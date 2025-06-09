@@ -1,0 +1,121 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // shadcn input
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle login logic here
+    console.log('Login attempt:', { email, password });
+  };
+
+  const handleCreateAccount = () => {
+    // Handle create account logic here
+    console.log('Create account clicked');
+  };
+
+  return (
+    <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
+      {/* School Logo at top left */}
+      <div className="absolute top-8 left-10 z-20 flex items-center">
+        <img
+          src="https://th.bing.com/th/id/OIP.H7B2zQa6tyItU1JR6pPcngHaEE?rs=1&pid=ImgDetMain"
+          alt="School Logo"
+          className="h-24 w-24 object-cover rounded-full mr-5 shadow"
+        />
+        <span className="text-3xl font-extrabold text-cyan-700">FPT University</span>
+      </div>
+
+      {/* Decorative teal shape */}
+      <div className="hidden md:block absolute bg-cyan-400 rounded-full w-[500px] h-[500px] right-[-180px] top-1/2 -translate-y-1/2 z-0" />
+
+      <div className="flex w-[1400px] h-[700px] bg-white rounded-2xl shadow-xl overflow-hidden z-10">
+        {/* Left - Image and text */}
+        <div className="w-1/2 h-full relative flex flex-col justify-end">
+          <img
+            src="https://campusm.exlibrisgroup.com/wp-content/uploads/2019/07/GettyImages-887132600-scaled.jpg"
+            alt="Beach"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="relative z-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-10 pt-32 h-full flex flex-col justify-end rounded-bl-2xl">
+            <h1 className="text-5xl font-bold text-white mb-4 leading-tight drop-shadow">
+              The Best Academic  <br />Experience
+            </h1>
+            <p className="text-base text-white/90 max-w-md mb-4 drop-shadow">
+              Access to thousands of academic resources and tools to enhance your learning experience.
+            </p>
+          </div>
+        </div>
+        {/* Right - Login form */}
+        <div className="w-1/2 flex items-center justify-center bg-white relative">
+          <div className="w-full max-w-md px-10 py-12 flex flex-col items-center">
+            {/* School avatar instead of Login text */}
+            <img
+              src="https://th.bing.com/th/id/OIP.H7B2zQa6tyItU1JR6pPcngHaEE?rs=1&pid=ImgDetMain"
+              alt="School Avatar"
+              className="h-20 w-20 object-cover rounded-full mb-6 shadow"
+            />
+            <h2 className="text-3xl font-bold text-cyan-700 mb-6">Sign in</h2>
+            {/* Login form */}
+            <form onSubmit={handleLogin} className="space-y-5 w-full">
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {/* Simple eye icon SVG for show/hide */}
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.657.336-3.236.938-4.675M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.062-2.675A9.956 9.956 0 0022 9c0 5.523-4.477 10-10 10a9.956 9.956 0 01-4.675-.938" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm7.5 0c-1.74 4.5-6.5 7.5-10.5 7.5S2.24 16.5.5 12C2.24 7.5 7.04 4.5 12 4.5s9.26 3 10.5 7.5z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+                <Button
+                type="submit"
+                onClick={() => window.location.href = '/main/home'}
+                className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-full font-medium shadow transition-all"
+                >
+                LOGIN
+                </Button>
+            </form>
+            <div className="my-5 text-center w-full">
+              <span className="text-gray-400">Or</span>
+            </div>
+            <div className="mt-6 text-center w-full">
+              <span className="text-gray-400">Already have an account? </span>
+              <a href="/auth/register" className="text-cyan-600 hover:underline font-medium">Sign up</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
