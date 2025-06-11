@@ -1,6 +1,6 @@
 'use client';
 import React from "react";
-import NavigationBar from "@/app/components/navbar";
+import NavigationBar from "@/app/layouts/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -8,7 +8,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 const FriendsNCommunitys = () => {
     return (
         <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
-            <div className="w-4/5 mx-auto p-4">
+            <NavigationBar />
+            <div className="w-4/5 absolute top-[10vh] left-1/2 -translate-x-1/2">
                 <Input
                     type="text"
                     placeholder="Search friends or communities..."
@@ -116,7 +117,7 @@ const FriendsNCommunitys = () => {
                  
          
              
-            <NavigationBar />
+   
         </div>
     );
 };

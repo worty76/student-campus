@@ -116,7 +116,7 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+ body {
+  @apply bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen;
+}
 }
