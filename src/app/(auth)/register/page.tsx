@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -23,45 +24,52 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
       {/* School Logo at top left */}
-      <div className="absolute top-8 left-10 z-20 flex items-center">
-        <img
-          src="https://th.bing.com/th/id/OIP.H7B2zQa6tyItU1JR6pPcngHaEE?rs=1&pid=ImgDetMain"
+      <div className="absolute top-[2%] left-[2%] z-20 flex items-center">
+        <Image
+          src="/schoolimg.jpg"
           alt="School Logo"
-          className="h-24 w-24 object-cover rounded-full mr-5 shadow"
+          width={96}
+          height={96}
+          className="h-[7vw] w-[7vw] min-h-[48px] min-w-[48px] max-h-[96px] max-w-[96px] object-cover rounded-full mr-[2vw] shadow"
         />
-        <span className="text-3xl font-extrabold text-cyan-700">FPT University</span>
+        <span className="text-[2vw] min-text-2xl font-extrabold text-cyan-700">FPT University</span>
       </div>
 
       {/* Decorative teal shape */}
-      <div className="hidden md:block absolute bg-cyan-400 rounded-full w-[500px] h-[500px] right-[-180px] top-1/2 -translate-y-1/2 z-0" />
+      <div className="hidden md:block absolute bg-cyan-400 rounded-full w-[35%] h-[60%] right-[-12%] top-1/2 -translate-y-1/2 z-0" />
 
-      <div className="flex w-[1400px] h-[700px] bg-white rounded-2xl shadow-xl overflow-hidden z-10">
+      <div className="flex w-[90vw] max-w-[1100px] h-[70vh] max-h-[700px] bg-white rounded-2xl shadow-xl overflow-hidden z-10">
         {/* Left - Image and text */}
         <div className="w-1/2 h-full relative flex flex-col justify-end">
-          <img
-            src="https://campusm.exlibrisgroup.com/wp-content/uploads/2019/07/GettyImages-887132600-scaled.jpg"
+          <Image
+            src="/authbgimg.avif"
             alt="Beach"
+            fill
             className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+            priority
           />
-          <div className="relative z-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-10 pt-32 h-full flex flex-col justify-end rounded-bl-2xl">
-            <h1 className="text-5xl font-bold text-white mb-4 leading-tight drop-shadow">
+          <div className="relative z-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-[6%] pt-[18%] h-full flex flex-col justify-end rounded-bl-2xl">
+            <h1 className="text-[3vw] min-text-3xl font-bold text-white mb-4 leading-tight drop-shadow">
               Create Your Academic Future
             </h1>
-            <p className="text-base text-white/90 max-w-md mb-4 drop-shadow">
+            <p className="text-base text-white/90 max-w-[80%] mb-4 drop-shadow">
               Access to thousands of academic resources and join our vibrant community of learners.
             </p>
           </div>
         </div>
         {/* Right - Register form */}
-        <div className="w-1/2 flex items-center justify-center bg-white relative">
-          <div className="w-full max-w-md px-10 py-12 flex flex-col items-center">
-            <img
-              src="https://th.bing.com/th/id/OIP.H7B2zQa6tyItU1JR6pPcngHaEE?rs=1&pid=ImgDetMain"
+        <div className="w-1/2 h-full flex items-center justify-center bg-white relative object-cover">
+          <div className="flex flex-col items-center justify-center w-full h-full px-8 py-6">
+            <Image
+              src="/schoolimg.jpg"
               alt="School Avatar"
-              className="h-20 w-20 object-cover rounded-full mb-6 shadow"
+              width={80}
+              height={80}
+              className="h-8 w-8 md:h-20 md:w-20 object-cover rounded-full mb-4 shadow"
             />
-            <h2 className="text-3xl font-bold text-cyan-700 mb-6">JOIN OUR ACADEMIC</h2>
-              <form onSubmit={handleRegister} className="space-y-5 w-full">
+            <h2 className="text-xl md:text-2xl font-bold text-cyan-700 mb-4 text-center">JOIN OUR ACADEMIC</h2>
+            <form onSubmit={handleRegister} className="space-y-4 w-full max-w-sm mx-auto">
               <Input
                 type="text"
                 placeholder="Full Name"
@@ -148,14 +156,14 @@ export default function RegisterPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-full font-medium shadow transition-all"
+                className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-2 rounded-full font-medium shadow transition-all"
               >
                 SIGN UP
               </Button>
             </form>
-            <div className="mt-6 text-center w-full">
+            <div className="mt-4 text-center w-full">
               <span className="text-gray-400">Already have an account? </span>
-              <a href="/auth/login" className="text-cyan-600 hover:underline font-medium">Log in</a>
+              <a href="/login" className="text-cyan-600 hover:underline font-medium">Log in</a>
             </div>
           </div>
         </div>

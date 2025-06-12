@@ -1,14 +1,17 @@
 'use client';
-import React from "react";
-import NavigationBar from "@/app/components/navbar";
+import React, { useState } from "react";
+import NavigationBar from "@/app/layouts/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const FriendsNCommunitys = () => {
+
+    const [searchrs,setSearchrs] = useState(false)
     return (
         <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
-            <div className="w-4/5 mx-auto p-4">
+            <NavigationBar />
+            <div className="w-4/5 absolute top-[10vh] left-1/2 -translate-x-1/2">
                 <Input
                     type="text"
                     placeholder="Search friends or communities..."
@@ -46,13 +49,24 @@ const FriendsNCommunitys = () => {
                             <SelectItem value="lop3">Lớp 3</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button
-                        variant="outline"
-                        className="ml-auto border-blue-500 text-blue-700 hover:bg-blue-50"
-                        type="button"
-                    >
-                        Reset
-                    </Button>
+                    <div className="flex gap-2 ml-auto">
+                        <Button
+                            onClick={() => setSearchrs(true)}
+                            variant="outline"
+                            className="border-blue-500 text-blue-700 hover:bg-blue-50"
+                            type="button"
+                        >
+                            Search
+                        </Button>
+                        <Button
+                            onClick={() => setSearchrs(false)}
+                            variant="outline"
+                            className="border-blue-500 text-blue-700 hover:bg-blue-50"
+                            type="button"
+                        >
+                            Reset
+                        </Button>
+                    </div>
                 </div>
                 <hr className="my-4 border-blue-200" />
                 <div className="container mx-auto flex flex-row items-center justify-center gap-8">
@@ -67,7 +81,9 @@ const FriendsNCommunitys = () => {
                         </Button>
                     </div>
                 </div>
-                <div className="mt-8">
+                 
+                 {searchrs === true && (
+                    <div className="mt-8">
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-lg font-semibold text-blue-700">Search results:</h2>
                         <div className="flex items-center gap-2">
@@ -110,13 +126,43 @@ const FriendsNCommunitys = () => {
                 </li>
               </ul>
                 </div>
+                 ) 
+                 }
+                 {searchrs === false && (
+                  <div className="mb-6">
+                        <h3 className="text-base font-semibold text-blue-600 mb-2">Gợi ý bạn bè</h3>
+                        <ul className="space-y-2">
+                            <li className="flex items-center bg-blue-50 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer">
+                                <span className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold mr-3">A</span>
+                                <div>
+                                    <span className="font-medium text-blue-800">An Nguyen</span>
+                                    <div className="text-xs text-gray-500">CNTT/Năm 1</div>
+                                </div>
+                                <Button className="ml-auto bg-blue-500 text-white hover:bg-blue-600 px-4 py-1 rounded" size="sm">
+                                    Kết bạn
+                                </Button>
+                            </li>
+                            <li className="flex items-center bg-blue-50 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer">
+                                <span className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold mr-3">B</span>
+                                <div>
+                                    <span className="font-medium text-blue-800">Binh Tran</span>
+                                    <div className="text-xs text-gray-500">Kinh tế/Năm 2</div>
+                                </div>
+                                <Button className="ml-auto bg-blue-500 text-white hover:bg-blue-600 px-4 py-1 rounded" size="sm">
+                                    Kết bạn
+                                </Button>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+                
                  
             </div>
          
                  
          
              
-            <NavigationBar />
+   
         </div>
     );
 };
