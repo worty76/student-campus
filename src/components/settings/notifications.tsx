@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Input } from "../ui/input";
-const Notifications = () => {
+const Notifications: React.FC = () => {
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
     return (

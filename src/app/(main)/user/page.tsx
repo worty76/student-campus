@@ -57,42 +57,14 @@ const UserProfilePage = () => {
             </div>
             {/* Progress Bar */}
             <div className="mb-[6%]">
-              <div className="flex justify-between text-[1vw] min-text-xs text-gray-600 mb-[2%]">
-                <span>Level 6</span>
-                <span>(25/175)</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-[0.6vw] min-h-[8px]">
-                <div className="bg-red-500 h-full rounded-full" style={{ width: '14%' }}></div>
-              </div>
+             
             </div>
             {/* Study Info */}
             <div className="mb-[6%]">
               <h3 className="font-semibold text-gray-900 mb-[2%] text-[1.1vw] min-text-sm">Studying: Computer Science BSc</h3>
               <p className="text-gray-600 text-[1vw] min-text-xs">Aspiring software engineer.</p>
-            </div>
-            {/* HOBBIES */}
-            <div className="mb-[6%]">
-              <h3 className="font-semibold text-gray-900 mb-[3%] text-[1.1vw] min-text-sm">HOBBIES</h3>
-              <div className="flex flex-wrap gap-[2%]">
-                <span className="bg-teal-500 text-white px-[6%] py-[2%] rounded-full text-[1vw] min-text-xs flex items-center gap-1">
-                  <Code size={14} />
-                  Code
-                </span>
-                <span className="bg-teal-500 text-white px-[6%] py-[2%] rounded-full text-[1vw] min-text-xs flex items-center gap-1">
-                  <Waves size={14} />
-                  Swimming
-                </span>
-              </div>
-            </div>
-            {/* INTERESTS */}
-            <div className="mb-[6%]">
-              <h3 className="font-semibold text-gray-900 mb-[3%] text-[1.1vw] min-text-sm">INTERESTS</h3>
-              <div className="flex flex-wrap gap-[2%]">
-                <span className="bg-purple-500 text-white px-[6%] py-[2%] rounded-full text-[1vw] min-text-xs flex items-center gap-1">
-                  <Brain size={14} />
-                  Artificial-Intelligence
-                </span>
-              </div>
+                 <h3 className="font-semibold text-gray-900 mb-[2%] text-[1.1vw] min-text-sm">Year</h3>
+              <p className="text-gray-600 text-[1vw] min-text-xs">2021-2026</p>
             </div>
           </div>
         </div>

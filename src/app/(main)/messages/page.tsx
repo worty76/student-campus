@@ -102,6 +102,7 @@ export default function MessagesPage() {
             <div className="font-bold text-blue-900 text-lg mb-2">Nguyễn Văn A</div>
             <div className="text-gray-500 mb-4 text-sm">Sinh viên năm 2</div>
             <Button className="bg-blue-600 text-white w-full mb-2">Xem hồ sơ</Button>
+            <Button className="bg-blue-600 text-white w-full mb-2">Tạo Nhóm</Button>
             <Button variant="outline" className="w-full">Chặn</Button>
           </div>
         </div>

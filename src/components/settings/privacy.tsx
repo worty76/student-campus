@@ -6,7 +6,7 @@ type PrivacySettings = {
     messagePermission: "everyone" | "friends" | "noone";
 };
 
-const Privacy = () => {
+const Privacy : React.FC = () => {
     const [privacy, setPrivacy] = useState<PrivacySettings>({
         profileVisibility: "everyone",
         messagePermission: "everyone",

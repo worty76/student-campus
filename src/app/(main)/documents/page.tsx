@@ -71,7 +71,7 @@ export default function DocumentsPage() {
             {/* Filters */}
             <div className="flex flex-wrap gap-4 mb-8">
                 <Select value={subject} onValueChange={setSubject}>
-                    <SelectTrigger className="w-48 border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
+                    <SelectTrigger className="w-48 bg-white border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
                         <SelectValue placeholder="Chọn môn học" />
                     </SelectTrigger>
                     <SelectContent>
@@ -87,7 +87,7 @@ export default function DocumentsPage() {
                 </Select>
 
                 <Select value={lecturer} onValueChange={setLecturer}>
-                    <SelectTrigger className="w-48 border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
+                    <SelectTrigger className="w-48 bg-white border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
                         <SelectValue placeholder="Chọn giảng viên" />
                     </SelectTrigger>
                     <SelectContent>
@@ -103,7 +103,7 @@ export default function DocumentsPage() {
                 </Select>
 
                 <Select value={faculty} onValueChange={setFaculty}>
-                    <SelectTrigger className="w-48 border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
+                    <SelectTrigger className="w-48 bg-white border-solid border-blue-300 hover:border-blue-400 focus-within:border-blue-500">
                         <SelectValue placeholder="Chọn khoa/năm học" />
                     </SelectTrigger>
                     <SelectContent>
