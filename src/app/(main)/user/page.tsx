@@ -1,5 +1,6 @@
+'use client'
 import React from 'react';
-import { Calendar, Mail, User, FileText, Code, Waves, Brain, Lock, Globe, Edit3 } from 'lucide-react';
+import { Calendar, Mail, User, FileText, Lock, Globe, Edit3 } from 'lucide-react';
 import NavigationBar from '@/app/layouts/navbar';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
