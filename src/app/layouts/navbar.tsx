@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
     NavigationMenu,
@@ -69,7 +70,12 @@ export default function NavigationBar() {
                                     aria-haspopup="true"
                                     aria-expanded="false"
                                 >
-                                    <span>🔔</span>
+                                    <span>🔔
+                                        {/* Notification badge */}
+                                    <span className="absolute -bottom-[-30px] -right-[-40px] bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] flex items-center justify-center border border-white shadow">
+                                        3
+                                    </span>   
+                                    </span>
                                     <span className="hidden sm:inline">Notifications</span>
                                 </NavigationMenuLink>
                             </DropdownMenuTrigger>
@@ -89,10 +95,16 @@ export default function NavigationBar() {
                                 <DropdownMenuItem>
                                     John sent you a friend request
                                 </DropdownMenuItem>
+                                <hr className="my-2 border-t border-gray-200" />
+                                <DropdownMenuItem
+                                onClick={() => window.location.href = "/notifications"}
+                                >
+                                    See all the notifications
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </NavigationMenuItem>
-                     <NavigationMenuItem>
+                     <NavigationMenuItem>   
                         <NavigationMenuLink
                             href="/user"
                             className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"

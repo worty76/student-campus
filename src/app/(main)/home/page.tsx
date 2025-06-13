@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NavigationBar from "@/app/layouts/navbar";
-import BubbleChat from "@/components/Chat/bubble";
+import BubbleChat from "@/components/chat/bubble";
+import PostAdd from "@/components/home/postadd";
 import Image from "next/image";
 // Dummy user info
 const userInfo = {
@@ -47,6 +48,7 @@ const HomePage = () => {
   const [postContent, setPostContent] = useState("");
   const [posts] = useState(dummyPosts);
    const [chatFriend, setChatFriend] = useState<string | null>(null);
+   const [isAddmodalopen,setisAddmodalopen] = useState(false)
   // const handlePost = () => {
   //   if (!postContent.trim()) return;
 
@@ -200,8 +202,8 @@ const HomePage = () => {
                 </div>
               </div>
               <Button
-                // onClick={handlePost}
-                disabled={!postContent.trim()}
+                onClick={()=>setisAddmodalopen(true)}
+               
                 className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
               >
                 Đăng bài
@@ -327,6 +329,9 @@ const HomePage = () => {
           status="Online"
         
         />
+        )}
+        {isAddmodalopen === true && (
+            <PostAdd name={userInfo.name} onClose={() => setisAddmodalopen(false)} />
         )}
       {/* Decorative blue bar bottom */}
       <div className="fixed left-0 bottom-0 w-full bg-gradient-to-r from-blue-400 via-blue-300 to-blue-100 h-2 z-40" />
