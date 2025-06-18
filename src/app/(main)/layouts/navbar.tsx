@@ -1,5 +1,5 @@
 
-import React from "react";
+import React ,{useState,useEffect} from "react";
 import {
     NavigationMenu,
     NavigationMenuList,
@@ -17,6 +17,27 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function NavigationBar() {
+      const [userId, setUserId] = useState('');
+      
+
+    useEffect(() => {
+        // Check if we're in a browser environment and token exists
+        if (typeof window !== 'undefined') {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    // Simple token parsing - in production, use a proper JWT library
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('UserID:', payload.userId);
+                    setUserId(payload.userId || '');
+                }
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                // Handle invalid token
+                setUserId('');
+            }
+        }
+    }, []);
     return (
          <div className="fixed left-0 top-0 w-full bg-white border-t border-gray-200 z-50 shadow-lg flex justify-center">
                 <NavigationMenu className="w-full max-w-xl h-16">
@@ -106,7 +127,7 @@ export default function NavigationBar() {
                     </NavigationMenuItem>
                      <NavigationMenuItem>   
                         <NavigationMenuLink
-                            href="/user"
+                            href={`/user/profile?userid=${userId}`}
                             className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
                         >
                             <span>👤</span>

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import NavigationBar from "@/app/layouts/navbar";
+import NavigationBar from "@/app/(main)/layouts/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
