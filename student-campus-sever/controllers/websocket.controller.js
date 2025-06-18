@@ -34,12 +34,12 @@ const onConnection = (ws, req) => {
                     from
                 }));
             const notires = await logNotifications(from,to,message.type)
-            if(notires.message === 'Friend request already sent'){
-                 fromSocket.send(JSON.stringify({
-                    type: 'notification',
-                    message:'Friend request already sent'
-                 }))
-            }
+            // if(notires.message === 'Friend request already sent'){
+            //      fromSocket.send(JSON.stringify({
+            //         type: 'notification',
+            //         message:'Friend request already sent'
+            //      }))
+            // }
             const res = await sendFriendRequest(from, to);
             console.log('notifications result: ',notires)
             console.log('Friend request result:', res);
