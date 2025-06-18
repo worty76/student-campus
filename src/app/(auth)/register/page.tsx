@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import Image from 'next/image'
+import axios from 'axios';
+
+
+
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -14,12 +18,42 @@ export default function RegisterPage() {
   const [major, setMajor] = useState('');
   const [year, setYear] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle register logic here
-    console.log({ name, email, password, faculty, major, year });
-  };
+
+
+     const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault(); // Ngăn form reload trang
+
+        try {
+          const items = {
+            username: name,
+            email: email,
+            password: password,
+            faculty: faculty,
+            major: major,
+            year: year
+          };
+
+          const response = await axios.post(
+            'http://localhost:3001/api/auth/register',
+            { items: items },
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          if(response){
+            console.log(response.data)
+          }
+        } catch (error: any) {
+          alert(error.response?.data?.message || error.message || 'Đã xảy ra lỗi');
+        }
+      };
+
+
 
   return (
     <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
@@ -91,10 +125,23 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPassword(value);
+
+                    // Regex: ít nhất 6 ký tự, gồm ít nhất 1 chữ cái và 1 số
+                    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
+                    if (!passwordRegex.test(value)) {
+                      setPasswordError(true);
+                    } else {
+                      setPasswordError(false);
+                    }
+                  }}
                   required
-                  className="pr-10 w-full"
+                  className={`pr-10 w-full ${passwordError ===true ? 'border-red-500' : ''}`}
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -119,10 +166,10 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Select Faculty" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SE">Software Engineering</SelectItem>
-                    <SelectItem value="AI">Artificial Intelligence</SelectItem>
-                    <SelectItem value="BA">Business Administration</SelectItem>
-                    <SelectItem value="GD">Graphic Design</SelectItem>
+                    <SelectItem value="Software Engineering">Software Engineering</SelectItem>
+                    <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+                    <SelectItem value="Business Administration">Business Administration</SelectItem>
+                    <SelectItem value="Graphic Design">Graphic Design</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -133,8 +180,8 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Select Major" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Web">Web Development</SelectItem>
-                    <SelectItem value="Mobile">Mobile Development</SelectItem>
+                    <SelectItem value="Web Development">Web Development</SelectItem>
+                    <SelectItem value="Mobile Development">Mobile Development</SelectItem>
                     <SelectItem value="Marketing">Marketing</SelectItem>
                     <SelectItem value="Animation">Animation</SelectItem>
                   </SelectContent>
@@ -147,14 +194,15 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Select Year" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Year 1</SelectItem>
-                    <SelectItem value="2">Year 2</SelectItem>
-                    <SelectItem value="3">Year 3</SelectItem>
-                    <SelectItem value="4">Year 4</SelectItem>
+                    <SelectItem value="First Year">First Year</SelectItem>
+                    <SelectItem value="Second Year">Second Year</SelectItem>
+                    <SelectItem value="Third Year">Third Year</SelectItem>
+                    <SelectItem value="Fourth Year">Fourth Year</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Button
+                onClick={handleRegister}
                 type="submit"
                 className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-2 rounded-full font-medium shadow transition-all"
               >

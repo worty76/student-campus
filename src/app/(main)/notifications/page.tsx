@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from "react";
 import { Bell, Users, Image as ImageIcon, Trophy } from "lucide-react";
-import NavigationBar from "@/app/layouts/navbar";
+import NavigationBar from "@/app/(main)/layouts/navbar";
 import Image from "next/image";
 const notifications = [
     {

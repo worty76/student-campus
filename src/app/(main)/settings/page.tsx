@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import NavigationBar from '@/app/layouts/navbar';
+import NavigationBar from '@/app/(main)/layouts/navbar';
 import { Button } from '@/components/ui/button';
 import PasswordChange from '@/components/settings/password';
 import Notifications from '@/components/settings/notifications';

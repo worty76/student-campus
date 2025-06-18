@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UploadCloud, Flame } from "lucide-react";
-import NavigationBar from "@/app/layouts/navbar";
+import NavigationBar from "@/app/(main)/layouts/navbar";
 // Dummy data for filters and documents
 const subjects = ["Toán", "Lý", "Hóa", "Văn"];
 const lecturers = ["Thầy A", "Cô B", "Thầy C"];

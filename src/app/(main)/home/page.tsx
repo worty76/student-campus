@@ -1,12 +1,40 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import NavigationBar from "@/app/layouts/navbar";
+import NavigationBar from "@/app/(main)/layouts/navbar";
 import BubbleChat from "@/components/chat/bubble";
 import PostAdd from "@/components/home/postadd";
 import Image from "next/image";
-// Dummy user info
+import { useSearchParams } from 'next/navigation';
+import axios from "axios";
+import { useWebSocket } from "@/app/constants/websocket.contex";
+// TypeScript interfaces for the post data
+interface FileAttachment {
+  url: string;
+  filename: string;
+  mimetype: string;
+  filetype: string;
+}
+
+interface Attachment {
+  file?: FileAttachment;
+  url?: string;
+  filename?: string;
+  mimetype?: string;
+  filetype?: string;
+}
+
+interface Post {
+  _id: string;
+  userId: string;
+  text: string;
+  attachments: Attachment[];
+  createdAt: string;
+  likes: string[];
+  comments: any[];
+}
+
 const userInfo = {
   name: "Nguyễn Văn A",
   avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -15,86 +43,78 @@ const userInfo = {
   year: "Năm 3",
 };
 
-const dummyPosts = [
-  {
-    id: 1,
-    author: "Alice",
-    content: "Chào mọi người!",
-    time: "2 phút trước",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 2,
-    author: "Bob",
-    content: "Đây là video học nhóm hôm qua!",
-    time: "10 phút trước",
-    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  },
-  {
-    id: 3,
-    author: "Lan",
-    content: "Mình chia sẻ file tài liệu Toán nhé!",
-    time: "20 phút trước",
-    file: {
-      name: "BaiTapToan.pdf",
-      url: "#",
-    },
-  },
-];
-
 const onlineFriends = ["Minh", "Lan", "Hùng", "Trang"];
 
 const HomePage = () => {
+
   const [postContent, setPostContent] = useState("");
-  const [posts] = useState(dummyPosts);
-   const [chatFriend, setChatFriend] = useState<string | null>(null);
-   const [isAddmodalopen,setisAddmodalopen] = useState(false)
-  // const handlePost = () => {
-  //   if (!postContent.trim()) return;
+  const [posts, setPosts] = useState<Post[]>([]);
+  
+  const [chatFriend, setChatFriend] = useState<string | null>(null);
+  const [isAddmodalopen, setisAddmodalopen] = useState(false);
 
-  //   let processedContent = postContent;
-  //   const newPost  = {
-  //     id: Date.now(),
-  //     author: "Bạn",
-  //     content: processedContent,
-  //     time: "Vừa xong",
-  //   };
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('user');
 
-  //   // Check for image ![alt](url)
-  //   const imageMatch = postContent.match(/!\[.*?\]\((.*?)\)/);
-  //   if (imageMatch) {
-  //     newPost.image = imageMatch[1];
-  //     processedContent = processedContent.replace(/!\[.*?\]\(.*?\)/, '').trim();
-  //   }
+  const {  status } = useWebSocket();
+  
+  
+  useEffect(() => {
+    console.log("User ID:", userId);
+    getpost();
+    console.log("Socket status: ",status)
+  }, [userId]);
+   
+  const getpost = async() => {
+    try {
+      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+      const response = await axios.get('http://localhost:3001/api/get/post',{
+        headers:{
+          Authorization: token ? `Bearer ${token}` : "",
+        }
+      });
+      if (response.status === 200 && response.data.success) {
+        const posts = response.data.posts;
+        console.log('Random posts:', posts);
+        setPosts(posts);
+      } else {
+        console.error('Failed to fetch posts:', response.data.message);
+        setPosts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching random posts:', error);
+      setPosts([]);
+    }
+  }
 
-  //   // Check for video [video](url)
-  //   const videoMatch = postContent.match(/\[video\]\((.*?)\)/);
-  //   if (videoMatch) {
-  //     newPost.video = videoMatch[1];
-  //     processedContent = processedContent.replace(/\[video\]\(.*?\)/, '').trim();
-  //   }
+  const formatTime = (createdAt: string): string => {
+    const now = new Date();
+    const postTime = new Date(createdAt);
+    const diffInMinutes = Math.floor((now.getTime() - postTime.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "Vừa xong";
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} giờ trước`;
+    return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
+  };
 
-  //   // Check for file [file name](url)
-  //   const fileMatch = postContent.match(/\[file\s+(.*?)\]\((.*?)\)/);
-  //   if (fileMatch) {
-  //     newPost.file = {
-  //       name: fileMatch[1],
-  //       url: fileMatch[2],
-  //     };
-  //     processedContent = processedContent.replace(/\[file\s+.*?\]\(.*?\)/, '').trim();
-  //   }
-
-  //   newPost.content = processedContent;
-  //   setPosts([newPost, ...posts]);
-  //   setPostContent("");
-  // };
-
-  // const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === 'Enter' && !e.shiftKey) {
-  //     e.preventDefault();
-  //     handlePost();
-  //   }
-  // };
+  const getFileIcon = (filetype: string): string => {
+    switch (filetype) {
+      case 'image':
+        return '🖼️';
+      case 'txt':
+        return '📄';
+      case 'pdf':
+        return '📋';
+      case 'doc':
+      case 'docx':
+        return '📝';
+      case 'video':
+        return '🎥';
+      default:
+        return '📎';
+    }
+  };
 
   return (
     <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen pb-20 flex flex-col items-center relative overflow-x-hidden">
@@ -103,11 +123,11 @@ const HomePage = () => {
       {/* Decorative blue bar top */}
       <div className="w-full h-2 bg-gradient-to-r from-blue-400 via-blue-300 to-blue-100 mb-2" />
       <NavigationBar />
-      <div className="flex flex-col absolute top-[5vh]  items-center w-full">
+      <div className="flex flex-col absolute top-[5vh] items-center w-full">
       
         <div className="flex flex-col md:flex-row justify-center items-start gap-8 w-full max-w-7xl mt-8">
           {/* User Info */}
-          <div className="w-full md:w-74  flex-shrink-0  justify-center">
+          <div className="w-full md:w-74 flex-shrink-0 justify-center">
             <div className="bg-white border border-blue-200 rounded-lg p-6 shadow-md w-full max-w-xs flex flex-col items-center relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-2 bg-blue-200 rounded-full blur-sm" />
               <Image
@@ -159,30 +179,30 @@ const HomePage = () => {
                 </li>
               </ul>
             </div>
-             <hr className="my-6 border-t border-gray-500 w-full" />
-             <div>
-                 <h4 className="font-semibold text-blue-900 mb-3">About Website</h4>
-                  <ul className="space-y-3">
-                    <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
+            <hr className="my-6 border-t border-gray-500 w-full" />
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-3">About Website</h4>
+              <ul className="space-y-3">
+                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
                   <div className="flex items-center mb-1">
                     <span className="text-lg mr-2">🗨️</span>
                     <span className="font-semibold text-blue-800">IT Q&A</span>
                   </div>
-                     </li>
-                     <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
+                </li>
+                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
                   <div className="flex items-center mb-1">
                     <span className="text-lg mr-2">🗨️</span>
                     <span className="font-semibold text-blue-800">IT Q&A</span>
                   </div>
-                     </li>
-                     <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
+                </li>
+                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
                   <div className="flex items-center mb-1">
                     <span className="text-lg mr-2">🗨️</span>
                     <span className="font-semibold text-blue-800">IT Q&A</span>
                   </div>
-                     </li>
-                  </ul>
-             </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Main Feed */}
@@ -194,7 +214,6 @@ const HomePage = () => {
                   placeholder="Chia sẻ trạng thái, hình ảnh, file tài liệu..."
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
-                  // onKeyPress={handleKeyPress}
                   className="mb-2 border-blue-200 focus:ring-blue-400"
                 />
                 <div className="text-xs text-blue-500 mb-2">
@@ -202,8 +221,7 @@ const HomePage = () => {
                 </div>
               </div>
               <Button
-                onClick={()=>setisAddmodalopen(true)}
-               
+                onClick={() => setisAddmodalopen(true)}
                 className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
               >
                 Đăng bài
@@ -211,94 +229,108 @@ const HomePage = () => {
             </div>
 
             {/* Posts */}
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-white border border-blue-100 rounded-lg p-4 mb-5 shadow-sm w-full max-w-2xl mx-auto"
-              >
-                <div className="flex items-center mb-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mr-3 flex items-center justify-center text-white font-semibold text-sm shadow">
-                    {post.author.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-blue-900">{post.author}</div>
-                    <div className="text-xs text-blue-400">{post.time}</div>
-                  </div>
-                </div>
-
-                {post.content && (
-                  <div className="text-gray-800 mb-3 leading-relaxed">{post.content}</div>
-                )}
-
-                {post.image && (
-                  <div className="mb-3">
-                     <Image
-                      src={'/schoolimg.jpg'}
-                      alt="Hình ảnh đăng tải"
-                      width={800}
-                      height={400}
-                      className="rounded-lg max-h-96 w-full object-cover border border-blue-100"
-                      style={{ maxHeight: 384, width: "100%", objectFit: "cover" }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-
-                {post.video && (
-                  <div className="mb-3">
-                    <video
-                      controls
-                      className="rounded-lg max-h-96 w-full border border-blue-100"
-                      onError={(e) => {
-                        (e.target as HTMLVideoElement).style.display = 'none';
-                      }}
-                    >
-                      <source src={post.video} type="video/mp4" />
-                      Trình duyệt của bạn không hỗ trợ video.
-                    </video>
-                  </div>
-                )}
-
-                {post.file && (
-                  <div className="mb-2">
-                    <a
-                      href={post.file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-3 py-2 bg-blue-50 rounded-lg hover:bg-blue-100 text-blue-700 text-sm transition-colors duration-200 border border-blue-200"
-                      onClick={(e) => {
-                        if (post.file.url === '#') {
-                          e.preventDefault();
-                          alert('Đây là file demo - không có link thực tế');
-                        }
-                      }}
-                    >
-                      <span className="mr-2">📄</span>
-                      {post.file.name}
-                    </a>
-                  </div>
-                )}
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-4 pt-3 border-t border-blue-100">
-                  <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                    <span>👍</span> Thích
-                  </button>
-                  <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                    <span>💬</span> Bình luận
-                  </button>
-                  <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                    <span>📤</span> Chia sẻ
-                  </button>
-                </div>
+            {posts.length === 0 ? (
+              <div className="bg-white border border-blue-100 rounded-lg p-8 mb-5 shadow-sm w-full max-w-2xl mx-auto text-center">
+                <div className="text-gray-500 text-lg mb-2">📝</div>
+                <div className="text-gray-600">Chưa có bài viết nào</div>
+                <div className="text-sm text-gray-400 mt-1">Hãy là người đầu tiên chia sẻ nội dung!</div>
               </div>
-            ))}
+            ) : (
+              posts.map((post) => (
+                <div
+                  key={post._id}
+                  className="bg-white border border-blue-100 rounded-lg p-4 mb-5 shadow-sm w-full max-w-2xl mx-auto"
+                >
+                  <div className="flex items-center mb-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mr-3 flex items-center justify-center text-white font-semibold text-sm shadow">
+                      U
+                    </div>
+                    <div>
+                      <div className="font-semibold text-blue-900">User</div>
+                      <div className="text-xs text-blue-400">{formatTime(post.createdAt)}</div>
+                    </div>
+                  </div>
+
+                  {/* Post text content */}
+                  {post.text && (
+                    <div className="text-gray-800 mb-3 leading-relaxed">{post.text}</div>
+                  )}
+
+                  {/* Attachments */}
+                  {post.attachments && post.attachments.length > 0 && (
+                    <div className="mb-3 space-y-3">
+                      {post.attachments.map((attachment, index) => {
+                        // Handle both attachment structures
+                        const file = attachment.file || attachment;
+                        
+                        if (file.filetype === 'image' || file.mimetype?.startsWith('image/')) {
+                          return (
+                            <div key={index} className="mb-3">
+                              <img
+                                src={file.url}
+                                alt="Hình ảnh đăng tải"
+                                className="rounded-lg max-h-96 w-full object-cover border border-blue-100"
+                                style={{ maxHeight: 384, width: "100%", objectFit: "cover" }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          );
+                        } else if (file.filetype === 'video' || file.mimetype?.startsWith('video/')) {
+                          return (
+                            <div key={index} className="mb-3">
+                              <video
+                                controls
+                                className="rounded-lg max-h-96 w-full border border-blue-100"
+                                onError={(e) => {
+                                  (e.target as HTMLVideoElement).style.display = 'none';
+                                }}
+                              >
+                                <source src={file.url} type={file.mimetype} />
+                                Trình duyệt của bạn không hỗ trợ video.
+                              </video>
+                            </div>
+                          );
+                        } else {
+                          // For other file types (documents, text files, etc.)
+                          return (
+                            <div key={index} className="mb-2">
+                              <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-3 py-2 bg-blue-50 rounded-lg hover:bg-blue-100 text-blue-700 text-sm transition-colors duration-200 border border-blue-200"
+                              >
+                                {/* <span className="mr-2">{getFileIcon(file.filetype)}</span> */}
+                                {file.filename || 'Tài liệu đính kèm'}
+                              </a>
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-4 pt-3 border-t border-blue-100">
+                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
+                      <span>👍</span> Thích ({post.likes?.length || 0})
+                    </button>
+                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
+                      <span>💬</span> Bình luận ({post.comments?.length || 0})
+                    </button>
+                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
+                      <span>📤</span> Chia sẻ
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Online Friends */}
-           <div className="w-full md:w-[600px] justify-center">
+          <div className="w-full md:w-[600px] justify-center">
             <div className="bg-white border border-blue-100 rounded-lg p-6 shadow-sm sticky top-8 w-full max-w-[1000px]">
               <h4 className="mb-4 font-semibold text-blue-900">Bạn bè online ({onlineFriends.length})</h4>
               <ul className="space-y-3">
@@ -315,29 +347,28 @@ const HomePage = () => {
                 ))}
               </ul>
             </div>
-          <hr className="my-6 border-t border-gray-500 w-full" />
+            <hr className="my-6 border-t border-gray-500 w-full" />
           </div>
-          
-         
-   
-      
         </div>
       </div>
-       {chatFriend && (
+      
+      {chatFriend && (
         <BubbleChat
           name={chatFriend}
           status="Online"
-        
         />
-        )}
-        {isAddmodalopen === true && (
-            <PostAdd name={userInfo.name} onClose={() => setisAddmodalopen(false)} />
-        )}
+      )}
+      
+      {isAddmodalopen === true && userId && (
+        <PostAdd
+          _id={userId}
+          name={userInfo.name}
+          onClose={() => setisAddmodalopen(false)}
+        />
+      )}
+
       {/* Decorative blue bar bottom */}
       <div className="fixed left-0 bottom-0 w-full bg-gradient-to-r from-blue-400 via-blue-300 to-blue-100 h-2 z-40" />
-
-      {/* Bottom Menu */}
-      
     </div>
   );
 };
