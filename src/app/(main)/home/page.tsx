@@ -6,9 +6,9 @@ import NavigationBar from "@/app/(main)/layouts/navbar";
 import BubbleChat from "@/components/chat/bubble";
 import PostAdd from "@/components/home/postadd";
 import Image from "next/image";
-import { useSearchParams } from 'next/navigation';
+
 import axios from "axios";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+
 // TypeScript interfaces for the post data
 interface FileAttachment {
   url: string;
@@ -32,7 +32,7 @@ interface Post {
   attachments: Attachment[];
   createdAt: string;
   likes: string[];
-  comments: any[];
+  comments: string[];
 }
 
 const userInfo = {
@@ -52,17 +52,23 @@ const HomePage = () => {
   
   const [chatFriend, setChatFriend] = useState<string | null>(null);
   const [isAddmodalopen, setisAddmodalopen] = useState(false);
+  
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const searchParams = useSearchParams();
-  const userId = searchParams.get('user');
+  useEffect(() => {
+    const storedId = localStorage.getItem('userId');
+    if (storedId) {
+      setUserId(storedId);
+    }
+  }, []);
 
-  const {  status } = useWebSocket();
+  
   
   
   useEffect(() => {
     console.log("User ID:", userId);
     getpost();
-    console.log("Socket status: ",status)
+   
   }, [userId]);
    
   const getpost = async() => {
@@ -98,23 +104,23 @@ const HomePage = () => {
     return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
   };
 
-  const getFileIcon = (filetype: string): string => {
-    switch (filetype) {
-      case 'image':
-        return '🖼️';
-      case 'txt':
-        return '📄';
-      case 'pdf':
-        return '📋';
-      case 'doc':
-      case 'docx':
-        return '📝';
-      case 'video':
-        return '🎥';
-      default:
-        return '📎';
-    }
-  };
+  // const getFileIcon = (filetype: string): string => {
+  //   switch (filetype) {
+  //     case 'image':
+  //       return '🖼️';
+  //     case 'txt':
+  //       return '📄';
+  //     case 'pdf':
+  //       return '📋';
+  //     case 'doc':
+  //     case 'docx':
+  //       return '📝';
+  //     case 'video':
+  //       return '🎥';
+  //     default:
+  //       return '📎';
+  //   }
+  // };
 
   return (
     <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen pb-20 flex flex-col items-center relative overflow-x-hidden">
@@ -266,9 +272,14 @@ const HomePage = () => {
                         if (file.filetype === 'image' || file.mimetype?.startsWith('image/')) {
                           return (
                             <div key={index} className="mb-3">
-                              <img
-                                src={file.url}
+                              
+                              <Image
+                                src={file.url || '/default-image.png'}
                                 alt="Hình ảnh đăng tải"
+                                width={640}
+                                height={640
+
+                                }
                                 className="rounded-lg max-h-96 w-full object-cover border border-blue-100"
                                 style={{ maxHeight: 384, width: "100%", objectFit: "cover" }}
                                 onError={(e) => {

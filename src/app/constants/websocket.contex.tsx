@@ -3,14 +3,20 @@ import React, { createContext, useContext, useRef, useState, useEffect, useCallb
 
 type WebSocketStatus = 'Disconnected' | 'Connecting' | 'Connected' | 'Error' | 'Reconnecting';
 
-type MessageHandler = (data: any) => void;
+interface WebSocketMessage {
+  type: 'init' | 'friend_request' | 'message';
+  from?: string;
+  to?: string;
+}
+
+type MessageHandler = (data: WebSocketMessage) => void;
 
 interface WebSocketContextType {
   socket: WebSocket | null;
   status: WebSocketStatus;
   connectWebSocket: (userId: string) => void;
   disconnect: () => void;
-  sendMessage: (data: any) => boolean;
+  sendMessage: (data: WebSocketMessage) => boolean;
   addMessageHandler: (handler: MessageHandler) => () => void;
 }
 
@@ -33,7 +39,61 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     }
   };
 
-  const attemptReconnect = useCallback(() => {
+ const connectWebSocket = useCallback((userId: string) => {
+  clearReconnectTimeout();
+  userIdRef.current = userId;
+
+  if (socketRef.current) {
+    socketRef.current.close();
+  }
+
+  setStatus('Connecting');
+
+  const socket = new WebSocket('ws://localhost:3001');
+  socketRef.current = socket;
+
+  socket.onopen = () => {
+    console.log('WebSocket connected');
+    setStatus('Connected');
+    reconnectAttemptsRef.current = 0;
+
+    socket.send(JSON.stringify({ type: 'init', id: userId }));
+  };
+
+  socket.onclose = (event) => {
+    console.log('WebSocket closed:', event.code, event.reason);
+    socketRef.current = null;
+
+    if (event.code !== 1000 && userIdRef.current) {
+      attemptReconnectInternal(); // gọi nội bộ
+    } else {
+      setStatus('Disconnected');
+    }
+  };
+
+  socket.onerror = (error) => {
+    console.error('WebSocket error:', error);
+    setStatus('Error');
+  };
+
+  socket.onmessage = (event) => {
+    console.log('[Socket Message]', event.data);
+    try {
+      const data = JSON.parse(event.data);
+      messageHandlersRef.current.forEach((handler) => {
+        try {
+          handler(data);
+        } catch (err) {
+          console.error('Error in message handler:', err);
+        }
+      });
+    } catch (err) {
+      console.error('Failed to parse WebSocket message:', err);
+    }
+  };
+
+  // Inline reconnect logic to avoid circular dependency
+  function attemptReconnectInternal() {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
       console.log('Max reconnection attempts reached');
       setStatus('Error');
@@ -42,76 +102,15 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
     setStatus('Reconnecting');
     reconnectAttemptsRef.current++;
-    
+
     reconnectTimeoutRef.current = setTimeout(() => {
       if (userIdRef.current) {
         console.log(`Reconnection attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`);
         connectWebSocket(userIdRef.current);
       }
     }, reconnectDelay);
-  }, []);
-
-  const connectWebSocket = useCallback((userId: string) => {
-    // Clear any existing reconnection attempts
-    clearReconnectTimeout();
-    
-    // Store userId for reconnection attempts
-    userIdRef.current = userId;
-
-    // Close existing connection
-    if (socketRef.current) {
-      socketRef.current.close();
-    }
-
-    setStatus('Connecting');
-    const socket = new WebSocket('ws://localhost:3001');
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-      setStatus('Connected');
-      reconnectAttemptsRef.current = 0; // Reset reconnection attempts on successful connection
-      
-      // Send initialization message
-      socket.send(JSON.stringify({ type: 'init', id: userId }));
-    };
-
-    socket.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
-      socketRef.current = null;
-      
-      // Only attempt reconnection if it wasn't a manual disconnect
-      if (event.code !== 1000 && userIdRef.current) {
-        attemptReconnect();
-      } else {
-        setStatus('Disconnected');
-      }
-    };
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setStatus('Error');
-    };
-
-    socket.onmessage = (event) => {
-      console.log('[Socket Message]', event.data);
-      
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Notify all registered message handlers
-        messageHandlersRef.current.forEach(handler => {
-          try {
-            handler(data);
-          } catch (err) {
-            console.error('Error in message handler:', err);
-          }
-        });
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
-    };
-  }, [attemptReconnect]);
+  }
+}, []);
 
   const disconnect = useCallback(() => {
     clearReconnectTimeout();
@@ -126,7 +125,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     setStatus('Disconnected');
   }, []);
 
-  const sendMessage = useCallback((data: any): boolean => {
+  const sendMessage = useCallback((data:WebSocketMessage ): boolean => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       try {
         socketRef.current.send(JSON.stringify(data));
@@ -161,13 +160,13 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   }, []);
 
   const contextValue: WebSocketContextType = {
-    socket: socketRef.current,
-    status,
-    connectWebSocket,
-    disconnect,
-    sendMessage,
-    addMessageHandler,
-  };
+  socket: socketRef.current,
+  status,
+  connectWebSocket,
+  disconnect,
+  sendMessage,
+  addMessageHandler,
+};
     useEffect(() => {
       const storedUserId = localStorage.getItem('userId');
       if (storedUserId) {

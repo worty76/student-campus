@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState,} from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -12,18 +12,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-  const socketRef = useRef<WebSocket | null>(null);
+ 
   const router = useRouter();
-  const { connectWebSocket, status } = useWebSocket();
+  const { connectWebSocket } = useWebSocket();
   // Cleanup WebSocket khi component unmount
-  useEffect(() => {
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }, []);
-
+  
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +44,7 @@ export default function LoginPage() {
         localStorage.setItem('userId',response.data.logindata.user._id)
         
         // Kết nối WebSocket sau khi login thành công
-        const username = response.data.logindata.user.username || 'khanhnee';
+       
         connectWebSocket(response.data.logindata.user._id);
         
         // Chuyển hướng (có thể delay một chút để WebSocket kết nối)

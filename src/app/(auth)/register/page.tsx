@@ -48,8 +48,8 @@ export default function RegisterPage() {
           if(response){
             console.log(response.data)
           }
-        } catch (error: any) {
-          alert(error.response?.data?.message || error.message || 'Đã xảy ra lỗi');
+        } catch (error) {
+          alert(error);
         }
       };
 

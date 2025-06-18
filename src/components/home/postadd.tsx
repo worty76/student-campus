@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { X, ImageIcon, Users, Smile, MapPin, FileText } from "lucide-react";
 import axios from "axios";
+import Image from "next/image";
 const user = {
   name: "Lê Khánh",
   avatar: "/api/placeholder/40/40",
@@ -81,12 +82,7 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
       formData.append("files", file);
     });
 
-    // Debug FormData
-    console.log("=== FormData Debug ===");
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
+    
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
        const res = await axios.post(
@@ -137,10 +133,12 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
 
       {/* User info */}
       <div className="flex items-center gap-3 px-5 pt-4">
-        <img
+        <Image
           src={user.avatar}
           alt="avatar"
           className="w-10 h-10 rounded-full object-cover bg-blue-100"
+          width={80}
+          height={80}
         />
         <div>
           <div className="text-blue-900 font-semibold">{name || user.name}</div>
@@ -167,10 +165,12 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
             {files.map((file, idx) => (
               <div key={idx} className="flex items-center gap-2 text-blue-800 bg-blue-50 p-3 rounded-lg">
                 {file.type.startsWith("image/") ? (
-                  <img
+                  <Image
                     src={URL.createObjectURL(file)}
                     alt="preview"
                     className="w-12 h-12 object-cover rounded"
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <FileText size={32} />

@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState, useRef } from 'react';
-import { Calendar, Mail, User, FileText, Lock, Globe, Edit3, Save, X, Camera, Upload } from 'lucide-react';
+import {  Mail, FileText, Lock, Globe, Edit3, Save, X, Camera, Upload } from 'lucide-react';
 import NavigationBar from '@/app/(main)/layouts/navbar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -60,11 +60,11 @@ const UserProfilePage = () => {
     const toid = '684ff70ccca78e5425b09cc2'
     sendMessage({
       type: 'friend_request',
-      content: 'Test!',
-      from: fromid,
-      to: toid,
+      from: fromid || '123',
+      to: toid || '123',
     });
   }
+
   
   const getUserData = async() => {
     try {
@@ -238,7 +238,7 @@ const UserProfilePage = () => {
                     }`}
                     onClick={handleAvatarClick}
                   >
-                    <img
+                    <Image
                       src={getCurrentAvatarUrl()}
                       alt="User Avatar"
                       className="w-full h-full object-cover rounded-full"

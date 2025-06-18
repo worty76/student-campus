@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { useRouter } from 'next/navigation';
 export default function NavigationBar() {
       const [userId, setUserId] = useState('');
       
