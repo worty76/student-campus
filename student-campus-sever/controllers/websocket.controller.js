@@ -6,7 +6,7 @@ const clients = new Map();
 const Friend_rq = require('../schemas/friend_rq.model');
 const Notifications = require('../schemas/notification.model');
 const User = require('../schemas/user.model'); // Đảm bảo bạn có schema này
-
+const {acceptUserRequest,denyUserRequest}  = require('../controllers/friendrequest.controller.routes')
 const onConnection = (ws, req) => {
     ws.on('message', async (data) => {
         const message = JSON.parse(data);
@@ -48,6 +48,64 @@ const onConnection = (ws, req) => {
             console.log('notifications result:', notires);
             console.log('Friend request result:', res);
         }
+
+        if (message.type === 'accept_request') {
+            const { reqid, from ,to } = message;
+            const fromSocket = clients.get(from);
+            const toSocket = clients.get(to);
+            console.log(reqid)
+            // Gọi gửi lời mời trước
+            const res = await acceptUserRequest(reqid,from,to);
+
+            // Nếu lời mời đã tồn tại
+            if (res === 'Friend request not found' || res  === 'Missing request ID') {
+                fromSocket?.send(JSON.stringify({
+                    type: 'accept_404',
+                    message: res
+                }));
+                return;
+            }
+
+            if (toSocket?.readyState === WebSocket.OPEN) {
+                toSocket.send(JSON.stringify({
+                    type: 'accept_request',
+                    message: `${from} đã chấp nhận lời mời kết bạn`,
+                    from
+                }));
+            }
+
+            const notires = await logNotifications(from, to, message.type);
+            console.log('notifications result:', notires);
+            console.log('Friend request result:', res);
+        }
+
+         if (message.type === 'deny_request') {
+            const { reqid, from ,to } = message;
+            const fromSocket = clients.get(from);
+            const toSocket = clients.get(to);
+            console.log(reqid)
+            // Gọi gửi lời mời trước
+            const res = await denyUserRequest(reqid);
+
+            // Nếu lời mời đã tồn tại
+            if (res === 'Friend request not found' || res  === 'Missing request ID') {
+                fromSocket?.send(JSON.stringify({
+                    type: 'accept_404',
+                    message: res
+                }));
+                return;
+            }
+
+            if (toSocket?.readyState === WebSocket.OPEN) {
+                toSocket.send(JSON.stringify({
+                    type: 'deny_request',
+                    message: `${from} đã chấp nhận lời mời kết bạn`,
+                    from
+                }));
+            }
+
+            
+        }
     });
 
     ws.on('close', () => {
@@ -72,6 +130,9 @@ const logNotifications = async (from, to, type) => {
         switch (type) {
             case 'friend_request':
                 message = `Bạn có một lời mời kết bạn mới từ ${from}`;
+                break;
+            case 'accept_request':
+                message = `${from} đã chấp nhận lời mời kết bạn của bạn`;
                 break;
             case 'like':
                 message = `${from} đã thích bài viết của bạn.`;
