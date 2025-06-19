@@ -1,5 +1,6 @@
 const multer = require('multer');
 const cloudinary = require('../utils/cloudiary');
+const Post = require('../schemas/Post.model')
 const fs = require('fs');
 const { ObjectId } = require('mongodb');
 const client = require('../DTB/mongoconnection');
@@ -13,7 +14,7 @@ const createPost = async (req, res) => {
         console.debug('Received files:', req.files);
 
         const { userId, text } = req.body;
-        await client.connect();
+        
         console.debug('Connected to MongoDB');
 
         let attachments = [];
@@ -68,8 +69,7 @@ const createPost = async (req, res) => {
 
         console.debug('Post object to insert:', post);
 
-        const db = client.db('student_campus');
-        const result = await db.collection('posts').insertOne(post);
+        const result = await Post.insertOne(post);
         console.debug('MongoDB insert result:', result);
 
         res.status(201).json({ success: true, post: { _id: result.insertedId, ...post } });
@@ -80,18 +80,18 @@ const createPost = async (req, res) => {
 };
 
 const RenderPost = async (req, res) => {
-    try {
-        await client.connect();
-        const db = client.db('student_campus');
-        // Get 5 random posts
-        const posts = await db.collection('posts').aggregate([
-            { $sample: { size: 5 } }
-        ]).toArray();
-        res.status(200).json({ success: true, posts });
-    } catch (error) {
-        console.error('Error in RenderPost:', error);
-        res.status(500).json({ message: 'Error fetching posts', error: error.message });
-    }
+  try {
+    // Lấy toàn bộ bài post, sắp xếp theo thời gian mới nhất
+    const posts = await Post.find({})
+      .populate('userId', 'username avatar') // populate nếu muốn hiển thị thông tin user
+      .populate('comments.userId', 'username avatar') // populate user của từng comment
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, posts });
+  } catch (error) {
+    console.error('Error in RenderPost:', error);
+    res.status(500).json({ message: 'Error fetching posts', error: error.message });
+  }
 };
 
 module.exports = {
