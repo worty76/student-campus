@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const client = require('./DTB/mongoconnection')
+const client = require('./DTB/mongooseconnection')
 
 const authrouter = require('./routes/api/auth.routes')
 const postrouter = require('./routes/api/post.routes')

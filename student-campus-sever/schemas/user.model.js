@@ -5,10 +5,12 @@ const user = mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     createtime: { type: Date, default: Date.now },
-    interest: { type: Array },
+    friends: { type: Array },
     Faculty: { type: String , required: true},
     Major:{ type: String , required: true},
-    Year: { type: Number , required: true},
+    Year: { type: String , required: true},
+    avatar_link: {type: String }
+
     
 })
 

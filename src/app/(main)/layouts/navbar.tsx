@@ -7,15 +7,6 @@ import {
     NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
 export default function NavigationBar() {
       const [userId, setUserId] = useState('');
       
@@ -82,48 +73,18 @@ export default function NavigationBar() {
                    
                     {/* The following three items are at the end */}
                      <NavigationMenuItem className="relative">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <NavigationMenuLink
-                                    href="#"
-                                    className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
-                                    tabIndex={0}
-                                    aria-haspopup="true"
-                                    aria-expanded="false"
-                                >
-                                    <span>🔔
+                         <NavigationMenuLink
+                            href='/notifications'
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                        >
+                            <span>🔔
                                         {/* Notification badge */}
                                     <span className="absolute -bottom-[-30px] -right-[-40px] bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] flex items-center justify-center border border-white shadow">
                                         3
                                     </span>   
                                     </span>
                                     <span className="hidden sm:inline">Notifications</span>
-                                </NavigationMenuLink>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="center"
-                                className="left-1/2 -translate-x-1/2 min-w-[260px] sm:min-w-[320px] mt-2"
-                                style={{ position: "absolute" }}
-                            >
-                                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    New message from Alice
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    Document Math101pdf updated
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    John sent you a friend request
-                                </DropdownMenuItem>
-                                <hr className="my-2 border-t border-gray-200" />
-                                <DropdownMenuItem
-                                onClick={() => window.location.href = "/notifications"}
-                                >
-                                    See all the notifications
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        </NavigationMenuLink>
                     </NavigationMenuItem>
                      <NavigationMenuItem>   
                         <NavigationMenuLink
