@@ -29,6 +29,7 @@ interface SearchFriend {
   Major: string;
   Year: string;
   type: string;
+  rqid: string;
 }
 
 interface FilterOptions {
@@ -51,6 +52,8 @@ const FriendsNCommunitys = () => {
   });
   const { sendMessage, status } = useWebSocket();
   const [queryerror, setQueryerror] = useState(false);
+  // Thêm state để theo dõi các lời mời đã được chấp nhận
+  const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getSuggestionsFriend();
@@ -154,11 +157,13 @@ const FriendsNCommunitys = () => {
     setSearchsData([]);
     setFilteredData([]);
     setQuery('');
+    // Reset accepted requests khi reset filters
+    setAcceptedRequests(new Set());
   };
 
   const handleSendFriendRequest = async (receiverId: string) => {
     try {
-      const senderId = localStorage.getItem("userId");
+      
       
       console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
@@ -174,52 +179,69 @@ const FriendsNCommunitys = () => {
     }
   };
 
-  const handleAcceptFriendRequest = async (friendId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
+  const handleAcceptFriendRequest = async (receiverId: string , reqid: string) => {
+     try {
       
-      const response = await axios.post('http://localhost:3001/api/accept-friend-request', {
-        friendId,
-        userId
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      
+      console.log('WebSocket status:', status);
+      const fromid = localStorage.getItem('userId');
+      const toid = receiverId;
+      const rqid = reqid;
+      sendMessage({
+        type: 'accept_request',
+        from: fromid || '123',
+        to: toid || '123',
+        reqid: rqid || '123'
       });
       
-      if (response.status === 200) {
-        // Refresh search results
-        handleSearchFriend();
-      }
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
+      // Thêm userId vào danh sách đã chấp nhận
+      setAcceptedRequests(prev => new Set(prev).add(receiverId));
+    } catch (err) {
+      console.error("Gửi kết bạn thất bại:", err);
+      alert("Lỗi khi chấp nhận kết bạn.");
     }
   };
 
-  const handleRejectFriendRequest = async (friendId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
+  const handleRejectFriendRequest = async (friendId: string,reqid: string) => {
+     try {
       
-      const response = await axios.post('http://localhost:3001/api/reject-friend-request', {
-        friendId,
-        userId
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      
+      console.log('WebSocket status:', status);
+      const fromid = localStorage.getItem('userId');
+      const toid = friendId;
+      const rqid = reqid;
+      sendMessage({
+        type: 'deny_request',
+        from: fromid || '123',
+        to: toid || '123',
+        reqid: rqid || '123'
       });
+       setSearchrs(false);
+       setSearchsData([]);
       
-      if (response.status === 200) {
-        // Refresh search results
-        handleSearchFriend();
-      }
-    } catch (error) {
-      console.error('Error rejecting friend request:', error);
+    } catch (err) {
+      console.error("Gửi kết bạn thất bại:", err);
+      alert("Lỗi khi chấp nhận kết bạn.");
     }
   };
+  
+//   const getlistfriendrq = async () =>{
+//     try {
+//     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+//       const userId = localStorage.getItem("userId");
 
+//       if (!userId) return;
+
+//       const response = await axios.post(`http://localhost:3001/api/get/list-friend`, {id:userId},{
+//         headers: {
+//           Authorization: token ? `Bearer ${token}` : "",
+//         }
+//     });
+//     console.log(response.data)
+//     } catch (error) {
+//         console.log(error)
+//     }
+//   }
   // Helper function to check if an item is a SearchFriend
   const isSearchFriend = (friend: SuggestionFriend | SearchFriend): friend is SearchFriend => {
     return 'type' in friend;
@@ -228,6 +250,19 @@ const FriendsNCommunitys = () => {
   // Render button based on friend type and search state
   const renderFriendButton = (friend: SuggestionFriend | SearchFriend) => {
     if (searchrs && isSearchFriend(friend)) {
+      // Kiểm tra nếu đã chấp nhận lời mời này
+      if (acceptedRequests.has(friend._id)) {
+        return (
+          <Button
+            disabled
+            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            size="sm"
+          >
+            Đã chấp nhận lời mời
+          </Button>
+        );
+      }
+      
       // Logic cho kết quả search
       if (friend.type === 'sender') {
         return (
@@ -243,14 +278,14 @@ const FriendsNCommunitys = () => {
         return (
           <div className="flex space-x-2">
             <Button
-              onClick={() => handleAcceptFriendRequest(friend._id)}
+              onClick={() => handleAcceptFriendRequest(friend._id,friend.rqid)}
               className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
               size="sm"
             >
               Chấp nhận
             </Button>
             <Button
-              onClick={() => handleRejectFriendRequest(friend._id)}
+              onClick={() => handleRejectFriendRequest(friend._id,friend.rqid)}
               className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
               size="sm"
             >
@@ -363,18 +398,7 @@ const FriendsNCommunitys = () => {
 
         <hr className="my-4 border-blue-200" />
 
-        <div className="container mx-auto flex flex-row items-center justify-center gap-8">
-          <div className="flex-1 flex flex-col items-center">
-            <Button className="w-full mb-2 bg-blue-500 text-white hover:bg-blue-600">
-              Friends
-            </Button>
-          </div>
-          <div className="flex-1 flex flex-col items-center">
-            <Button className="w-full mb-2 bg-blue-500 text-white hover:bg-blue-600">
-              Communities
-            </Button>
-          </div>
-        </div>
+        
 
         <div className="mt-8">
           <div className="flex items-center justify-between mb-2">

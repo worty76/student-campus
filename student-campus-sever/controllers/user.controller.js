@@ -371,6 +371,8 @@ const SearchFriend = async (req, res) => {
         console.log(`Friend request between ${userId} and ${user._id}:`, existingFr);
 
         let type = null;
+        let rqid = null;
+        rqid =  existingFr._id
         if (existingFr) {
           if (userId.equals(existingFr.senderId)) {
             type = 'sender';
@@ -383,7 +385,10 @@ const SearchFriend = async (req, res) => {
 
         return {
           ...user.toObject(),
-          type
+          type,
+          rqid
+          
+          
         };
       })
     );
