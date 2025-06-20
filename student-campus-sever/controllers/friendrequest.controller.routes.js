@@ -77,7 +77,9 @@ const getUserFriendRequest = async (req, res) => {
           senderId: request.senderId,
           receiverId: request.receiverId,
           createdAt: request.createdAt,
-          senderInfo: sender
+          username: sender.username,
+          avatar_link: sender.avatar_link,
+          status: request.status
         };
       })
 );

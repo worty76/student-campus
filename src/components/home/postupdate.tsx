@@ -3,21 +3,47 @@ import { X, ImageIcon, Users, Smile, MapPin, FileText } from "lucide-react";
 import axios from "axios";
 import Image from "next/image";
 import { BASEURL } from "@/app/constants/url";
-const user = {
-  name: "Lê Khánh",
-  avatar: "/api/placeholder/40/40",
-  privacy: "Bạn bè ngoại trừ...",
-};
 
-interface PostAddProps {
-  _id: string;
-  name: string;
-  onClose: () => void;
+interface FileAttachment {
+  url: string;
+  filename: string;
+  mimetype: string;
+  filetype: string;
+  file?: File; // Add optional File object for new uploads
 }
 
-const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => {
-  const [content, setContent] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+interface Attachment {
+  file?: FileAttachment;
+  url?: string;
+  filename?: string;
+  mimetype?: string;
+  filetype?: string;
+}
+
+interface PostUpdateProps {
+  _id: string; // post id
+  userid: string;
+  content?: string;
+  files?: Attachment[];
+  onClose: () => void;
+  userData?: UserdataProps;
+}
+
+interface UserdataProps {
+  id?: string;
+  username: string;
+  Year: string;
+  Major: string;
+  email: string;
+  Faculty: string;
+  avatar?: string;
+  avatar_link?: string;
+  interest?: string[];
+}
+
+const PostUpdate: React.FC<PostUpdateProps> = ({ _id, userid, content, files, onClose, userData }) => {
+  const [postContent, setPostContent] = useState(content || "");
+  const [postFiles, setPostFiles] = useState<Attachment[]>(files || []);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>("");
 
@@ -25,9 +51,12 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.log("Files:", files);
-  }, [files]);
+    console.log(content, files);
+    setPostContent(content || "");
+    setPostFiles(files || []);
+  }, [content, files]);
 
+  // Thêm file ảnh mới
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files).filter(file => {
@@ -41,11 +70,23 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
         }
         return true;
       });
-      setFiles(prev => [...prev, ...selectedFiles]);
+      
+      const newAttachments: Attachment[] = selectedFiles.map(file => ({
+        file: {
+          url: URL.createObjectURL(file),
+          filename: file.name,
+          mimetype: file.type,
+          filetype: file.type.split('/')[0],
+          file,
+        }
+      }));
+      
+      setPostFiles(prev => [...prev, ...newAttachments]);
       setUploadStatus("");
     }
   };
 
+  // Thêm file tài liệu mới
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files).filter(file => {
@@ -55,39 +96,70 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
         }
         return true;
       });
-      setFiles(prev => [...prev, ...selectedFiles]);
+      
+      const newAttachments: Attachment[] = selectedFiles.map(file => ({
+        file: {
+          url: URL.createObjectURL(file),
+          filename: file.name,
+          mimetype: file.type,
+          filetype: file.type.split('/')[0],
+          file,
+        }
+      }));
+      
+      setPostFiles(prev => [...prev, ...newAttachments]);
       setUploadStatus("");
     }
   };
 
   const removeFile = (idx: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== idx));
+    setPostFiles(prev => prev.filter((_, i) => i !== idx));
     if (imageInputRef.current) imageInputRef.current.value = '';
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handlePost = async () => {
-    if (!content.trim() && files.length === 0) {
+  const handleUpdate = async () => {
+    if (!postContent.trim() && postFiles.length === 0) {
       alert('Vui lòng nhập nội dung hoặc chọn file');
       return;
     }
 
     setIsLoading(true);
-    setUploadStatus("Đang đăng bài...");
+    setUploadStatus("Đang cập nhật bài...");
 
     const formData = new FormData();
-    formData.append("userId", _id);
-    formData.append("text", content.trim());
-
-    files.forEach((file) => {
-      formData.append("files", file);
-    });
-
+    formData.append("userId", userid);
+    formData.append("text", postContent.trim());
     
+    // Separate new files and existing attachments
+    const newFiles: File[] = [];
+    const existingAttachments: Attachment[] = [];
+    
+    postFiles.forEach((attachment) => {
+      const fileObj = attachment.file?.file;
+      if (fileObj && fileObj instanceof File) {
+        // This is a new file upload
+        newFiles.push(fileObj);
+      } else {
+        // This is an existing attachment (no changes)
+        existingAttachments.push(attachment);
+      }
+    });
+    
+    // Add new files to FormData
+    newFiles.forEach((file) => {
+      formData.append("files", file, file.name);
+    });
+    
+    // Add existing attachments as JSON if there are any
+    if (existingAttachments.length > 0) {
+      formData.append("existingAttachments", JSON.stringify(existingAttachments));
+    }
+
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-       const res = await axios.post(
-        `${BASEURL}/api/create/post`,
+      const res = await axios.put(
+        `${BASEURL}/api/update/post/${_id}`,
         formData,
         {
           headers: {
@@ -97,17 +169,17 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
         }
       );
 
-      if (res && res.status === 201) {
-        setUploadStatus('Đăng bài thành công !');
+      if (res && (res.status === 200 || res.status === 201)) {
+        setUploadStatus('Cập nhật bài thành công!');
         setTimeout(() => {
-          setContent('');
-          setFiles([]);
+          setPostContent('');
+          setPostFiles([]);
           onClose();
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
       console.error("Error:", error);
-      setUploadStatus("Có lỗi xảy ra khi đăng bài. Vui lòng thử lại.");
+      setUploadStatus("Có lỗi xảy ra khi cập nhật bài. Vui lòng thử lại.");
       if (error instanceof Error) {
         console.error("Error message:", error.message);
       }
@@ -116,13 +188,13 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
     }
   };
 
-  const isPostEnabled = (content.trim() || files.length > 0) && !isLoading;
+  const isPostEnabled = (postContent.trim() || postFiles.length > 0) && !isLoading;
 
   return (
     <div className="bg-white top-[10vh] rounded-xl w-full max-w-md mx-auto p-0 relative shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2 border-b border-blue-100">
-        <span className="text-lg font-semibold text-blue-900">Tạo bài viết</span>
+        <span className="text-lg font-semibold text-blue-900">Chỉnh sửa bài viết</span>
         <button
           onClick={onClose}
           className="text-blue-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50"
@@ -135,16 +207,16 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
       {/* User info */}
       <div className="flex items-center gap-3 px-5 pt-4">
         <Image
-          src={user.avatar}
+          src={userData?.avatar_link || "/api/placeholder/80/80"}
           alt="avatar"
           className="w-10 h-10 rounded-full object-cover bg-blue-100"
           width={80}
           height={80}
         />
         <div>
-          <div className="text-blue-900 font-semibold">{name || user.name}</div>
+          <div className="text-blue-900 font-semibold">Lê Khánh</div>
           <div className="bg-blue-100 text-xs text-blue-700 px-2 py-1 rounded flex items-center gap-1 w-fit mt-1">
-            <Users size={14} /> {user.privacy}
+            <Users size={14} /> Bạn bè ngoại trừ...
           </div>
         </div>
       </div>
@@ -155,46 +227,57 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
           className="w-full bg-transparent text-lg text-blue-900 outline-none resize-none placeholder-blue-400 border-none"
           rows={4}
           placeholder="Lê ơi, bạn đang nghĩ gì thế?"
-          value={content}
-          onChange={e => setContent(e.target.value)}
+          value={postContent}
+          onChange={e => setPostContent(e.target.value)}
           disabled={isLoading}
         />
 
         {/* Preview files (images & docs) */}
-        {files.length > 0 && (
+        {postFiles.length > 0 && (
           <div className="mt-2 flex flex-col gap-2">
-            {files.map((file, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-blue-800 bg-blue-50 p-3 rounded-lg">
-                {file.type.startsWith("image/") ? (
-                  <Image
-                    src={URL.createObjectURL(file)}
-                    alt="preview"
-                    className="w-12 h-12 object-cover rounded"
-                    width={80}
-                    height={80}
-                  />
-                ) : (
-                  // Hiển thị icon và link cho file không phải ảnh
-                  <a
-                    href={URL.createObjectURL(file)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2"
+            {postFiles.map((attachment, idx) => {
+              // Get file object from attachment
+              const fileObj = attachment.file || {
+                url: attachment.url || '',
+                filename: attachment.filename || '',
+                mimetype: attachment.mimetype || '',
+                filetype: attachment.filetype || ''
+              };
+              
+              const isImage = fileObj.mimetype?.startsWith("image/");
+              
+              return (
+                <div key={idx} className="flex items-center gap-2 text-blue-800 bg-blue-50 p-3 rounded-lg">
+                  {isImage ? (
+                    <Image
+                      src={fileObj.url || "/api/placeholder/80/80"}
+                      alt="preview"
+                      className="w-12 h-12 object-cover rounded"
+                      width={80}
+                      height={80}
+                    />
+                  ) : (
+                    <a
+                      href={fileObj.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <FileText size={32} />
+                      <span className="underline">{fileObj.filename}</span>
+                    </a>
+                  )}
+                 
+                  <button
+                    onClick={() => removeFile(idx)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    disabled={isLoading}
                   >
-                    <FileText size={32} />
-                    <span className="underline">{file.name}</span>
-                  </a>
-                )}
-               
-                <button
-                  onClick={() => removeFile(idx)}
-                  className="text-red-500 hover:text-red-700 p-1"
-                  disabled={isLoading}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+                    <X size={16} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -282,13 +365,13 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
               : "bg-blue-200 cursor-not-allowed"
           }`}
           disabled={!isPostEnabled}
-          onClick={handlePost}
+          onClick={handleUpdate}
         >
-          {isLoading ? "Đang đăng..." : "Đăng"}
+          {isLoading ? "Đang cập nhật..." : "Cập nhật"}
         </button>
       </div>
     </div>
   );
 };
 
-export default PostAdd;
+export default PostUpdate;

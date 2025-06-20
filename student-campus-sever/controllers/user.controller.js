@@ -372,22 +372,22 @@ const SearchFriend = async (req, res) => {
 
         let type = null;
         let rqid = null;
-        rqid =  existingFr._id
-        if (existingFr) {
+        let status = null;
+          if (existingFr) {
+          rqid = existingFr._id;
+          status = existingFr.status; // Lấy trạng thái từ friend_request
           if (userId.equals(existingFr.senderId)) {
             type = 'sender';
           } else if (userId.equals(existingFr.receiverId)) {
             type = 'receiver';
           }
-        } else {
-          console.log('No friend request found');
         }
 
         return {
           ...user.toObject(),
           type,
-          rqid
-          
+          rqid,
+          status
           
         };
       })

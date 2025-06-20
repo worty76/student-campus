@@ -8,18 +8,7 @@ import Privacy from '@/components/settings/privacy';
 const SettingsPage = () => {
 
     const [item, setItem] = useState('password')
-    // State for toggles and privacy settings
-    // const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    // const [privacy, setPrivacy] = useState({
-    //     profileVisibility: 'everyone',
-    //     messagePermission: 'everyone',
-    // });
-
-    // const handlePasswordChange = (e: React.FormEvent) => {
-    //     e.preventDefault();
-    //     alert('Mật khẩu đã được thay đổi!');
-    // };
-
+   
     
 
     return (
