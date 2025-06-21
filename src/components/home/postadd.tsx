@@ -174,7 +174,7 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
                     height={80}
                   />
                 ) : (
-                  // Hiển thị icon và link cho file không phải ảnh
+                  
                   <a
                     href={URL.createObjectURL(file)}
                     target="_blank"

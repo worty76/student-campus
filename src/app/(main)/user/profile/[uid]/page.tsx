@@ -72,7 +72,7 @@ const UserProfilePage = () => {
     });
   }
 
-  const getUserData = async () => {
+  const getUserData = React.useCallback(async () => {
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
       const response = await axios.get(`${BASEURL}/api/get/userinfo/` + userId, {
@@ -87,7 +87,7 @@ const UserProfilePage = () => {
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-  }
+  }, [userId]);
 
   const getCurrentAvatarUrl = () => {
     return userData?.avatar_link || userData?.avatar || '/schoolimg.jpg';
@@ -96,7 +96,7 @@ const UserProfilePage = () => {
 
   
   
-  const getUserPost = async () => {
+  const getUserPost = React.useCallback(async () => {
     try {
      
       const token = localStorage.getItem('token')
@@ -112,12 +112,12 @@ const UserProfilePage = () => {
     } catch (error) {
       console.error("Error fetching user posts:", error);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     getUserData();
     getUserPost();
-  })
+  }, [getUserData, getUserPost]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 dark:bg-[#0d1117] overflow-hidden">

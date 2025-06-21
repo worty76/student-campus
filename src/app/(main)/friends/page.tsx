@@ -82,7 +82,7 @@ const FriendsNCommunitys = () => {
       (!filters.faculty || friend.Faculty.toLowerCase().includes(filters.faculty.toLowerCase())) &&
       (!filters.year || friend.Year.toString() === filters.year)
     );
-  });
+  },[]);
   setFilteredData(filtered);
 
   getlistfriendrq();

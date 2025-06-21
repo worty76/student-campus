@@ -67,11 +67,7 @@ const LoginRequest = async (req, res) => {
       console.log(items)
 
       try {
-            // await client.connect();
-            // const db = client.db("student_campus");
-            // const doc = db.collection("User");
-
-            // Find user by email using MongoDB
+          
             const foundUser = await User.findOne({ email: email });
             if (!foundUser) {
                   console.log('Invalid email or password')
@@ -125,16 +121,27 @@ const getUserData = async (req, res) => {
             if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
             }
-           const resUser = {
+           let friends = user.friends
+          
+             const reswithFriendName = await Promise.all(
+            friends.map(async (fr) => {
+                const user = await User.findOne({ _id: fr },'username avatar_link'
+                  
+                );
+                return user; // Trả về kết quả
+              })
+            );
+            const resUser = {
             username: user.username,
             Year: user.Year,
             Major: user.Major,
             Faculty: user.Faculty,
+            friends: reswithFriendName,
             email: user.email,
             avatar_link: user.avatar_link
 
-           }
-           console.log(user.avatarLink)
+           }      
+           
            res.status(200).json({ success: true, resUser });
       } catch (error) {
             console.error("Error getting user data:", error);

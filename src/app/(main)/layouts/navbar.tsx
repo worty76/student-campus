@@ -62,6 +62,15 @@ export default function NavigationBar() {
                     </NavigationMenuItem>
                     <NavigationMenuItem>
                         <NavigationMenuLink
+                            href="/community"
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                        >
+                            <span>📚</span>
+                            <span className="hidden sm:inline">Comunity</span>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <NavigationMenuLink
                             href="/friends"
                             className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
                         >

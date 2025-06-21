@@ -87,18 +87,22 @@ const createPost = async (req, res) => {
 
 const RenderPost = async (req, res) => {
   try {
-    // Lấy toàn bộ bài post, sắp xếp theo thời gian mới nhất
+    
     const posts = await Post.find({})
-      .populate('userId', 'username avatar') // populate nếu muốn hiển thị thông tin user
-      .populate('comments.userId', 'username avatar') // populate user của từng comment
+      .populate('userId', 'username avatar') 
+      .populate('comments.userId', 'username avatar') 
       .sort({ createdAt: -1 });
-
+    
     res.status(200).json({ success: true, posts });
   } catch (error) {
     console.error('Error in RenderPost:', error);
     res.status(500).json({ message: 'Error fetching posts', error: error.message });
   }
 };
+
+
+
+
 
 const getUserPosts = async (req, res) => {
     try {   

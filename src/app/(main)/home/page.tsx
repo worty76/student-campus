@@ -34,6 +34,22 @@ interface Post {
   likes: string[];
   comments: string[];
 }
+interface friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
+}
+interface UserdataProps {
+  id?: string,
+  username: string,
+  Year: string,
+  Major: string,
+  email: string,
+  Faculty: string,
+  avatar?: string,
+  avatar_link?: string,
+  friends?: friends[]
+}
 
 const userInfo = {
   name: "Nguyễn Văn A",
@@ -48,7 +64,7 @@ const onlineFriends = ["Minh", "Lan", "Hùng", "Trang"];
 const HomePage = () => {
   const [postContent, setPostContent] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
-
+  const [userData, setUserData] = useState<UserdataProps | null>(null);
   const [chatFriend, setChatFriend] = useState<string | null>(null);
   const [isAddmodalopen, setisAddmodalopen] = useState(false);
 
@@ -58,11 +74,13 @@ const HomePage = () => {
     const storedId = localStorage.getItem("userId");
     if (storedId) {
       setUserId(storedId);
+       
     }
   }, []);
 
   useEffect(() => {
     getpost();
+    getUserData();
   }, [userId]);
 
   const getpost = async () => {
@@ -77,6 +95,7 @@ const HomePage = () => {
       if (response.status === 200 && response.data.success) {
         const posts = response.data.posts;
         setPosts(posts);
+        console.log("Posts:", posts);
       } else {
         setPosts([]);
       }
@@ -85,6 +104,27 @@ const HomePage = () => {
       setPosts([]);
     }
   };
+
+   const getUserData = async () => {
+    try {
+      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+      const userId = localStorage.getItem('userId')
+      const response = await axios.get(`${BASEURL}/api/get/userinfo/` + userId, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        }
+      });
+      if (response.status === 200) {
+        const userData = response.data.resUser;
+        setUserData(userData);
+      
+   
+        console.log(userData);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
 
   const formatTime = (createdAt: string): string => {
     const now = new Date();
@@ -116,7 +156,7 @@ const HomePage = () => {
             <div className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6 h-fit border border-blue-200 w-full max-w-xs flex flex-col items-center relative">
               <div className="w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center">
                 <Image
-                  src={"/schoolimg.jpg"}
+                  src={userData?.avatar_link  ||"/schoolimg.jpg"}
                   alt={userInfo.name}
                   width={80}
                   height={80}
@@ -124,12 +164,12 @@ const HomePage = () => {
                 />
               </div>
               <div className="font-semibold text-lg text-blue-800 dark:text-white mb-1">
-                {userInfo.name}
+                {userData?.username || userInfo.name}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                {userInfo.email}
+                {userData?.email || userInfo.email}
               </div>
-            </div>
+            </div>  
             <hr className="my-6 border-t border-gray-500 w-full" />
             <div>
               <h4 className="font-semibold text-blue-900 mb-3">
@@ -264,7 +304,7 @@ const HomePage = () => {
                       U
                     </div>
                     <div>
-                      <div className="font-semibold text-blue-900">User</div>
+                      {/* <div className="font-semibold text-blue-900">{post.userId}</div> */}
                       <div className="text-xs text-blue-400">
                         {formatTime(post.createdAt)}
                       </div>
