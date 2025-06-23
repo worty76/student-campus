@@ -8,23 +8,25 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const client = require('./DTB/mongoconnection')
+const client = require('./DTB/mongooseconnection')
 
 const authrouter = require('./routes/api/auth.routes')
 const postrouter = require('./routes/api/post.routes')
 const userrouter = require('./routes/api/user.routes')
-
+const friend_rqrouter = require('./routes/api/friendrq.routes')
+const grouprouter = require('./routes/api/group.routes')
 app.use(cors({
   origin: 'http://localhost:3000',  // hoặc '*' để cho tất cả
   methods: ['GET','POST','PUT','DELETE'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
 // Middleware
 app.use(bodyParser.json());
 
-app.use('/api/', authrouter,postrouter,userrouter);
+app.use('/api/', authrouter,postrouter,userrouter,friend_rqrouter,grouprouter);
 
 
 // WebSocket connection

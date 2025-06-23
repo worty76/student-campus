@@ -1,0 +1,661 @@
+'use client';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Plus, MessageCircle, Heart, Share2, Clock, Eye, Search, ChevronDown } from "lucide-react";
+import NavigationBar from "../layouts/navbar";
+import axios from "axios";
+import { BASEURL } from "@/app/constants/url";
+
+
+
+
+
+
+const groupPosts = [
+    {
+        id: 1,
+        author: "Nguyễn Văn A",
+        groupName: "Toán cao cấp A1",
+        time: "2 giờ trước",
+        content: "Mình có tài liệu về giới hạn và đạo hàm rất hay, ai cần thì inbox mình nhé! Có cả bài tập và lời giải chi tiết.",
+        likes: 24,
+        comments: 8,
+        views: 156,
+        hasImage: true
+    },
+    {
+        id: 2,
+        author: "Trần Thị B",
+        groupName: "Lập trình Java cơ bản",
+        time: "4 giờ trước",
+        content: "Các bạn có ai biết cách xử lý exception trong Java không? Mình đang gặp khó khăn ở phần try-catch. Mong được hỗ trợ!",
+        likes: 12,
+        comments: 15,
+        views: 89,
+        hasImage: false
+    },
+    {
+        id: 3,
+        author: "Lê Minh C",
+        groupName: "Tiếng Anh giao tiếp",
+        time: "6 giờ trước",
+        content: "Chia sẻ 50 câu giao tiếp tiếng Anh thông dụng nhất cho sinh viên. Học thuộc những câu này sẽ giúp các bạn tự tin hơn khi nói chuyện!",
+        likes: 45,
+        comments: 12,
+        views: 234,
+        hasImage: true
+    },
+    {
+        id: 4,
+        author: "Phạm Văn D",
+        groupName: "Kinh tế vi mô",
+        time: "1 ngày trước",
+        content: "Thầy vừa gửi đề cương ôn tập cuối kỳ. Các bạn cùng ôn tập nhé! Có chỗ nào không hiểu thì hỏi trong group.",
+        likes: 18,
+        comments: 6,
+        views: 112,
+        hasImage: false
+    }
+];
+
+// Available icons for group selection
+const availableIcons = [
+    "📚", "🔢", "☕", "🇺🇸", "📊", "⚛️", "📱", "🎨", "💰", "🖥️",
+    "🧮", "🏛️", "🌍", "🔬", "🎵", "🎭", "🏃", "🍳", "📖", "✍️",
+    "🎯", "💡", "🚀", "🌟", "🔥", "💎", "🎪", "🎲", "🎸", "🎤",
+    "📷", "🎬", "🎮", "🏆", "🎈", "🎊", "🌈", "🦄", "🐱", "🐶"
+];
+
+// Interface for ExploreGroup (update: icon is optional)
+interface ExploreGroup {
+    _id: string;
+    name: string;
+    creater: string;
+    icon?: string;
+    desc?: string;
+    members: string[];
+    posts: string[];
+    createAt: string | Date;
+    tags: string[];
+}
+
+// Thêm interface cho nhóm của user nếu cần
+interface UserGroup {
+    _id: string;
+    name: string;
+    creater: string;
+    icon?: string;
+    desc?: string;
+    members: string[];
+    posts: string[];
+    createAt: string | Date;
+    tags: string[];
+}
+
+export default function CommunityGroupsPage() {
+    const [selectedGroup, setSelectedGroup] = useState("all");
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [groupDesc, setGroupDesc] = useState("");
+    const [selectedIcon, setSelectedIcon] = useState("📚");
+    const [showIconSelector, setShowIconSelector] = useState(false);
+    const [tagInput, setTagInput] = useState("");
+    const [tags, setTags] = useState<string[]>([]);
+    const [search, setSearch] = useState("");
+    const [mainTab, setMainTab] = useState<"posts" | "groups">("posts");
+    const [exploreTab, setExploreTab] = useState<"explore" | "joined">("joined");
+    const [exGroups, setExploreGroups] = useState<ExploreGroup[]>([]);
+    const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
+    
+
+    const filteredExploreGroups = exGroups.filter(group =>
+        group.name.toLowerCase().includes(search.toLowerCase()) ||
+        (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
+    );
+
+    const filteredPosts = selectedGroup === "all" 
+        ? groupPosts 
+        : groupPosts.filter(post => post.groupName === selectedGroup);
+
+
+
+    useEffect(() =>{
+    const token = localStorage.getItem('token');
+    if (token) {
+        getGroup();
+        getUsersGroupData();
+    }
+    },[])
+    const createNewGroup = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            if (!groupName.trim() || !userId) {
+                alert('Vui lòng nhập tên nhóm và đảm bảo bạn đã đăng nhập.');
+                return;
+            }
+            const group = {
+                name: groupName.trim(),
+                creater: userId,
+                desc: groupDesc.trim(),
+                icon: selectedIcon,
+                members: [userId],
+                tags,
+            };
+            await axios.post(
+                `${BASEURL}/api/create/group`,
+                { group },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            alert('Tạo nhóm thành công!');
+            setGroupName('');
+            setGroupDesc('');
+            setSelectedIcon('📚');
+            setTags([]);
+            setShowCreateGroup(false);
+        } catch (error) {
+              console.log(error)
+        }
+    };
+
+    const getGroup = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${BASEURL}/api/get/group`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res && res.data) {
+                // Set explore groups from API response
+                setExploreGroups(res.data as ExploreGroup[]);
+            }
+        } catch (error) {
+            console.error('Error in getGroup:', error);
+          
+        }
+    };
+
+    // Lấy nhóm của user từ API
+    const getUsersGroupData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const res = await axios.get(`${BASEURL}/api/get/user/group/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res && res.data) {
+                setUserGroups(res.data as UserGroup[]);
+            }
+        } catch (error) {
+            console.error('Error in getUsersGroupData:', error);
+           
+        }
+    };
+
+    // Gọi API để tham gia nhóm
+    const joinedGroups = async (groupId: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            if (!token || !userId) {
+                alert('Bạn cần đăng nhập để tham gia nhóm.');
+                return;
+            }
+            await axios.put(
+                `${BASEURL}/api/join/group`,
+                { groupId, userId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            alert('Tham gia nhóm thành công!');
+            getGroup();
+            getUsersGroupData();
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    // Lọc nhóm của bạn theo search
+    const filteredUserGroups = userGroups.filter(group =>
+        group.name.toLowerCase().includes(search.toLowerCase()) ||
+        (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
+    );
+
+    return (
+        <div className="max-w-6xl mx-auto py-8 px-4">
+            <NavigationBar />
+            <div className="max-w-7xl mx-auto py-8 px-4 mt-[2vh]">
+                <h1 className="text-3xl font-bold mb-6 text-blue-700">Cộng đồng nhóm học tập</h1>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Container - Search and Groups Management */}
+                    <div className="lg:col-span-1 space-y-6 mt-[5vh]">
+                        {/* Search Section - Separate Container */}
+                        <Card className="border-blue-200">
+                            <CardContent className="pt-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Search className="text-blue-600" size={18} />
+                                    <span className="font-medium text-blue-700">Tìm kiếm</span>
+                                </div>
+                                <Input
+                                    placeholder="Tìm kiếm nhóm..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="border-blue-200 focus:border-blue-400"
+                                />
+                            </CardContent>
+                        </Card>
+
+                        {/* Navigation Toggle Section */}
+                        <Card className="border-blue-200">
+                            <CardContent className="pt-4 pb-2">
+                                <div className="flex gap-2 mb-2">
+                                    <Button
+                                        className={`flex-1 ${exploreTab === "joined" ? "bg-blue-600 text-white" : "bg-gray-100 text-blue-700"}`}
+                                        onClick={() => {
+                                            setExploreTab("joined");
+                                            setMainTab("groups");
+                                        }}
+                                    >
+                                        Nhóm của bạn
+                                    </Button>
+                                    <Button
+                                        className={`flex-1 ${exploreTab === "explore" ? "bg-green-600 text-white" : "bg-gray-100 text-green-700"}`}
+                                        onClick={() => {
+                                            setExploreTab("explore");
+                                            setMainTab("groups");
+                                        }}
+                                    >
+                                        Khám phá nhóm
+                                    </Button>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                                    onClick={() => setMainTab("posts")}
+                                >
+                                    <MessageCircle size={16} className="mr-2" />
+                                    Xem bài đăng
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Create Group Section */}
+                        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-white">
+                            <CardHeader
+                                className="cursor-pointer"
+                                onClick={() => setShowCreateGroup((v) => !v)}
+                            >
+                                <CardTitle className="text-blue-700 flex items-center gap-2">
+                                    <Plus className="text-blue-600" size={20} />
+                                    Tạo nhóm mới
+                                </CardTitle>
+                            </CardHeader>
+                            {showCreateGroup && (
+                                <CardContent className="space-y-4">
+                                    <Input
+                                        placeholder="Tên nhóm"
+                                        value={groupName}
+                                        onChange={e => setGroupName(e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="Mô tả nhóm"
+                                        value={groupDesc}
+                                        onChange={e => setGroupDesc(e.target.value)}
+                                    />
+                                    
+                                    {/* Icon Selector */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Chọn icon cho nhóm</label>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowIconSelector(!showIconSelector)}
+                                                className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl">{selectedIcon}</span>
+                                                    <span className="text-gray-700">Chọn icon</span>
+                                                </div>
+                                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showIconSelector ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            
+                                            {showIconSelector && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    <div className="grid grid-cols-8 gap-1 p-2">
+                                                        {availableIcons.map((icon, index) => (
+                                                            <button
+                                                                key={index}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedIcon(icon);
+                                                                    setShowIconSelector(false);
+                                                                }}
+                                                                className={`p-2 text-xl hover:bg-blue-50 rounded transition-colors ${
+                                                                    selectedIcon === icon ? 'bg-blue-100 ring-2 ring-blue-300' : ''
+                                                                }`}
+                                                            >
+                                                                {icon}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex gap-2 mb-2">
+                                            <Input
+                                                placeholder="Thêm tag mới"
+                                                value={tagInput}
+                                                onChange={e => setTagInput(e.target.value)}
+                                            />
+                                            <Button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+                                                        setTags([...tags, tagInput.trim()]);
+                                                        setTagInput("");
+                                                    }
+                                                }}
+                                            >
+                                                + Tag
+                                            </Button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {tags.map((tag, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs flex items-center gap-1"
+                                                >
+                                                    #{tag}
+                                                    <button
+                                                        type="button"
+                                                        className="ml-1 text-red-500"
+                                                        onClick={() =>
+                                                            setTags(tags.filter((t) => t !== tag))
+                                                        }
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={createNewGroup}
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                        <Plus size={16} className="mr-2" />
+                                        Tạo nhóm
+                                    </Button>
+                                </CardContent>
+                            )}
+                        </Card>
+
+                        {/* Quick Access to Joined Groups */}
+                        {mainTab === "posts" && (
+                            <Card className="border-blue-200">
+                                <CardHeader>
+                                    <CardTitle className="text-blue-700 flex items-center gap-2">
+                                        <Users className="text-blue-600" size={20} />
+                                        Nhóm của bạn
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={() => setSelectedGroup("all")}
+                                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                                                selectedGroup === "all" 
+                                                    ? "bg-blue-100 border-2 border-blue-300" 
+                                                    : "bg-gray-50 hover:bg-blue-50 border border-gray-200"
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl">📚</span>
+                                                    <div>
+                                                        <div className="font-medium text-blue-800">Tất cả nhóm</div>
+                                                        <div className="text-sm text-gray-500">Xem tất cả bài đăng</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        {filteredUserGroups.map((group) => (
+                                            <button
+                                                key={group._id}
+                                                onClick={() => setSelectedGroup(group.name)}
+                                                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                                                    selectedGroup === group.name 
+                                                        ? "bg-blue-100 border-2 border-blue-300" 
+                                                        : "bg-gray-50 hover:bg-blue-50 border border-gray-200"
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-2xl">{group.icon || "📚"}</span>
+                                                        <div>
+                                                            <div className="font-medium text-blue-800">{group.name}</div>
+                                                            <div className="text-sm text-gray-500">{group.members.length} thành viên</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+
+                    {/* Right Container - Dynamic Content */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {mainTab === "posts" ? (
+                            /* Posts Feed */
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-semibold text-blue-700 flex items-center gap-2">
+                                    <MessageCircle className="text-blue-600" size={20} />
+                                    {selectedGroup === "all" ? "Tất cả bài đăng" : `Bài đăng từ ${selectedGroup}`}
+                                </h2>
+                                
+                                {filteredPosts.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        Chưa có bài đăng nào trong nhóm này.
+                                    </div>
+                                )}
+
+                                {filteredPosts.map((post) => (
+                                    <Card key={post.id} className="border-blue-100 hover:shadow-md transition-shadow">
+                                        <CardContent className="pt-6">
+                                            {/* Post Header */}
+                                            <div className="flex items-start gap-3 mb-4">
+                                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-blue-600 font-semibold">
+                                                        {post.author.charAt(0)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-medium text-blue-800">{post.author}</span>
+                                                        <span className="text-gray-400">•</span>
+                                                        <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                            {post.groupName}
+                                                        </span>
+                                                        <span className="text-gray-400">•</span>
+                                                        <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                            <Clock size={12} />
+                                                            {post.time}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Post Content */}
+                                            <div className="mb-4">
+                                                <p className="text-gray-700 leading-relaxed">{post.content}</p>
+                                                {post.hasImage && (
+                                                    <div className="mt-3 w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                        <span className="text-gray-400">📎 Có tài liệu đính kèm</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Post Actions */}
+                                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                                <div className="flex items-center gap-6">
+                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors">
+                                                        <Heart size={18} />
+                                                        <span className="text-sm">{post.likes}</span>
+                                                    </button>
+                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                                        <MessageCircle size={18} />
+                                                        <span className="text-sm">{post.comments}</span>
+                                                    </button>
+                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
+                                                        <Share2 size={18} />
+                                                        <span className="text-sm">Chia sẻ</span>
+                                                    </button>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-gray-500 text-sm">
+                                                    <Eye size={16} />
+                                                    <span>{post.views}</span>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            /* Groups Display */
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-semibold flex items-center gap-2">
+                                    <Users className={exploreTab === "joined" ? "text-blue-600" : "text-green-600"} size={20} />
+                                    <span className={exploreTab === "joined" ? "text-blue-700" : "text-green-700"}>
+                                        {exploreTab === "joined" ? "Nhóm đã tham gia" : "Khám phá các nhóm mới"}
+                                    </span>
+                                </h2>
+
+                                {exploreTab === "joined" ? (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {filteredUserGroups.map((group) => (
+                                            <Card key={group._id} className="border-blue-100 hover:shadow-md transition-shadow">
+                                                <CardContent className="pt-6">
+                                                    <div className="flex items-start gap-4">
+                                                        <span className="text-4xl">{group.icon || "📚"}</span>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h3 className="font-semibold text-blue-800 text-lg">{group.name}</h3>
+                                                            </div>
+                                                            <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                                    <Users size={14} />
+                                                                    {group.members.length} thành viên
+                                                                </span>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {group.tags?.slice(0, 3).map((tag, idx) => (
+                                                                        <span
+                                                                            key={idx}
+                                                                            className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs"
+                                                                        >
+                                                                            #{tag}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {filteredExploreGroups.map((group) => {
+                                            // Lấy userId hiện tại
+                                            const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+                                            const isJoined = userId && group.members.includes(userId);
+
+                                            return (
+                                                <Card key={group._id} className="border-green-100 hover:shadow-md transition-shadow">
+                                                    <CardContent className="pt-6">
+                                                        <div className="flex items-start gap-4">
+                                                            <span className="text-4xl">{group.icon || "📚"}</span>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <h3 className="font-semibold text-green-800 text-lg">{group.name}</h3>
+                                                                    {isJoined ? (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            className="bg-gray-300 text-gray-600 cursor-default"
+                                                                            disabled
+                                                                        >
+                                                                            Đã tham gia
+                                                                        </Button>
+                                                                    ) : (
+                                                                        <Button
+                                                                            onClick={() => joinedGroups(group._id)}
+                                                                            size="sm"
+                                                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                                                        >
+                                                                            Tham gia
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                                        <Users size={14} />
+                                                                        {group.members.length} thành viên
+                                                                    </span>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {group.tags?.slice(0, 3).map((tag, idx) => (
+                                                                            <span
+                                                                                key={idx}
+                                                                                className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs"
+                                                                            >
+                                                                                #{tag}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {((exploreTab === "joined" && filteredUserGroups.length === 0) ||
+                (exploreTab === "explore" && filteredExploreGroups.length === 0)) && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        Không tìm thấy nhóm nào phù hợp với từ khóa tìm kiếm.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

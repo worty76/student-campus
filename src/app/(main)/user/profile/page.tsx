@@ -1,26 +1,54 @@
 'use client'
 import React, { useEffect, useState, useRef } from 'react';
-import {  Mail, FileText, Lock, Globe, Edit3, Save, X, Camera, Upload } from 'lucide-react';
+import {  Edit3, Save, X, Camera } from 'lucide-react';
 import NavigationBar from '@/app/(main)/layouts/navbar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import axios from 'axios';
-import { useWebSocket } from '@/app/constants/websocket.contex';
+import { BASEURL } from "@/app/constants/url";
+import { useRouter } from 'next/navigation';
+import RenderPost from '@/components/ui/post';
+interface FileAttachment {
+  url: string;
+  filename: string;
+  mimetype: string;
+  filetype: string;
+}
+interface Post {
+  _id: string;
+  userId: string;
+  text: string;
+  attachments: Attachment[];
+  createdAt: string;
+  likes: string[];
+  comments: string[];
+}
+interface Attachment {
+  file?: FileAttachment;
+  url?: string;
+  filename?: string;
+  mimetype?: string;
+  filetype?: string;
+}
+interface friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
+}
 interface UserdataProps {
-   id?: string,
-   username: string,
-   Year: string,
-   Major: string,
-   email: string,
-   Faculty: string,
-   avatar?: string,
-   avatar_link?: string, // Match backend field
-   interest?: string[]
+  id?: string,
+  username: string,
+  Year: string,
+  Major: string,
+  email: string,
+  Faculty: string,
+  avatar?: string,
+  avatar_link?: string,
+  friends?: friends[]
 }
 
 const UserProfilePage = () => {
-  
   const [userData, setUserData] = useState<UserdataProps | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<UserdataProps | null>(null);
@@ -28,9 +56,9 @@ const UserProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const { sendMessage, status } = useWebSocket();
-  // Options for select dropdowns
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isAddmodalopen, setisAddmodalopen] = useState(false);
+  const router = useRouter();
   const facultyOptions = [
     'Software Engineering',
     'Artificial Intelligence',
@@ -51,56 +79,34 @@ const UserProfilePage = () => {
     'Third Year',
     'Fourth Year',
   ];
-  
-  
 
-  const createFriendRequest = () => {
-    console.log('WebSocket status:', status);
-    const fromid = localStorage.getItem('userId')
-    const toid = '684ff70ccca78e5425b09cc2'
-    sendMessage({
-      type: 'friend_request',
-      from: fromid || '123',
-      to: toid || '123',
-    });
-  }
-
-  
-  const getUserData = async() => {
+  const getUserData = async () => {
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
       const userId = localStorage.getItem('userId')
-
-      const response = await axios.get('http://localhost:3001/api/get/userinfo/'+userId, {
+      const response = await axios.get(`${BASEURL}/api/get/userinfo/` + userId, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         }
       });
       if (response.status === 200) {
-        console.log("User info:", response.data);
         const userData = response.data.resUser;
         setUserData(userData);
         setEditedData(userData);
-        setAvatarPreview(userData.avatar_link)
-        // Set avatar preview from user data or default
-        const avatarUrl = userData.avatar_link || userData.avatar || '/schoolimg.jpg';
-        setAvatarPreview(avatarUrl);
+        setAvatarPreview(userData.avatar_link || userData.avatar || '/schoolimg.jpg');
+        console.log(userData);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
   }
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  }
+  const handleEdit = () => setIsEditing(true);
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedData(userData); // Reset to original data
-    // Reset avatar preview to original user data
-    const originalAvatar = userData?.avatar_link || userData?.avatar || '/schoolimg.jpg';
-    setAvatarPreview(originalAvatar);
+    setEditedData(userData);
+    setAvatarPreview(userData?.avatar_link || userData?.avatar || '/schoolimg.jpg');
     setAvatarFile(null);
   }
 
@@ -113,36 +119,26 @@ const UserProfilePage = () => {
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select an image file');
         return;
       }
-
-      // Validate file size (e.g., 5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         alert('File size must be less than 5MB');
         return;
       }
-
       setAvatarFile(file);
-      
-      // Create preview URL
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-      };
+      reader.onload = (e) => setAvatarPreview(e.target?.result as string);
       reader.readAsDataURL(file);
     }
   }
 
-  const handleSave = async() => {
+  const handleSave = async () => {
     setIsSaving(true);
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
       const userId = localStorage.getItem('userId');
-
-      // Prepare the info object to match backend expectations
       const info = {
         id: userId,
         username: editedData?.username || '',
@@ -150,47 +146,31 @@ const UserProfilePage = () => {
         Faculty: editedData?.Faculty || '',
         Major: editedData?.Major || '',
         Year: editedData?.Year || '',
-        interest: editedData?.interest || []
+        friends: editedData?.friends || []
       };
-
-      // Create FormData to send both file and data
       const formData = new FormData();
       formData.append('info', JSON.stringify(info));
-      
-      // Add file if selected
       if (avatarFile) {
         formData.append('file', avatarFile);
       }
-
-      const response = await axios.post('http://localhost:3001/api/update/user/img', formData, {
+      const response = await axios.post(`${BASEURL}/api/update/user/img`, formData, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
           'Content-Type': 'multipart/form-data'
         }
       });
-
       if (response.status === 200) {
-        console.log("Update response:", response.data);
-        
-        // Update local state with the returned user data
         const updatedUser = response.data.user;
         setUserData(updatedUser);
         setEditedData(updatedUser);
-        
-        // Update avatar preview with new avatar link if available
-        const newAvatarUrl = updatedUser.avatar_link || updatedUser.avatar || '/schoolimg.jpg';
-        setAvatarPreview(newAvatarUrl);
-        
+        setAvatarPreview(updatedUser.avatar_link || updatedUser.avatar || '/schoolimg.jpg');
         setIsEditing(false);
         setAvatarFile(null);
-        console.log("User info updated successfully");
-        
-        // Optional: Show success message
         alert('Profile updated successfully!');
       }
     } catch (error) {
-      console.error("Error updating user data:", error);
-      alert('Error updating profile. Please try again.');
+      console.error("Error updating profile:", error);
+      
     } finally {
       setIsSaving(false);
     }
@@ -205,270 +185,253 @@ const UserProfilePage = () => {
     }
   }
 
-  // Get the current avatar URL to display
   const getCurrentAvatarUrl = () => {
     if (isEditing) {
-      return avatarPreview; // Use preview in edit mode (could be new file or original)
+      return avatarPreview;
     } else {
-      return userData?.avatar_link || userData?.avatar || '/schoolimg.jpg'; // Use original data in view mode
+      return userData?.avatar_link || userData?.avatar || '/schoolimg.jpg';
     }
   }
+ 
+ 
+  
+  const getUserPost = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token')
+      const response = await axios.get(`${BASEURL}/api/get/user/post/${userId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        }
+      });
+      if (response.status === 200 && Array.isArray(response.data.posts)) {
+        setPosts(response.data.posts);
+        console.log(response)
+      }
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
 
   useEffect(() => {
     getUserData();
+    getUserPost();
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 p-0">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 dark:bg-[#0d1117] overflow-hidden">
       <NavigationBar />
-      <div
-        className="flex flex-col lg:flex-row gap-[2%] max-w-[95vw] mx-auto relative min-h-[80vh]"
-        style={{ top: '10vh' }}
-      >
-        {/* Student Info Column */}
-        {userData && editedData && (
-          <div className="w-full lg:w-[26%] mb-[2%] lg:mb-0 flex flex-col h-full">
-            <div className="flex-1 bg-white bg-opacity-80 rounded-lg shadow-lg p-[6%] flex flex-col justify-between h-full">
-              {/* Profile Header */}
-              <div className="text-center mb-[6%]">
-                <div className="relative inline-block mb-[4%]">
-                  <div 
-                    className={`w-[60%] aspect-square max-w-[160px] min-w-[80px] bg-gray-800 rounded-full flex items-center justify-center overflow-hidden mx-auto relative ${
-                      isEditing ? 'cursor-pointer hover:opacity-80' : ''
-                    }`}
-                    onClick={handleAvatarClick}
-                  >
-                    <Image
-                      src={getCurrentAvatarUrl()}
-                      alt="User Avatar"
-                      className="w-full h-full object-cover rounded-full"
-                      width={160}
-                      height={160}
-                      onError={(e) => {
-                        // Fallback if image fails to load
-                        (e.target as HTMLImageElement).src = '/schoolimg.jpg';
-                      }}
-                    />
-                    {isEditing && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <Camera size={24} className="text-white" />
-                      </div>
-                    )}
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh] overflow-hidden ">
+        {/* Sidebar - Profile Info and Friends */}
+        <div className="w-full md:w-64 flex flex-col gap-4">
+          {/* Profile Info Container */}
+          <aside className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6">
+            <div className="mb-6 flex flex-col items-center">
+              <div
+                className={`w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center relative ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
+                onClick={handleAvatarClick}
+              >
+                <Image
+                  src={getCurrentAvatarUrl()}
+                  alt="User Avatar"
+                  className="w-20 h-20 object-cover rounded-full"
+                  width={80}
+                  height={80}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/schoolimg.jpg';
+                  }}
+                />
+                {isEditing && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Camera size={24} className="text-white" />
                   </div>
-                  
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                  
-                  {isEditing && (
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-lg"
-                      size="sm"
-                    >
-                      <Upload size={16} />
-                    </Button>
-                  )}
-                </div>
-
-                {/* Editable Username */}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editedData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    className="text-[2vw] min-text-xl font-bold text-gray-900 mb-[2%] text-center bg-transparent border-b-2 border-blue-300 focus:border-blue-500 outline-none w-full"
-                  />
-                ) : (
-                  <h1 className="text-[2vw] min-text-xl font-bold text-gray-900 mb-[2%]">{userData.username}</h1>
                 )}
-
-                <div className="flex items-center justify-center gap-[2%] mb-[4%] flex-wrap">
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editedData?.username || ''}
+                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  className="text-lg font-bold text-center bg-transparent border-b-2 border-blue-300 focus:border-blue-500 outline-none w-full"
+                />
+              ) : (
+                <div className="text-center font-semibold text-lg text-blue-800 dark:text-white mb-1">
+                  {userData?.username}
+                </div>
+              )}
+              <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                {userData?.email}
+              </div>
+             
+              
+            </div>
+            <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-3">Faculty</h4>
+              {isEditing ? (
+                <Select value={editedData?.Faculty} onValueChange={(value) => handleInputChange('Faculty', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select faculty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {facultyOptions.map((faculty) => (
+                      <SelectItem key={faculty} value={faculty}>
+                        {faculty}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="text-sm text-gray-700">{userData?.Faculty}</div>
+              )}
+            </div>
+            <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-3">Major</h4>
+              {isEditing ? (
+                <Select value={editedData?.Major} onValueChange={(value) => handleInputChange('Major', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select major" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {majorOptions.map((major) => (
+                      <SelectItem key={major} value={major}>
+                        {major}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="text-sm text-gray-700">{userData?.Major}</div>
+              )}
+            </div>
+            <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-3">Year</h4>
+              {isEditing ? (
+                <Select value={editedData?.Year} onValueChange={(value) => handleInputChange('Year', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="text-sm text-gray-700">{userData?.Year}</div>
+              )}
+            </div>
+            <div className="flex justify-center gap-2 mt-4">
+              {isEditing ? (
+                <>
                   <Button
-                  onClick={createFriendRequest}
-                  className="bg-green-500 hover:bg-green-600 text-white px-[8%] py-[2%] rounded-lg flex items-center gap-2 text-[1vw] min-text-xs">
-                    <Edit3 size={16} />
-                    Add Friend
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                  >
+                    <Save size={16} />
+                    {isSaving ? 'Saving...' : 'Save'}
                   </Button>
-                </div>
-                
-                {/* Edit/Save/Cancel Buttons */}
-                <div className="flex justify-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <Button 
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-[8%] py-[2%] rounded-lg flex items-center gap-2 text-[1vw] min-text-xs"
-                      >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button 
-                        onClick={handleCancel}
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-[8%] py-[2%] rounded-lg flex items-center gap-2 text-[1vw] min-text-xs"
-                      >
-                        <X size={16} />
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <Button 
-                      onClick={handleEdit}
-                      className="bg-green-500 hover:bg-green-600 text-white px-[8%] py-[2%] rounded-lg flex items-center gap-2 text-[1vw] min-text-xs"
-                    >
-                      <Edit3 size={16} />
-                      Edit Profile
-                    </Button>
-                  )}
-                </div>
-              </div>
+                  <Button
+                    onClick={handleCancel}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                  >
+                    <X size={16} />
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleEdit}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                >
+                  <Edit3 size={16} />
+                  Edit Profile
+                </Button>
+              )}
+            </div>
+          </aside>
 
-              {/* Basic Info */}
-              <div className="space-y-[3%] mb-[6%]">
-                <div className="flex items-center gap-[3%] text-blue-600 text-[1vw] min-text-xs">
-                  <Mail size={16} />
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={editedData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="bg-transparent border-b border-blue-300 focus:border-blue-500 outline-none flex-1"
-                    />
-                  ) : (
-                    <span>{userData.email}</span>
-                  )}
+          {/* Friends List Container */}
+          <div className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="font-semibold text-lg text-gray-900 dark:text-white">Bạn bè</span>
+                <span className="ml-2 text-gray-500 text-sm">{userData?.friends?.length || 0} người bạn</span>
+              </div>
+              {/* <a href="#" className="text-blue-600 text-sm hover:underline">Xem tất cả bạn bè</a> */}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+           {userData?.friends?.slice(0, 9).map((friend) => (
+              <button    
+                onClick={() => {
+                  localStorage.setItem('profileData', JSON.stringify(friend));
+                  router.push(`/user/profile/${friend._id}`);
+                }}
+                key={friend._id}
+                className="flex flex-col items-center rounded-lg p-2 transition-all duration-200"
+              >
+                <div className="w-16 h-16 rounded-lg overflow-hidden mb-1 bg-white flex items-center justify-center">
+                  <Image
+                    src={friend.avatar_link || '/schoolimg.jpg'}
+                    alt={friend.username}
+                    width={64}
+                    height={64}
+                    className="object-contain w-full h-full transition duration-200 hover:brightness-110"
+                  />
                 </div>
-              </div>
+                <span className="text-xs text-gray-800 dark:text-gray-200 text-center truncate w-16">
+                  {friend.username}
+                </span>
+              </button>
+            ))}
 
-              {/* Study Info */}
-              <div className="mb-[6%]">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Faculty:</label>
-                      <Select value={editedData.Faculty} onValueChange={(value) => handleInputChange('Faculty', value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select faculty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {facultyOptions.map((faculty) => (
-                            <SelectItem key={faculty} value={faculty}>
-                              {faculty}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Major:</label>
-                      <Select value={editedData.Major} onValueChange={(value) => handleInputChange('Major', value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select major" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {majorOptions.map((major) => (
-                            <SelectItem key={major} value={major}>
-                              {major}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Year:</label>
-                      <Select value={editedData.Year} onValueChange={(value) => handleInputChange('Year', value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {yearOptions.map((year) => (
-                            <SelectItem key={year} value={year}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <h3 className="font-semibold text-gray-900 mb-[2%] text-[1.1vw] min-text-sm">Studying: {userData.Faculty}</h3>
-                    <p className="text-gray-600 text-[1vw] min-text-xs">Major: {userData.Major}</p>
-                    <h3 className="font-semibold text-gray-900 mb-[2%] text-[1.1vw] min-text-sm">{userData.Year}</h3>
-                  </>
-                )}
-              </div>
+
+
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Post Info Column */}
-        <div className="w-full lg:w-[72%] h-full flex flex-col">
-          {/* Posts Header */}
-          <div className="bg-white bg-opacity-80 rounded-lg shadow-lg p-[4%] mb-[2%] flex items-center justify-between">
-            <h2 className="text-[1.3vw] min-text-base font-semibold text-gray-900">POSTS</h2>
-            <Button className="bg-green-500 hover:bg-green-600 text-white font-semibold flex items-center gap-2 text-[1vw] min-text-xs px-[6%] py-[2%]">
-              + Post
+        {/* Main Content (Posts) */}
+        <main className="flex-1 bg-white dark:bg-[#161b22] rounded-lg shadow p-8 flex flex-col gap-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Bài viết của bạn</h1>
+            <Button
+              onClick={() => {setisAddmodalopen(true)
+                console.log(isAddmodalopen)
+              }}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              Đăng bài
             </Button>
           </div>
           {/* Posts List */}
-          <div className="space-y-[2%] flex-1">
-            {/* Post 1 */}
-            <div className="bg-white rounded-lg shadow-sm p-[4%]">
-              <div className="flex items-start justify-between mb-[4%]">
-                <div className="flex items-center gap-[3%]">
-                   <Image
-                      src="/schoolimg.jpg"
-                      alt="Post thumbnail"
-                      width={60}
-                      height={60}
-                      className="text-gray-600"
-                    />
-                  <h3 className="text-[1.1vw] min-text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
-                    Look at this image of Exeter Cathedral!!!!!!!!
-                  </h3>
-                </div>
-                <div className="flex items-center gap-[2%] text-[0.9vw] min-text-xs text-gray-500">
-                  <span>11-03-21</span>
-                  <div className="flex items-center gap-1">
-                    <Globe size={14} />
-                    <span>Public</span>
-                  </div>
-                </div>
-              </div>
-            <p className="text-gray-700 text-[1vw] min-text-xs">It&apos;s so cooooool</p>
-            </div>
-            {/* Post 2 */}
-            <div className="bg-white rounded-lg shadow-sm p-[4%]">
-              <div className="flex items-start justify-between mb-[4%]">
-                <div className="flex items-center gap-[3%]">
-                  <FileText className="text-gray-600" size={20} />
-                  <h3 className="text-[1.1vw] min-text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
-                    Note to self
-                  </h3>
-                </div>
-                <div className="flex items-center gap-[2%] text-[0.9vw] min-text-xs text-gray-500">
-                  <span>11-03-21</span>
-                  <div className="flex items-center gap-1">
-                    <Lock size={14} />
-                    <span>Private</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-gray-700 text-[1vw] min-text-xs">Remember to post that youtube link later!</p>
-            </div>
-           
+          <div className="space-y-6">
+            {posts.length === 0 ? (
+              <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
+            ) : (
+              posts.map((post) => (
+                <RenderPost key={post._id} post={post} userData={userData} />
+              ))
+            )}
           </div>
-        </div>
+        </main>
+        
       </div>
     </div>
   );
 };
 
-export default UserProfilePage;
+export default UserProfilePage

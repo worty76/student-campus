@@ -7,6 +7,7 @@ import Image from "next/image";
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/app/constants/websocket.contex';
+import { BASEURL } from "@/app/constants/url";
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +28,7 @@ export default function LoginPage() {
         password: password,
       };
 
-      const response = await axios.post('http://localhost:3001/api/auth/login',
+      const response = await axios.post(`${BASEURL}/api/auth/login`,
         { items }, 
         {
           headers: {
@@ -42,7 +43,7 @@ export default function LoginPage() {
         // Lưu token
         localStorage.setItem('token', response.data.logindata.token);
         localStorage.setItem('userId',response.data.logindata.user._id)
-        
+        localStorage.setItem('userdata', JSON.stringify(response.data.logindata.user));
         // Kết nối WebSocket sau khi login thành công
        
         connectWebSocket(response.data.logindata.user._id);
@@ -58,7 +59,7 @@ export default function LoginPage() {
       setConnectionStatus('Login Failed');
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
       {/* School Logo at top left */}

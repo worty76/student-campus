@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import Image from 'next/image'
 import axios from 'axios';
-
+import {BASEURL} from "@/app/constants/url";
 
 
 
@@ -36,7 +36,7 @@ export default function RegisterPage() {
           };
 
           const response = await axios.post(
-            'http://localhost:3001/api/auth/register',
+            `${BASEURL}api/auth/register`,
             { items: items },
             {
               headers: {
@@ -47,6 +47,8 @@ export default function RegisterPage() {
 
           if(response){
             console.log(response.data)
+            window.location.href = '/login';
+
           }
         } catch (error) {
           alert(error);

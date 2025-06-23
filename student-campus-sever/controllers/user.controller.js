@@ -1,12 +1,15 @@
 const mongoose =  require('mongoose')
 const bcrypt = require('bcrypt');
-const UserSchema = require('../schemas/user.model')
+
 const jwt = require('jsonwebtoken');
 const client = require('../DTB/mongoconnection')
 const { ObjectId } = require("mongodb");
 const JWT_SECRET = process.env.JWT_SECRET_KEY; 
 const cloudinary = require('../utils/cloudiary');
 const fs = require('fs');
+const User = require('../schemas/user.model');
+const friend_request = require('../schemas/friend_rq.model')
+
 
 const createAccount = async (req, res) => {
       const { items } = req.body;
@@ -19,12 +22,10 @@ const createAccount = async (req, res) => {
       const year = items.year;
 
       try { 
-              await client.connect();
-              const db = client.db("student_campus");
-              const doc = db.collection("User");
+             
 
    
-            const existinggmail = await doc.findOne({ email: email });
+            const existinggmail = await User.findOne({ email: email });
 
             if (existinggmail) {
                   return res.status(409).json({ message: 'Email already exists' });
@@ -32,7 +33,7 @@ const createAccount = async (req, res) => {
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            const result = await doc.insertOne({
+            const result = new User({
                     username: username,
                     email: email,
                     password: hashedPassword,
@@ -40,8 +41,12 @@ const createAccount = async (req, res) => {
                     friends: [],
                     Faculty: faculty,
                     Major: major,
-                    Year: year
+                    Year:year,
+                    avatar_link: '',
+                    
             })
+
+            await result.save();
 
             if (result) {
                   return res.status(201).json({ message: 'Account created successfully', userId: result.insertedId });
@@ -62,13 +67,10 @@ const LoginRequest = async (req, res) => {
       console.log(items)
 
       try {
-            await client.connect();
-            const db = client.db("student_campus");
-            const doc = db.collection("User");
-
-            // Find user by email using MongoDB
-            const foundUser = await doc.findOne({ email: email });
+          
+            const foundUser = await User.findOne({ email: email });
             if (!foundUser) {
+                  console.log('Invalid email or password')
                   return res.status(401).json({ message: 'Invalid email or password' });
             }
 
@@ -96,7 +98,8 @@ const LoginRequest = async (req, res) => {
                         Major: foundUser.Major,
                         Year: foundUser.Year,
                         interest: foundUser.interest,
-                        createtime: foundUser.createtime
+                        createtime: foundUser.createtime,
+                        avatar_link: foundUser.avatarLink
                   }
             }
 
@@ -111,25 +114,34 @@ const getUserData = async (req, res) => {
       const { id } = req.params;
       console.log(id)
       try {
-          await client.connect();
-           const db = client.db("student_campus");
-           const doc = db.collection("User");
+         
            const findid = new ObjectId(id); 
-           const user = await doc.findOne({ _id: findid });
+           const user = await User.findOne({ _id: findid });
 
             if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
             }
-           const resUser = {
+           let friends = user.friends
+          
+             const reswithFriendName = await Promise.all(
+            friends.map(async (fr) => {
+                const user = await User.findOne({ _id: fr },'username avatar_link'
+                  
+                );
+                return user; // Trả về kết quả
+              })
+            );
+            const resUser = {
             username: user.username,
             Year: user.Year,
             Major: user.Major,
             Faculty: user.Faculty,
+            friends: reswithFriendName,
             email: user.email,
             avatar_link: user.avatar_link
 
-           }
-           console.log(user.avatarLink)
+           }      
+           
            res.status(200).json({ success: true, resUser });
       } catch (error) {
             console.error("Error getting user data:", error);
@@ -205,7 +217,7 @@ const editUserInfo = async (req, res) => {
     console.log('[DEBUG] Các trường sẽ được update:', updateFields);
 
    
-    const result = await doc.findOneAndUpdate(
+    const result = await User.findOneAndUpdate(
       { _id: updateId }, 
       { $set: updateFields },
       { returnDocument: 'after' }
@@ -246,5 +258,156 @@ const editUserInfo = async (req, res) => {
   }
 };
 
+const renderFriendyouKnow = async (req, res) => {
+  const { id } = req.params;
+  console.log("User ID:", id);
 
-module.exports = {createAccount,LoginRequest,getUserData,editUserInfo}
+  try {
+    const foundUser = await User.findById(id);
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const alluser = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: foundUser._id },
+          $or: [
+            { Faculty: foundUser.Faculty },
+            { Major: foundUser.Major },
+            { Year: foundUser.Year }
+          ]
+        }
+      },
+      { $sample: { size: 10 } }, // lấy nhiều hơn để có thể lọc sau
+      {
+        $project: {
+          _id: 1,
+          username: 1,
+          Faculty: 1,
+          Major: 1,
+          Year: 1
+        }
+      }
+    ]);
+
+    const resultNotInFriendRq = [];
+
+    for (const user of alluser) {
+      const existingFr = await friend_request.findOne({
+        $or: [
+          { senderId: id, receiverId: user._id },
+          { senderId: user._id, receiverId: id }
+        ]
+      });
+
+      if (!existingFr) {
+        resultNotInFriendRq.push(user);
+      }
+    }
+
+    // Trả về tối đa 3 người đã lọc
+    const finalSuggestions = resultNotInFriendRq.slice(0, 3);
+
+    return res.status(200).json({ suggestions: finalSuggestions });
+  } catch (error) {
+    console.error("Error rendering friends you may know:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+const SearchFriend = async (req, res) => {
+  const { query, id } = req.body;
+  console.log("Searching by:", id);
+
+  try {
+    if (!query) {
+      return res.status(400).json({ message: "Missing search query" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    const userId = new mongoose.Types.ObjectId(id);
+
+    // Tìm người dùng khác khớp từ khóa
+    const results = await User.find({
+      _id: { $ne: userId },
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } }
+      ]
+    }).select('_id username Faculty Major Year').limit(10);
+
+    // Với mỗi user tìm được, kiểm tra trạng thái friend_request
+    const resultsWithType = await Promise.all(
+      results.map(async (user) => {
+        // DEBUG: Kiểm tra collection và tất cả dữ liệu
+        console.log('Collection name:', friend_request.collection.name);
+        
+        // DEBUG: Lấy tất cả friend requests trong collection
+        const allFriendRequests = await friend_request.find({}).limit(5);
+        console.log('All friend requests in collection (first 5):', allFriendRequests);
+        
+        // DEBUG: Đếm tổng số documents
+        const count = await friend_request.countDocuments({});
+        console.log('Total friend requests count:', count);
+        
+        // DEBUG: In ra thông tin để kiểm tra
+        console.log('Current userId:', userId.toString());
+        console.log('Target user._id:', user._id.toString());
+        
+      
+        const existingFr = await friend_request.findOne({
+          // type: 'friend_request', // BỎ dòng này
+          $or: [
+            { 
+              senderId: new mongoose.Types.ObjectId(userId), 
+              receiverId: new mongoose.Types.ObjectId(user._id) 
+            },
+            { 
+              senderId: new mongoose.Types.ObjectId(user._id), 
+              receiverId: new mongoose.Types.ObjectId(userId) 
+            }
+          ]
+        });
+        
+        console.log(`Friend request between ${userId} and ${user._id}:`, existingFr);
+
+        let type = null;
+        let rqid = null;
+        let status = null;
+          if (existingFr) {
+          rqid = existingFr._id;
+          status = existingFr.status; // Lấy trạng thái từ friend_request
+          if (userId.equals(existingFr.senderId)) {
+            type = 'sender';
+          } else if (userId.equals(existingFr.receiverId)) {
+            type = 'receiver';
+          }
+        }
+
+        return {
+          ...user.toObject(),
+          type,
+          rqid,
+          status
+          
+        };
+      })
+    );
+    
+    return res.status(200).json({ results: resultsWithType });
+  } catch (error) {
+    console.error("SearchFriend error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+
+module.exports = {createAccount,LoginRequest,getUserData,editUserInfo ,renderFriendyouKnow,SearchFriend}
