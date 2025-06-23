@@ -10,6 +10,7 @@ const user = {
 };
 
 interface PostAddProps {
+ 
   _id: string;
   name: string;
   onClose: () => void;

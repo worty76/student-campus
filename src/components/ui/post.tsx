@@ -31,13 +31,8 @@ interface Attachment {
 interface UserdataProps {
   id?: string,
   username: string,
-  Year: string,
-  Major: string,
-  email: string,
-  Faculty: string,
-  avatar?: string,
   avatar_link?: string,
-  interest?: string[]
+  
 }
 
 const formatTime = (createdAt: string): string => {

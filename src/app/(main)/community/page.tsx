@@ -3,63 +3,37 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Plus, MessageCircle, Heart, Share2, Clock, Eye, Search, ChevronDown } from "lucide-react";
+import { Users, Plus, MessageCircle, Search, ChevronDown } from "lucide-react";
 import NavigationBar from "../layouts/navbar";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
+import PostAddGroup from "@/components/home/postaddgroup";
+import RenderPost from "@/components/ui/post";
 
 
 
-
-
-
-const groupPosts = [
-    {
-        id: 1,
-        author: "Nguyễn Văn A",
-        groupName: "Toán cao cấp A1",
-        time: "2 giờ trước",
-        content: "Mình có tài liệu về giới hạn và đạo hàm rất hay, ai cần thì inbox mình nhé! Có cả bài tập và lời giải chi tiết.",
-        likes: 24,
-        comments: 8,
-        views: 156,
-        hasImage: true
-    },
-    {
-        id: 2,
-        author: "Trần Thị B",
-        groupName: "Lập trình Java cơ bản",
-        time: "4 giờ trước",
-        content: "Các bạn có ai biết cách xử lý exception trong Java không? Mình đang gặp khó khăn ở phần try-catch. Mong được hỗ trợ!",
-        likes: 12,
-        comments: 15,
-        views: 89,
-        hasImage: false
-    },
-    {
-        id: 3,
-        author: "Lê Minh C",
-        groupName: "Tiếng Anh giao tiếp",
-        time: "6 giờ trước",
-        content: "Chia sẻ 50 câu giao tiếp tiếng Anh thông dụng nhất cho sinh viên. Học thuộc những câu này sẽ giúp các bạn tự tin hơn khi nói chuyện!",
-        likes: 45,
-        comments: 12,
-        views: 234,
-        hasImage: true
-    },
-    {
-        id: 4,
-        author: "Phạm Văn D",
-        groupName: "Kinh tế vi mô",
-        time: "1 ngày trước",
-        content: "Thầy vừa gửi đề cương ôn tập cuối kỳ. Các bạn cùng ôn tập nhé! Có chỗ nào không hiểu thì hỏi trong group.",
-        likes: 18,
-        comments: 6,
-        views: 112,
-        hasImage: false
-    }
-];
-
+interface FileAttachment {
+  url: string;
+  filename: string;
+  mimetype: string;
+  filetype: string;
+}
+interface Post {
+  _id: string;
+  userId: string;
+  text: string;
+  attachments: Attachment[];
+  createdAt: string;
+  likes: string[];
+  comments: string[];
+}
+interface Attachment {
+  file?: FileAttachment;
+  url?: string;
+  filename?: string;
+  mimetype?: string;
+  filetype?: string;
+}
 // Available icons for group selection
 const availableIcons = [
     "📚", "🔢", "☕", "🇺🇸", "📊", "⚛️", "📱", "🎨", "💰", "🖥️",
@@ -94,6 +68,19 @@ interface UserGroup {
     tags: string[];
 }
 
+// Thêm interface mới
+interface PostWithGroup extends Post {
+    groupName: string;
+    userInfo?: userInfo | null;
+}
+
+interface userInfo {
+
+     _id: string;
+    username: string;
+    avatar_link: string;
+                              
+}
 export default function CommunityGroupsPage() {
     const [selectedGroup, setSelectedGroup] = useState("all");
     const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -108,26 +95,49 @@ export default function CommunityGroupsPage() {
     const [exploreTab, setExploreTab] = useState<"explore" | "joined">("joined");
     const [exGroups, setExploreGroups] = useState<ExploreGroup[]>([]);
     const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
+    const [isAddmodalopen,setisAddmodalopen] = useState(false)
+    const [userId, setUserId] = useState<string | null>(null);
+    const [userInfo, setUserInfo] = useState<userInfo>() || null;
+    const [currentGroup, setCurrentGroup] = useState('')
     
+    // Sửa type mới cho state
+const [allGroupPosts, setAllGroupPosts] = useState<PostWithGroup[]>([]);
 
     const filteredExploreGroups = exGroups.filter(group =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
         (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
     );
 
-    const filteredPosts = selectedGroup === "all" 
-        ? groupPosts 
-        : groupPosts.filter(post => post.groupName === selectedGroup);
-
-
+    // Sửa filteredPosts để lấy đúng dữ liệu khi ở mục "Tất cả nhóm"
+const filteredPosts = selectedGroup === "all"
+    ? allGroupPosts
+    : allGroupPosts.filter(post => post.groupName === selectedGroup);
 
     useEffect(() =>{
     const token = localStorage.getItem('token');
+     const id = localStorage.getItem('userId');
+        const data = localStorage.getItem('userdata');
+
+        setUserId(id);
+
+        if (data) {
+            try {
+            const parsedData = JSON.parse(data);
+            setUserInfo(parsedData);
+        } catch (e) {
+            console.error("Failed to parse userdata from localStorage:", e);
+            }
+        }
+     
     if (token) {
         getGroup();
         getUsersGroupData();
     }
-    },[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [])
+
+  
+
     const createNewGroup = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -184,27 +194,58 @@ export default function CommunityGroupsPage() {
         }
     };
 
-    // Lấy nhóm của user từ API
-    const getUsersGroupData = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const userId = localStorage.getItem('userId');
-            const res = await axios.get(`${BASEURL}/api/get/user/group/${userId}`, {
+    
+
+const loadAllGroupsPosts = async (groups: UserGroup[]) => {
+    try {
+        const token = localStorage.getItem('token');
+      
+let allPosts: PostWithGroup[] = [];
+        for (const group of groups) {
+            const res = await axios.get(`${BASEURL}/api/get/group/post/${group._id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
             if (res && res.data) {
-                setUserGroups(res.data as UserGroup[]);
+                console.log(res.data)
+                // Sử dụng type mới cho allPosts
+                allPosts = allPosts.concat(res.data.posts.map((post: Post) => ({
+                    ...post,
+                    groupName: group.name 
+                })));
             }
-        } catch (error) {
-            console.error('Error in getUsersGroupData:', error);
+        }
+        setAllGroupPosts(allPosts);
+    } catch (error) {
+        console.error('Error loading all group posts:', error);
+    }
+};
+
+    
+const getUsersGroupData = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const res = await axios.get(`${BASEURL}/api/get/user/group/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (res && res.data) {
+            setUserGroups(res.data as UserGroup[]);
+         
+            loadAllGroupsPosts(res.data as UserGroup[]);
+        }
+    } catch (error) {
+        console.error('Error in getUsersGroupData:', error);
            
         }
     };
 
-    // Gọi API để tham gia nhóm
+    
     const joinedGroups = async (groupId: string) => {
         try {
             const token = localStorage.getItem('token');
@@ -231,7 +272,9 @@ export default function CommunityGroupsPage() {
         }
     };
 
-    // Lọc nhóm của bạn theo search
+ 
+
+  
     const filteredUserGroups = userGroups.filter(group =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
         (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
@@ -441,7 +484,11 @@ export default function CommunityGroupsPage() {
                                         {filteredUserGroups.map((group) => (
                                             <button
                                                 key={group._id}
-                                                onClick={() => setSelectedGroup(group.name)}
+                                                onClick={() => {
+                                                    setSelectedGroup(group.name)
+                                                    
+                                                    setCurrentGroup(group._id)
+                                                }}
                                                 className={`w-full text-left p-3 rounded-lg transition-colors ${
                                                     selectedGroup === group.name 
                                                         ? "bg-blue-100 border-2 border-blue-300" 
@@ -465,15 +512,26 @@ export default function CommunityGroupsPage() {
                         )}
                     </div>
 
-                    {/* Right Container - Dynamic Content */}
+                   
                     <div className="lg:col-span-2 space-y-6">
                         {mainTab === "posts" ? (
                             /* Posts Feed */
                             <div className="space-y-4">
-                                <h2 className="text-xl font-semibold text-blue-700 flex items-center gap-2">
-                                    <MessageCircle className="text-blue-600" size={20} />
-                                    {selectedGroup === "all" ? "Tất cả bài đăng" : `Bài đăng từ ${selectedGroup}`}
-                                </h2>
+                                <div className="flex items-center justify-between mb-2">
+                                    <h2 className="text-xl font-semibold text-blue-700 flex items-center gap-2">
+                                        <MessageCircle className="text-blue-600" size={20} />
+                                        {selectedGroup === "all" ? "Tất cả bài đăng" : `Bài đăng từ ${selectedGroup}`}
+                                    </h2>
+                                    {selectedGroup !== "all" && (
+                                        <Button
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                            style={{ marginTop: "5vh", marginRight: "3vh" }}
+                                            onClick={() => setisAddmodalopen(true)}
+                                        >
+                                            + Đăng bài
+                                        </Button>
+                                    )}
+                                </div>
                                 
                                 {filteredPosts.length === 0 && (
                                     <div className="text-center py-8 text-gray-500">
@@ -482,64 +540,7 @@ export default function CommunityGroupsPage() {
                                 )}
 
                                 {filteredPosts.map((post) => (
-                                    <Card key={post.id} className="border-blue-100 hover:shadow-md transition-shadow">
-                                        <CardContent className="pt-6">
-                                            {/* Post Header */}
-                                            <div className="flex items-start gap-3 mb-4">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-blue-600 font-semibold">
-                                                        {post.author.charAt(0)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="font-medium text-blue-800">{post.author}</span>
-                                                        <span className="text-gray-400">•</span>
-                                                        <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                            {post.groupName}
-                                                        </span>
-                                                        <span className="text-gray-400">•</span>
-                                                        <span className="text-sm text-gray-500 flex items-center gap-1">
-                                                            <Clock size={12} />
-                                                            {post.time}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Post Content */}
-                                            <div className="mb-4">
-                                                <p className="text-gray-700 leading-relaxed">{post.content}</p>
-                                                {post.hasImage && (
-                                                    <div className="mt-3 w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                                                        <span className="text-gray-400">📎 Có tài liệu đính kèm</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Post Actions */}
-                                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                                <div className="flex items-center gap-6">
-                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors">
-                                                        <Heart size={18} />
-                                                        <span className="text-sm">{post.likes}</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                                        <MessageCircle size={18} />
-                                                        <span className="text-sm">{post.comments}</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
-                                                        <Share2 size={18} />
-                                                        <span className="text-sm">Chia sẻ</span>
-                                                    </button>
-                                                </div>
-                                                <div className="flex items-center gap-1 text-gray-500 text-sm">
-                                                    <Eye size={16} />
-                                                    <span>{post.views}</span>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <RenderPost key={post._id || ''} post={post} userData={post.userInfo  || null} />
                                 ))}
                             </div>
                         ) : (
@@ -644,7 +645,7 @@ export default function CommunityGroupsPage() {
                                         })}
                                     </div>
                                 )}
-
+                                
                                 {((exploreTab === "joined" && filteredUserGroups.length === 0) ||
                 (exploreTab === "explore" && filteredExploreGroups.length === 0)) && (
                                     <div className="text-center py-8 text-gray-500">
@@ -653,7 +654,19 @@ export default function CommunityGroupsPage() {
                                 )}
                             </div>
                         )}
+                         {isAddmodalopen === true && userId && selectedGroup !== "all" && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <PostAddGroup
+            groupid={currentGroup}
+            groupname={selectedGroup}
+            _id={userId}
+            name={userInfo?.username || 'bull'}
+            onClose={() => setisAddmodalopen(false)}
+          />
+        </div>
+      )}
                     </div>
+                    
                 </div>
             </div>
         </div>
