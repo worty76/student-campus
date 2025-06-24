@@ -5,6 +5,8 @@ const fs = require('fs');
 const { ObjectId } = require('mongodb');
 const client = require('../DTB/mongoconnection');
 const User = require('../schemas/user.model')
+const Group = require('../schemas/group.model');
+const { default: mongoose } = require('mongoose');
 
 // Temporary local storage for file
 const upload = multer({ dest: 'uploads/' });
@@ -79,6 +81,84 @@ const createPost = async (req, res) => {
         console.debug('MongoDB insert result:', result);
 
         res.status(201).json({ success: true, post: { _id: result.insertedId, ...post } });
+    } catch (error) {
+        console.error('Error in createPost:', error);
+        res.status(500).json({ message: 'Error creating post', error: error.message });
+    }
+};
+const createPostGroup = async (req, res) => {
+    
+    try {
+        console.debug('Received request body:', req.body);
+        console.debug('Received files:', req.files);
+        const { userId, text ,groupid} = req.body;
+        console.debug('Connected to MongoDB');
+        console.log(groupid);
+        let attachments = [];
+
+        // Handle multiple file uploads
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const ext = file.originalname.split('.').pop().toLowerCase();
+                let resourceType = 'auto';
+                if (ext === 'pdf' || ext === 'doc' || ext === 'docx' || ext === 'ppt' || ext === 'pptx' || ext === 'xls' || ext === 'xlsx' || ext === 'txt') {
+                    resourceType = 'raw';
+                }
+                console.debug('Uploading file to Cloudinary:', file.path);
+                const result = await cloudinary.uploader.upload(file.path, {
+                    resource_type: resourceType,
+                });
+                console.debug('Cloudinary upload result:', result);
+
+                fs.unlinkSync(file.path);
+                console.debug('Deleted local file:', file.path);
+
+                let filetype = 'document';
+                
+
+                if (result.resource_type === 'image') {
+                    filetype = 'image';
+                } else if (result.resource_type === 'video') {
+                    filetype = 'video';
+                } else if (ext === 'txt') {
+                    filetype = 'txt';
+                } else if (ext === 'pdf') {
+                    filetype = 'pdf';
+                } else if (ext === 'pptx') {
+                    filetype = 'pptx';
+                }
+
+                attachments.push({
+                    file: {
+                        url: result.secure_url,
+                        filename: result.original_filename,
+                        mimetype: file.mimetype,
+                        filetype,
+                    }
+                });
+                console.debug('Attachment info:', attachments[attachments.length - 1]);
+            }
+        }
+
+            const newPost = new Post({
+                userId: new ObjectId(userId),
+                text: text || '',
+                attachments,
+                createdAt: new Date(),
+                likes: [],
+                comments: [],
+            });
+
+            const savedPost = await newPost.save();
+
+            const test = await Group.updateOne(
+                { _id: new mongoose.Types.ObjectId(groupid) },
+                { $push: { posts: savedPost._id } }
+            );
+
+            console.debug('Update group with post result:', test);
+
+res.status(201).json({ success: true, post: savedPost });
     } catch (error) {
         console.error('Error in createPost:', error);
         res.status(500).json({ message: 'Error creating post', error: error.message });
@@ -262,5 +342,6 @@ module.exports = {
     RenderPost,
     getUserPosts,
     updatepost,
-    deletePost
+    deletePost,
+    createPostGroup
 };
