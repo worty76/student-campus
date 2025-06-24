@@ -4,7 +4,7 @@ const multer = require('multer');
 const cloudinary = require('../../utils/cloudiary');
 const fs = require('fs');
 
-const {createPost,RenderPost,getUserPosts,updatepost,deletePost,createPostGroup} = require('../../controllers/post.controller')
+const {createPost,RenderPost,getUserPosts,updatepost,deletePost,createPostGroup, renderPostBaseOnUser} = require('../../controllers/post.controller')
 const {authenticateToken} = require('../../utils/auth')
 
 // Temporary local storage for file
@@ -16,5 +16,6 @@ router.put('/update/post/:postid',authenticateToken,upload.array('files', 10),up
 router.delete('/post/delete/:id',authenticateToken,deletePost)
 router.get('/get/post',authenticateToken,RenderPost);
 router.get('/get/user/post/:id', authenticateToken, getUserPosts);
+router.get('/get/personal/feed/:userId',authenticateToken,renderPostBaseOnUser)
 
 module.exports = router;

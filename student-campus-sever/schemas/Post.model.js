@@ -42,11 +42,14 @@ const postSchema = new mongoose.Schema({
   },
   likes: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Array,
       ref: 'User'
     }
   ],
-  comments: [commentSchema]
+  comments:   {
+      type: Array,
+      ref: 'User'
+    }
 });
 
 module.exports = mongoose.model('posts', postSchema);

@@ -8,6 +8,7 @@ import PostAdd from "@/components/home/postadd";
 import Image from "next/image";
 import { BASEURL } from "@/app/constants/url";
 import axios from "axios";
+import RenderPost from "@/components/home/post";
 
 // TypeScript interfaces for the post data
 interface FileAttachment {
@@ -25,6 +26,7 @@ interface Attachment {
   filetype?: string;
 }
 
+// Đưa interface Post lên trước
 interface Post {
   _id: string;
   userId: string;
@@ -32,23 +34,43 @@ interface Post {
   attachments: Attachment[];
   createdAt: string;
   likes: string[];
-  comments: string[];
+  userInfo: userInfo;
+  comments: Comments[];
 }
+
+
+interface Comments {
+  userinfo: userInfo;
+  context: string;
+}
+interface userInfo {
+  _id:string;
+  username:string;
+  avatar_link:string;
+}
+
+
+interface userInfo {
+  _id: string;
+  username: string;
+  avatar_link: string;
+}
+
 interface friends {
   _id: string;
   username: string;
   avatar_link?: string;
 }
 interface UserdataProps {
-  id?: string,
-  username: string,
-  Year: string,
-  Major: string,
-  email: string,
-  Faculty: string,
-  avatar?: string,
-  avatar_link?: string,
-  friends?: friends[]
+  id?: string;
+  username: string;
+  Year: string;
+  Major: string;
+  email: string;
+  Faculty: string;
+  avatar?: string;
+  avatar_link?: string;
+  friends?: friends[];
 }
 
 const userInfo = {
@@ -74,75 +96,73 @@ const HomePage = () => {
     const storedId = localStorage.getItem("userId");
     if (storedId) {
       setUserId(storedId);
-       
+      getpost();
+      getUserData();
     }
   }, []);
 
-  useEffect(() => {
-    getpost();
-    getUserData();
-  }, [userId]);
-
   const getpost = async () => {
-    try {
-      const token =
-        sessionStorage.getItem("token") || localStorage.getItem("token");
-      const response = await axios.get(`${BASEURL}/api/get/post`, {
+  try {
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
+    const storedId = localStorage.getItem("userId");
+
+    if (!storedId || storedId === "null") {
+      console.warn("Invalid userId:", storedId);
+      setPosts([]);
+      return;
+    }
+
+    const response = await axios.get(
+      `${BASEURL}/api/get/personal/feed/${storedId}`,
+      {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },
-      });
-      if (response.status === 200 && response.data.success) {
-        const posts = response.data.posts;
-        setPosts(posts);
-        console.log("Posts:", posts);
-      } else {
-        setPosts([]);
       }
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+    );
+
+    if (response.status === 200 && response.data.success) {
+      const posts = response.data.posts;
+      console.log("Posts:", posts);
+      setPosts(posts);
+    } else {
       setPosts([]);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    setPosts([]);
+  }
+};
 
-   const getUserData = async () => {
+
+  const getUserData = async () => {
     try {
-      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-      const userId = localStorage.getItem('userId')
-      const response = await axios.get(`${BASEURL}/api/get/userinfo/` + userId, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(
+        `${BASEURL}/api/get/userinfo/` + userId,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
         }
-      });
+      );
       if (response.status === 200) {
         const userData = response.data.resUser;
         setUserData(userData);
-      
-   
+
         console.log(userData);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-  }
-
-  const formatTime = (createdAt: string): string => {
-    const now = new Date();
-    const postTime = new Date(createdAt);
-    const diffInMinutes = Math.floor(
-      (now.getTime() - postTime.getTime()) / (1000 * 60)
-    );
-
-    if (diffInMinutes < 1) return "Vừa xong";
-    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
-    if (diffInMinutes < 1440)
-      return `${Math.floor(diffInMinutes / 60)} giờ trước`;
-    return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
   };
 
-  return (
+ 
 
-     
+  return (
     <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen pb-20 flex flex-col items-center relative overflow-x-hidden">
       {/* Decorative blue gradient top left */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-100 rounded-full blur-3xl opacity-60 -z-10" />
@@ -156,7 +176,7 @@ const HomePage = () => {
             <div className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6 h-fit border border-blue-200 w-full max-w-xs flex flex-col items-center relative">
               <div className="w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center">
                 <Image
-                  src={userData?.avatar_link  ||"/schoolimg.jpg"}
+                  src={userData?.avatar_link || "/schoolimg.jpg"}
                   alt={userInfo.name}
                   width={80}
                   height={80}
@@ -169,7 +189,7 @@ const HomePage = () => {
               <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                 {userData?.email || userInfo.email}
               </div>
-            </div>  
+            </div>
             <hr className="my-6 border-t border-gray-500 w-full" />
             <div>
               <h4 className="font-semibold text-blue-900 mb-3">
@@ -295,113 +315,7 @@ const HomePage = () => {
               </div>
             ) : (
               posts.map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-white border border-blue-100 rounded-lg p-4 mb-5 shadow-sm w-full max-w-2xl mx-auto"
-                >
-                  <div className="flex items-center mb-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mr-3 flex items-center justify-center text-white font-semibold text-sm shadow">
-                      U
-                    </div>
-                    <div>
-                      {/* <div className="font-semibold text-blue-900">{post.userId}</div> */}
-                      <div className="text-xs text-blue-400">
-                        {formatTime(post.createdAt)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Post text content */}
-                  {post.text && (
-                    <div className="text-gray-800 mb-3 leading-relaxed">
-                      {post.text}
-                    </div>
-                  )}
-
-                  {/* Attachments */}
-                  {post.attachments && post.attachments.length > 0 && (
-                    <div className="mb-3 space-y-3">
-                      {post.attachments.map((attachment, index) => {
-                        // Handle both attachment structures
-                        const file = attachment.file || attachment;
-
-                        if (
-                          file.filetype === "image" ||
-                          file.mimetype?.startsWith("image/")
-                        ) {
-                          return (
-                            <div key={index} className="mb-3">
-                              <Image
-                                src={file.url || "/default-image.png"}
-                                alt="Hình ảnh đăng tải"
-                                width={640}
-                                height={640}
-                                className="rounded-lg max-h-96 w-full object-cover border border-blue-100"
-                                style={{
-                                  maxHeight: 384,
-                                  width: "100%",
-                                  objectFit: "cover",
-                                }}
-                                onError={(e) => {
-                                  (
-                                    e.target as HTMLImageElement
-                                  ).style.display = "none";
-                                }}
-                              />
-                            </div>
-                          );
-                        } else if (
-                          file.filetype === "video" ||
-                          file.mimetype?.startsWith("video/")
-                        ) {
-                          return (
-                            <div key={index} className="mb-3">
-                              <video
-                                controls
-                                className="rounded-lg max-h-96 w-full border border-blue-100"
-                                onError={(e) => {
-                                  (
-                                    e.target as HTMLVideoElement
-                                  ).style.display = "none";
-                                }}
-                              >
-                                <source src={file.url} type={file.mimetype} />
-                                Trình duyệt của bạn không hỗ trợ video.
-                              </video>
-                            </div>
-                          );
-                        } else {
-                          // For other file types (documents, text files, etc.)
-                          return (
-                            <div key={index} className="mb-2">
-                              <a
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center px-3 py-2 bg-blue-50 rounded-lg hover:bg-blue-100 text-blue-700 text-sm transition-colors duration-200 border border-blue-200"
-                              >
-                                {file.filename || "Tài liệu đính kèm"}
-                              </a>
-                            </div>
-                          );
-                        }
-                      })}
-                    </div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-4 pt-3 border-t border-blue-100">
-                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                      <span>👍</span> Thích ({post.likes?.length || 0})
-                    </button>
-                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                      <span>💬</span> Bình luận ({post.comments?.length || 0})
-                    </button>
-                    <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                      <span>📤</span> Chia sẻ
-                    </button>
-                  </div>
-                </div>
+                <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
               ))
             )}
           </div>

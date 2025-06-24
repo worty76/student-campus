@@ -8,8 +8,17 @@ import NavigationBar from "../layouts/navbar";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
 import PostAddGroup from "@/components/home/postaddgroup";
-import RenderPost from "@/components/ui/post";
+import RenderPost from "@/components/home/post";
 
+interface Comments {
+  userinfo: userInfo;
+  context: string;
+}
+interface userInfo {
+  _id:string;
+  username:string;
+  avatar_link:string;
+}
 
 
 interface FileAttachment {
@@ -25,7 +34,7 @@ interface Post {
   attachments: Attachment[];
   createdAt: string;
   likes: string[];
-  comments: string[];
+  comments: Comments[];
 }
 interface Attachment {
   file?: FileAttachment;

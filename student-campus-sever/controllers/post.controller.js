@@ -204,19 +204,19 @@ const updatepost = async (req, res) => {
         const { postid } = req.params;
         const userId = req.user && req.user.id ? req.user.id : req.body.userId;
 
-        // Tìm post với đúng user
+       
         const post = await Post.findOne({ _id: new ObjectId(postid), userId: new ObjectId(userId) });
         if (!post) {
             return res.status(404).json({ message: 'Post not found or user not authorized' });
         }
 
-        // Cập nhật nội dung bài viết
+
         if (typeof text === 'string') post.text = text;
 
-        // Xử lý attachments
+ 
         let finalAttachments = [];
         
-        // 1. Thêm existing attachments (không thay đổi) nếu có
+     
         if (existingAttachments) {
             try {
                 const parsedExistingAttachments = typeof existingAttachments === 'string' 
@@ -231,7 +231,7 @@ const updatepost = async (req, res) => {
             }
         }
 
-        // 2. Thêm các file mới được upload
+
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
                 const ext = file.originalname.split('.').pop().toLowerCase();
@@ -259,19 +259,18 @@ const updatepost = async (req, res) => {
             }
         }
 
-        // 3. Xóa các file cũ không còn trong finalAttachments
         if (post.attachments && post.attachments.length > 0) {
-            // Lấy danh sách URL của attachments mới
+        
             const newAttachmentUrls = finalAttachments.map(att => {
-                // Handle both structures: {file: {url}} and {url}
+                
                 return att.file?.url || att.url;
             }).filter(Boolean);
 
-            // Xóa các file cũ không còn trong danh sách mới
+          
             for (const oldAttachment of post.attachments) {
                 const oldUrl = oldAttachment.file?.url || oldAttachment.url;
                 if (oldUrl && !newAttachmentUrls.includes(oldUrl)) {
-                    // File này đã bị xóa, cần xóa trên Cloudinary
+                   
                     try {
                         const urlParts = oldUrl.split('/');
                         const publicIdWithExt = urlParts[urlParts.length - 1];
@@ -285,10 +284,9 @@ const updatepost = async (req, res) => {
             }
         }
 
-        // 4. Cập nhật attachments của post
+
         post.attachments = finalAttachments;
 
-        // Lưu lại bài viết
         await post.save();
 
         res.status(200).json({ success: true, post });
@@ -303,31 +301,31 @@ const deletePost = async (req, res) => {
         const userId = req.query.userId;
 
     try {
-        // Tìm post với đúng user
+
         const post = await Post.findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) });
         if (!post) {
             return res.status(404).json({ message: 'Post not found or user not authorized' });
         }
 
-        // Xóa các file đính kèm trên Cloudinary nếu có
+
         if (post.attachments && post.attachments.length > 0) {
             for (const attachment of post.attachments) {
                 if (attachment.file && attachment.file.url) {
-                    // Lấy public_id từ url để xóa trên Cloudinary
+                 
                     const urlParts = attachment.file.url.split('/');
                     const publicIdWithExt = urlParts[urlParts.length - 1];
                     const publicId = publicIdWithExt.split('.')[0];
                     try {
                         await cloudinary.uploader.destroy(publicId, { resource_type: 'auto' });
                     } catch (err) {
-                        // Không dừng lại nếu xóa file trên Cloudinary lỗi
+                    
                         console.warn('Failed to delete file on Cloudinary:', err.message);
                     }
                 }
             }
         }
 
-        // Xóa post khỏi database
+
         await Post.deleteOne({ _id: new ObjectId(id), userId: new ObjectId(userId) });
 
         res.status(200).json({ success: true, message: 'Post deleted successfully' });
@@ -337,11 +335,160 @@ const deletePost = async (req, res) => {
     }
 }
 
+const renderPostBaseOnUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const cleanid = userId.trim();
+        if (!cleanid) {
+            console.log('there is no user id');
+            return res.status(400).json({ success: false, message: 'No user id provided' });
+        }
+        const groups = await Group.find({ members: { $in: [cleanid] } });
+        const user = await User.findById(cleanid);
+        const userFriendsPost = user.friends || [];
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const friendPosts = await Post.find({ userId: { $in: userFriendsPost }, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+        const postsWithUser = await Promise.all(
+            friendPosts.map(async (post) => {
+                const user = await User.findById(post.userId).select('_id username avatar_link').lean();
+                // Flatten likes to array of userIds
+                const likes = Array.isArray(post.likes)
+                    ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
+                    : [];
+                return {
+                    ...post.toObject(),
+                    likes,
+                    userInfo: user
+                        ? {
+                            _id: user._id,
+                            username: user.username,
+                            avatar_link: user.avatar_link
+                        }
+                        : null
+                };
+            })
+        );
+
+        const groupPosts = await Post.find({ _id: { $in: groups.flatMap(g => g.posts) }, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+        const postGroupWithUser = await Promise.all(
+            groupPosts.map(async (post) => {
+                const user = await User.findById(post.userId).select('_id username avatar_link').lean();
+           
+                const likes = Array.isArray(post.likes)
+                    ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
+                    : [];
+                return {
+                    ...post.toObject(),
+                    likes,
+                    userInfo: user
+                        ? {
+                            _id: user._id,
+                            username: user.username,
+                            avatar_link: user.avatar_link
+                        }
+                        : null
+                };
+            })
+        );
+
+       
+        const allPosts = [...postsWithUser, ...postGroupWithUser];
+        const uniquePostsMap = new Map();
+        allPosts.forEach(post => {
+            uniquePostsMap.set(String(post._id), post);
+        });
+        const finalPosts = Array.from(uniquePostsMap.values());
+
+        res.status(200).json({ success: true, posts: finalPosts });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: 'Error fetching posts', error: error.message });
+    }
+};
+
+const likePost = async (postid, userId) => {
+    try {
+        if (!postid || !userId) {
+            console.log('postid and userId are required');
+            return false;
+        }
+
+        const postlike = await Post.updateOne(
+            { _id: new mongoose.Types.ObjectId(postid) },
+            { $addToSet: { likes: userId } }
+        );
+        if (postlike.modifiedCount > 0) {
+            return true;
+        } else {
+            console.log('User already liked this post or post not found');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while liking post:', error);
+        return false;
+    }
+};
+
+const unlikePost = async (postid, userId) => {
+    try {
+        if (!postid || !userId) {
+            console.log('postid and userId are required');
+            return false;
+        }
+
+        const result = await Post.updateOne(
+            { _id: new mongoose.Types.ObjectId(postid) },
+            { $pull: { likes: userId } }
+        );
+        if (result.modifiedCount > 0) {
+            return true;
+        } else {
+            console.log('User had not liked this post or post not found');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error while unliking post:', error);
+        return false;
+    }
+};
+
+
+const addcomment = async (postid, userId, context) => {
+    try {
+        if (!postid || !userId) {
+            console.log('postid and userId are required');
+            return false;
+        }
+        const userinfo = await User.findById(userId).select('username avatar_link');
+        const comment = {
+            userinfo: userinfo,
+            context: context
+        };
+        const result = await Post.updateOne(
+            { _id: new mongoose.Types.ObjectId(postid) },
+            { $push: { comments: comment } }
+        );
+        return result;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
+
+
+
 module.exports = {
     createPost,
     RenderPost,
     getUserPosts,
     updatepost,
     deletePost,
-    createPostGroup
+    createPostGroup,
+    renderPostBaseOnUser,
+    likePost,
+    unlikePost,
+    addcomment
 };

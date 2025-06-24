@@ -44,6 +44,7 @@ export default function LoginPage() {
         localStorage.setItem('token', response.data.logindata.token);
         localStorage.setItem('userId',response.data.logindata.user._id)
         localStorage.setItem('userdata', JSON.stringify(response.data.logindata.user));
+        
         // Kết nối WebSocket sau khi login thành công
        
         connectWebSocket(response.data.logindata.user._id);
