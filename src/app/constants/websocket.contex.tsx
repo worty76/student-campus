@@ -5,12 +5,15 @@ import Toast from '@/components/home/toastnoti';
 type WebSocketStatus = 'Disconnected' | 'Connecting' | 'Connected' | 'Error' | 'Reconnecting';
 
 interface WebSocketMessage {
-  type: 'init' | 'friend_request' | 'message' | 'accept_request' |'deny_request';
+  type: 'init' | 'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment';
   from?: string;
   to?: string;
   message?: string;
   fromName?: string; // Thêm tên người gửi
   reqid?:string;
+  postid?:string;
+  context?: string;
+
 }
 
 type MessageHandler = (data: WebSocketMessage) => void;
@@ -138,7 +141,22 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
             color: 'bg-blue-500'
           });
         }
-        
+         if (data.type === 'likes_post' || data.type === 'likes_post') {
+          addToast({
+            title: 'Thông Báo',
+            message: `${data.fromName || data.from || 'Ai đó'} Đã like bài viết của bạn`,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+         if (data.type === 'Comment' || data.type === 'comment') {
+          addToast({
+            title: 'Thông Báo',
+            message: `${data.fromName || data.from || 'Ai đó'} Đã bình luận vào bài viết của bạn`,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
 
 
         // Gọi các message handlers

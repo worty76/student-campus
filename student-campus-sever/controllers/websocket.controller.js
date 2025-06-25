@@ -7,12 +7,14 @@ const Friend_rq = require('../schemas/friend_rq.model');
 const Notifications = require('../schemas/notification.model');
 const User = require('../schemas/user.model'); // Đảm bảo bạn có schema này
 const {acceptUserRequest,denyUserRequest}  = require('../controllers/friendrequest.controller.routes')
+const {likePost,unlikePost,addcomment} = require('../controllers/post.controller')
 const onConnection = (ws, req) => {
     ws.on('message', async (data) => {
         const message = JSON.parse(data);
 
         if (message.type === 'init') {
             const id = message.id;
+            
             clients.set(id, ws);
             console.log(`New connection from: ${id}`);
             return;
@@ -106,6 +108,74 @@ const onConnection = (ws, req) => {
 
             
         }
+        if (message.type === 'likes_post') {
+            const { postid, from ,to } = message;
+            const fromSocket = clients.get(from);
+            const toSocket = clients.get(to);
+            console.log(postid,from)
+            const res =  await likePost(postid,from);
+        
+
+             if (res === 'postid and userId are required' || res  === 'User already liked this post or post not found') {
+                fromSocket?.send(JSON.stringify({
+                    type: 'accept_404',
+                    message: res
+                }));
+                return;
+            }
+      
+            if (toSocket?.readyState === WebSocket.OPEN) {
+                toSocket.send(JSON.stringify({
+                    type: 'likes_post',
+                    message: `${from} đã thích bài viết của bạn`,
+                    from
+                }));
+            }
+            const notires = await logNotificationsPost(from, to, postid, message.type,);
+            console.log('notifications result:', notires);
+        }
+        if (message.type === 'unlike_post') {
+            const { postid, from, to } = message;
+            const fromSocket = clients.get(from);
+            const toSocket = clients.get(to);
+            console.log(postid, from);
+            const res = await unlikePost(postid, from);
+
+            if (res === 'postid and userId are required' || res === 'User has not liked this post or post not found') {
+                fromSocket?.send(JSON.stringify({
+                    type: 'accept_404',
+                    message: res
+                }));
+                return;
+            }
+
+          
+        }
+         if (message.type === 'Comment') {
+            const { postid, from, to ,context} = message;
+            const fromSocket = clients.get(from);
+            const toSocket = clients.get(to);
+            console.log(postid, from);
+            const res = await addcomment( postid, from,context);
+
+            if (res === 'postid and userId are required' || res === 'User has not liked this post or post not found') {
+                fromSocket?.send(JSON.stringify({
+                    type: 'accept_404',
+                    message: res
+                }));
+                return;
+            }
+
+            if (toSocket?.readyState === WebSocket.OPEN) {
+                toSocket.send(JSON.stringify({
+                    type: 'Comment',
+                    message: `${from} đã bình luận về bài viết của bạn`,
+                    from
+                }));
+            }
+            const notires = await logNotificationsPost(from, to, postid, message.type,);
+            console.log('notifications result:', notires);
+        }
     });
 
     ws.on('close', () => {
@@ -134,7 +204,7 @@ const logNotifications = async (from, to, type) => {
             case 'accept_request':
                 message = `${from} đã chấp nhận lời mời kết bạn của bạn`;
                 break;
-            case 'like':
+            case 'likes_post':
                 message = `${from} đã thích bài viết của bạn.`;
                 break;
             case 'Comment':
@@ -157,10 +227,74 @@ const logNotifications = async (from, to, type) => {
                 return { message: 'Đã tồn tại lời mời kết bạn giữa hai người dùng' };
             }
         }
+        const doc = new Notifications({
+            senderId: from,
+            receiverId: to,
+            createAt: new Date(),
+            status: 'unread',
+            type: type,
+            context: message
+        });
+
+        return await doc.save();
+    } catch (error) {
+        console.error('[Notification Error]', error);
+        return { message: 'Internal error' };
+    }
+};
+
+const logNotificationsPost = async (from, to, postid, type) => {
+    try {
+        let message;
+        switch (type) {
+            case 'friend_request':
+                message = `Bạn có một lời mời kết bạn mới từ ${from}`;
+                break;
+            case 'accept_request':
+                message = `${from} đã chấp nhận lời mời kết bạn của bạn`;
+                break;
+            case 'likes_post':
+                message = `${from} đã thích bài viết của bạn.`;
+                break;
+            case 'Comment':
+                message = `${from} đã bình luận bài viết của bạn.`;
+                break;
+            default:
+                message = 'Thông báo mới.';
+        }
+
+        // Kiểm tra đã tồn tại thông báo like từ người dùng này cho bài viết này chưa
+        if (type === 'likes_post') {
+            const existingLike = await Notifications.findOne({
+                type: 'likes_post',
+                senderId: from,
+                receiverId: to,
+                post: postid
+            });
+
+            if (existingLike) {
+                return { message: 'Đã tồn tại thông báo like từ người dùng này cho bài viết này' };
+            }
+        }
+
+        if (type === 'friend_request') {
+            const existingFr = await Notifications.findOne({
+                type: 'friend_request',
+                $or: [
+                    { senderId: from, receiverId: to },
+                    { senderId: to, receiverId: from }
+                ]
+            });
+
+            if (existingFr) {
+                return { message: 'Đã tồn tại lời mời kết bạn giữa hai người dùng' };
+            }
+        }
 
         const doc = new Notifications({
             senderId: from,
             receiverId: to,
+            post: postid,
             createAt: new Date(),
             status: 'unread',
             type: type,
