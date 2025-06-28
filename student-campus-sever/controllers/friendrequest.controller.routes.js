@@ -66,9 +66,10 @@ const getUserFriendRequest = async (req, res) => {
     }
 
     const requests = await friend_request.find({
-      receiverId: id
-    }).populate("senderId", "username avatar"); // nếu muốn lấy thêm thông tin người gửi
-    
+      receiverId: id,
+      status: { $ne: 'accepted' }
+    });
+
     const resultWithUserData = await Promise.all(
       requests.map(async (request) => {
         const sender = await User.findById(request.senderId).select("username avatar_link");
@@ -82,7 +83,7 @@ const getUserFriendRequest = async (req, res) => {
           status: request.status
         };
       })
-);
+    );
     return res.status(200).json({
       message: "Friend requests fetched successfully",
       data: resultWithUserData

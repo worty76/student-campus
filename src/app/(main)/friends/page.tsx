@@ -44,11 +44,11 @@ interface FilterOptions {
 }
 interface FriendRequest {
     _id: string;
+    senderId: string;
+    receiverId: string;
     username: string;
-    Faculty: string;
-    Major: string;
-    Year: string;
-    rqid: string;
+    avatar_link: string;
+    status: string;
 }
 
 const FriendsNCommunitys = () => {
@@ -186,11 +186,11 @@ const FriendsNCommunitys = () => {
       
       console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
-      const toid = receiverId;
+      const toid = receiverId ;
       const rqid = reqid;
       sendMessage({
         type: 'accept_request',
-        from: fromid || '123',
+        from:  fromid|| '123',
         to: toid || '123',
         reqid: rqid || '123'
       });
@@ -239,7 +239,7 @@ const FriendsNCommunitys = () => {
         }
     });
     if(response){
-        console.log(response)
+        console.log(response.data.data)
         setFriendRequests(response.data.data)
     }
     } catch (error) {
@@ -521,20 +521,17 @@ const FriendsNCommunitys = () => {
                       </span>
                       <div>
                         <span className="font-medium text-blue-800">{req.username}</span>
-                        <div className="text-xs text-gray-500">
-                          {req.Faculty} / {req.Major} / Năm {req.Year}
-                        </div>
                       </div>
                       <div className="ml-auto flex gap-2" onClick={e => e.stopPropagation()}>
                         <Button
-                          onClick={() => handleAcceptFriendRequest(req._id, req.rqid)}
+                          onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
                           className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
                           size="sm"
                         >
                           Chấp nhận
                         </Button>
                         <Button
-                          onClick={() => handleRejectFriendRequest(req._id, req.rqid)}
+                          onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
                           className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
                           size="sm"
                         >

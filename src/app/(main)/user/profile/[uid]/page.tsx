@@ -41,7 +41,7 @@ interface UserdataProps {
   Faculty: string,
   avatar?: string,
   avatar_link?: string,
-  interest?: string[]
+  friends?: string[]
 }
 interface Comments {
   userinfo: userInfo;

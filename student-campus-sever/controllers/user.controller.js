@@ -97,9 +97,9 @@ const LoginRequest = async (req, res) => {
                         Faculty: foundUser.Faculty,
                         Major: foundUser.Major,
                         Year: foundUser.Year,
-                        interest: foundUser.interest,
+                        friends: foundUser.friends,
                         createtime: foundUser.createtime,
-                        avatar_link: foundUser.avatarLink
+                        avatar_link: foundUser.avatar_link
                   }
             }
 
@@ -149,6 +149,30 @@ const getUserData = async (req, res) => {
       }
 }
 
+const getusername = async (from) => {
+  if (!from) {
+    console.debug('[getusername] No "from" parameter provided.');
+    return null;
+  }
+  if (!mongoose.Types.ObjectId.isValid(from)) {
+    console.error('[getusername] Invalid ObjectId:', from);
+    return null;
+  }
+  console.debug('[getusername] Looking up user by id:', from);
+  try {
+    const user = await User.findById(from).select('username');
+    if (user) {
+      console.debug('[getusername] Found user:', user.username);
+      return user.username;
+    } else {
+      console.warn('[getusername] No user found for id:', from);
+      return null;
+    }
+  } catch (error) {
+    console.error('[getusername] Error in getusername:', error);
+    return null;
+  }
+}
 
 
 const editUserInfo = async (req, res) => {
@@ -279,7 +303,7 @@ const renderFriendyouKnow = async (req, res) => {
           ]
         }
       },
-      { $sample: { size: 10 } }, // lấy nhiều hơn để có thể lọc sau
+      { $sample: { size: 10 } },
       {
         $project: {
           _id: 1,
@@ -294,6 +318,11 @@ const renderFriendyouKnow = async (req, res) => {
     const resultNotInFriendRq = [];
 
     for (const user of alluser) {
+      // Kiểm tra đã là bạn bè chưa
+      const isFriend = foundUser.friends.some(friendId => friendId.toString() === user._id.toString());
+      if (isFriend) continue;
+
+      // Kiểm tra đã có friend request chưa
       const existingFr = await friend_request.findOne({
         $or: [
           { senderId: id, receiverId: user._id },
@@ -410,4 +439,4 @@ const SearchFriend = async (req, res) => {
 
 
 
-module.exports = {createAccount,LoginRequest,getUserData,editUserInfo ,renderFriendyouKnow,SearchFriend}
+module.exports = {createAccount,LoginRequest,getUserData,editUserInfo ,renderFriendyouKnow,SearchFriend,getusername}

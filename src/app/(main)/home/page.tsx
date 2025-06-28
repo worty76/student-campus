@@ -43,11 +43,7 @@ interface Comments {
   userinfo: userInfo;
   context: string;
 }
-interface userInfo {
-  _id:string;
-  username:string;
-  avatar_link:string;
-}
+
 
 
 interface userInfo {

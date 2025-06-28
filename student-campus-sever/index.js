@@ -15,6 +15,7 @@ const postrouter = require('./routes/api/post.routes')
 const userrouter = require('./routes/api/user.routes')
 const friend_rqrouter = require('./routes/api/friendrq.routes')
 const grouprouter = require('./routes/api/group.routes')
+const chatrouter = require('./routes/api/chat.routes')
 app.use(cors({
   origin: 'http://localhost:3000',  // hoặc '*' để cho tất cả
   methods: ['GET','POST','PUT','DELETE'],
@@ -26,7 +27,7 @@ app.use(cors({
 // Middleware
 app.use(bodyParser.json());
 
-app.use('/api/', authrouter,postrouter,userrouter,friend_rqrouter,grouprouter);
+app.use('/api/', authrouter,postrouter,userrouter,friend_rqrouter,grouprouter,chatrouter);
 
 
 // WebSocket connection

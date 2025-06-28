@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  
  
   const router = useRouter();
   const { connectWebSocket } = useWebSocket();
@@ -57,7 +57,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      setConnectionStatus('Login Failed');
+     
     }
   };
   
@@ -76,15 +76,7 @@ export default function LoginPage() {
       </div>
 
       {/* Connection Status */}
-      <div className="absolute top-4 right-4 z-20">
-        <span className={`px-3 py-1 rounded-full text-sm ${
-          connectionStatus === 'Connected' ? 'bg-green-100 text-green-800' :
-          connectionStatus === 'Error' ? 'bg-red-100 text-red-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          WebSocket: {connectionStatus}
-        </span>
-      </div>
+     
 
       {/* Decorative teal shape */}
       <div className="hidden md:block absolute bg-cyan-400 rounded-full w-[35%] h-[60%] right-[-12%] top-1/2 -translate-y-1/2 z-0" />

@@ -5,19 +5,31 @@ const clients = new Map();
 
 const Friend_rq = require('../schemas/friend_rq.model');
 const Notifications = require('../schemas/notification.model');
-const User = require('../schemas/user.model'); // Đảm bảo bạn có schema này
+const User = require('../schemas/user.model'); 
+const Chat = require('../schemas/chat.model')
 const {acceptUserRequest,denyUserRequest}  = require('../controllers/friendrequest.controller.routes')
 const {likePost,unlikePost,addcomment} = require('../controllers/post.controller')
+const {getusername} = require('../controllers/user.controller');
+const { default: axios } = require('axios');
 const onConnection = (ws, req) => {
     ws.on('message', async (data) => {
         const message = JSON.parse(data);
 
         if (message.type === 'init') {
             const id = message.id;
-            
             clients.set(id, ws);
             console.log(`New connection from: ${id}`);
             return;
+        }
+
+     
+        async function getUserNameById(userId) {
+            try {
+                const user = await getusername(userId);
+                return user || 'Ai đó';
+            } catch {
+                return 'Ai đó';
+            }
         }
 
         if (message.type === 'friend_request') {
@@ -25,10 +37,8 @@ const onConnection = (ws, req) => {
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
 
-            // Gọi gửi lời mời trước
             const res = await sendFriendRequest(from, to);
 
-            // Nếu lời mời đã tồn tại
             if (res.message === 'Friend request already sent' || res.message === 'Already friends with this person') {
                 fromSocket?.send(JSON.stringify({
                     type: 'Friend_request_exist',
@@ -37,12 +47,15 @@ const onConnection = (ws, req) => {
                 return;
             }
 
-            // Nếu gửi lời mời thành công, gửi WebSocket + log thông báo
+            // Lấy username từ from
+            const fromName = await getUserNameById(from);
+
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'Friend_request',
-                    message: `Bạn có lời mời kết bạn từ ${from}`,
-                    from
+                    message: `Bạn có lời mời kết bạn từ ${fromName}`,
+                    from,
+                    fromName
                 }));
             }
 
@@ -52,93 +65,94 @@ const onConnection = (ws, req) => {
         }
 
         if (message.type === 'accept_request') {
-            const { reqid, from ,to } = message;
+            const { reqid, from, to } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
-            console.log(reqid)
-            // Gọi gửi lời mời trước
-            const res = await acceptUserRequest(reqid,from,to);
-
-            // Nếu lời mời đã tồn tại
-            if (res === 'Friend request not found' || res  === 'Missing request ID') {
+            console.log('test:' ,from,to)
+            const res = await acceptUserRequest(reqid, from, to);
+            const users = [from, to];
+            const createChatBetween = await CreateChatRoom(users);
+            if (res === 'Friend request not found' || res === 'Missing request ID') {
                 fromSocket?.send(JSON.stringify({
                     type: 'accept_404',
                     message: res
                 }));
                 return;
             }
+
+            const fromName = await getUserNameById(to);
 
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'accept_request',
-                    message: `${from} đã chấp nhận lời mời kết bạn`,
-                    from
+                    message: `${fromName} đã chấp nhận lời mời kết bạn`,
+                    from,
+                    fromName
                 }));
             }
 
             const notires = await logNotifications(from, to, message.type);
-            console.log('notifications result:', notires);
-            console.log('Friend request result:', res);
+            console.log(createChatBetween)
         }
 
-         if (message.type === 'deny_request') {
-            const { reqid, from ,to } = message;
+        if (message.type === 'deny_request') {
+            const { reqid, from, to } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
-            console.log(reqid)
-            // Gọi gửi lời mời trước
             const res = await denyUserRequest(reqid);
 
-            // Nếu lời mời đã tồn tại
-            if (res === 'Friend request not found' || res  === 'Missing request ID') {
+            if (res === 'Friend request not found' || res === 'Missing request ID') {
                 fromSocket?.send(JSON.stringify({
                     type: 'accept_404',
                     message: res
                 }));
                 return;
             }
+
+            const fromName = await getUserNameById(from);
 
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'deny_request',
-                    message: `${from} đã chấp nhận lời mời kết bạn`,
-                    from
+                    message: `${fromName} đã từ chối lời mời kết bạn`,
+                    from,
+                    fromName
                 }));
             }
-
-            
         }
+
         if (message.type === 'likes_post') {
-            const { postid, from ,to } = message;
+            const { postid, from, to } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
-            console.log(postid,from)
-            const res =  await likePost(postid,from);
-        
+            const res = await likePost(postid, from);
 
-             if (res === 'postid and userId are required' || res  === 'User already liked this post or post not found') {
+            if (res === 'postid and userId are required' || res === 'User already liked this post or post not found') {
                 fromSocket?.send(JSON.stringify({
                     type: 'accept_404',
                     message: res
                 }));
                 return;
             }
-      
+
+            const fromName = await getUserNameById(from);
+
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'likes_post',
-                    message: `${from} đã thích bài viết của bạn`,
-                    from
+                    message: `${fromName} đã thích bài viết của bạn`,
+                    from,
+                    fromName
                 }));
             }
-            const notires = await logNotificationsPost(from, to, postid, message.type,);
+            const notires = await logNotificationsPost(from, to, postid, message.type);
             console.log('notifications result:', notires);
         }
+
         if (message.type === 'unlike_post') {
             const { postid, from, to } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
-            console.log(postid, from);
             const res = await unlikePost(postid, from);
 
             if (res === 'postid and userId are required' || res === 'User has not liked this post or post not found') {
@@ -148,15 +162,13 @@ const onConnection = (ws, req) => {
                 }));
                 return;
             }
-
-          
         }
-         if (message.type === 'Comment') {
-            const { postid, from, to ,context} = message;
+
+        if (message.type === 'Comment') {
+            const { postid, from, to, context } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
-            console.log(postid, from);
-            const res = await addcomment( postid, from,context);
+            const res = await addcomment(postid, from, context);
 
             if (res === 'postid and userId are required' || res === 'User has not liked this post or post not found') {
                 fromSocket?.send(JSON.stringify({
@@ -166,16 +178,163 @@ const onConnection = (ws, req) => {
                 return;
             }
 
+            const fromName = await getUserNameById(from);
+
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'Comment',
-                    message: `${from} đã bình luận về bài viết của bạn`,
-                    from
+                    message: `${fromName} đã bình luận về bài viết của bạn`,
+                    from,
+                    fromName
                 }));
             }
-            const notires = await logNotificationsPost(from, to, postid, message.type,);
+            const notires = await logNotificationsPost(from, to, postid, message.type);
             console.log('notifications result:', notires);
         }
+
+       if (message.type === 'online_friend') {
+            const friends = message.friends;
+            const from = message.from;
+
+            if (Array.isArray(friends)) {
+                // Debug: In ra để kiểm tra
+                console.log('=== DEBUG ONLINE FRIENDS ===');
+                console.log('friends array:', friends);
+                console.log('clients keys:', Array.from(clients.keys()));
+                
+                // Kiểm tra clients có chứa ID nào không
+                const onlineFriends = friends.filter(id => {
+                    const hasId = clients.has(id);
+                    const hasIdStr = clients.has(id.toString());
+                    console.log(`ID ${id} - has: ${hasId}, hasStr: ${hasIdStr}`);
+                    return hasId || hasIdStr;
+                });
+                
+                console.log('onlineFriends:', onlineFriends);
+                
+                const fromSocket = clients.get(from);
+                if (fromSocket && fromSocket.readyState === WebSocket.OPEN) {
+                    const resfriends = await getuseronline(friends);
+                    console.log('resfriends:', resfriends.map(u => ({ id: u._id, name: u.name || u.username })));
+                    
+                    const resWithOnline = resfriends.map(user => {
+                        const userId = user._id.toString();
+                        
+                   
+                        const isOnline1 = onlineFriends.includes(userId);
+                        const isOnline2 = onlineFriends.includes(user._id);
+                        const isOnline3 = onlineFriends.some(id => id.toString() === userId);
+                        const isOnline4 = clients.has(userId);
+                        const isOnline5 = clients.has(user._id);
+                        
+                        console.log(`User ${userId}:`, {
+                            isOnline1, isOnline2, isOnline3, isOnline4, isOnline5
+                        });
+                        
+                        return {
+                            ...user.toObject(),
+                            online: isOnline3 || isOnline4 || isOnline5
+                        };
+                    });
+                    
+                    console.log('Final result:', resWithOnline.map(u => ({ id: u._id, online: u.online })));
+                    
+                    fromSocket.send(JSON.stringify({
+                        type: 'online_friend',
+                        friends: resWithOnline
+                    }));
+                }
+            } else {
+                const fromSocket = clients.get(from);
+                if (fromSocket && fromSocket.readyState === WebSocket.OPEN) {
+                    fromSocket.send(JSON.stringify({
+                        type: 'online_friend',
+                        friends: []
+                    }));
+                }
+            }
+        }
+
+        if (message.type === 'text_to') {
+            const from = message.from;
+            const to = message.to;
+            const text = message.context;
+            const chatid = message.chatid;
+            
+            console.log(chatid)
+            const toSocket = clients.get(to);
+            const savetext = await addChatMessage(chatid,from,text);
+            
+            const fromName = await getusername(from);
+            if(savetext){
+                console.log(savetext)
+                const _id = savetext._id
+            
+                if (toSocket?.readyState === WebSocket.OPEN) {
+                toSocket.send(JSON.stringify({
+                    type: 'text_to',
+                    message: `${fromName} `,
+                    context:text,
+                    from,
+                    fromName,
+                    _id
+
+                }));
+            }
+            }
+        }
+       if (message.type === 'file_to') {
+            console.log('Received file_to message:', message);
+            const { chatid, from, to, context, file } = message;
+
+            let parsedFiles = [];
+
+            // Handle different file input formats
+            if (typeof file === 'string') {
+                try {
+                    parsedFiles = JSON.parse(file);
+                } catch (err) {
+                    console.error("Invalid file JSON string:", err);
+                    parsedFiles = [];
+                }
+            } else if (Array.isArray(file)) {
+                parsedFiles = file;
+            } else if (typeof file === 'object' && file !== null) {
+                parsedFiles = [file];
+            }
+
+            // Validate file objects
+            const validFiles = parsedFiles.filter(f => {
+                return f && 
+                    typeof f === 'object' && 
+                    typeof f.name === 'string' && 
+                    typeof f.type === 'string' && 
+                    typeof f.url === 'string';
+            });
+
+            console.log('Processed files:', validFiles);
+
+            const toSocket = clients.get(to);
+            const savetext = await addChatMessage(chatid, from, context, validFiles);
+
+            const fromName = await getusername(from);
+            if (savetext) {
+                const _id = savetext._id;
+
+                if (toSocket?.readyState === WebSocket.OPEN) {
+                    toSocket.send(JSON.stringify({
+                        type: 'file_to',
+                        message: `${fromName} đã gửi cho bạn một đính kèm`,
+                        context,
+                        from,
+                        fromName,
+                        _id,
+                        files: validFiles // Include the files in the response
+                    }));
+                }
+            }
+        }
+                    
     });
 
     ws.on('close', () => {
@@ -227,6 +386,21 @@ const logNotifications = async (from, to, type) => {
                 return { message: 'Đã tồn tại lời mời kết bạn giữa hai người dùng' };
             }
         }
+
+        if (type === 'accept_request') {
+            const existingAccept = await Notifications.findOne({
+                type: 'accept_request',
+                $or: [
+                    { senderId: from, receiverId: to },
+                    { senderId: to, receiverId: from }
+                ]
+            });
+
+            if (existingAccept) {
+                return { message: 'Đã tồn tại thông báo chấp nhận kết bạn giữa hai người dùng' };
+            }
+        }
+
         const doc = new Notifications({
             senderId: from,
             receiverId: to,
@@ -308,6 +482,19 @@ const logNotificationsPost = async (from, to, postid, type) => {
     }
 };
 
+const getuseronline = async (friends) => {
+    try {
+        
+        const objectIds = friends.map(f =>
+            typeof f === 'object' && f !== null ? f._id : f
+        ).map(id => new mongoose.Types.ObjectId(id));
+        const users = await User.find({ _id: { $in: objectIds } }, 'username avatar_link _id');
+        return users;
+    } catch (error) {
+        console.error('[getuseronline Error]', error);
+        return [];
+    }
+}
 
 const sendFriendRequest = async (from, to) => {
     try {
@@ -352,5 +539,124 @@ const sendFriendRequest = async (from, to) => {
         return { message: 'Internal error' };
     }
 };
+
+const CreateChatRoom = async (users) => {
+  try {
+    if (!Array.isArray(users) || users.length < 2) {
+      throw new Error('At least 2 users are required to create a chat room');
+    }
+
+    const participants = [...users]; 
+    const existingChat = await Chat.findOne({
+      participants: { $all: participants, $size: participants.length },
+      isGroupChat: participants.length > 2
+    });
+
+    if (existingChat) {
+      return existingChat;
+    }
+
+    const newChat = new Chat({
+      participants: participants,
+      isGroupChat: participants.length > 2,
+      chatContext: [],
+      lasttext: {},
+      isBlock: false
+    });
+
+    await newChat.save();
+    return newChat;
+  } catch (error) {
+    console.error('[CreateChatRoom Error]', error);
+    throw error;
+  }
+};
+
+
+
+const addChatMessage = async (chatid, from, text, files = null) => {
+  try {
+    console.log('Adding chat message:', { chatid, from, text, files });
+
+    const message = {
+      _id: new mongoose.Types.ObjectId(),
+      userid: from,
+      text: text || '',
+      timestamp: new Date(),
+    };
+
+    let validFiles = [];
+
+    if (files) {
+      let processedFiles = [];
+
+      if (typeof files === 'string') {
+        try {
+          processedFiles = JSON.parse(files);
+        } catch (parseError) {
+          console.error('Error parsing files string:', parseError);
+        }
+      } else if (Array.isArray(files)) {
+        processedFiles = files;
+      } else if (typeof files === 'object' && files !== null) {
+        processedFiles = [files];
+      }
+
+      validFiles = processedFiles
+        .filter(file => file && typeof file === 'object')
+        .map(file => ({
+          name: String(file.name || ''),
+          type: String(file.type || ''),
+          size: Number(file.size || 0),
+          url: String(file.url || '')
+        }))
+        .filter(file => file.name && file.type && file.url);
+
+      if (validFiles.length > 0) {
+        message.files = validFiles;
+      }
+    }
+
+    console.log('Final message object:', JSON.stringify(message, null, 2));
+
+    const updatedChat = await Chat.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(chatid),
+      {
+        $push: { chatContext: message },
+        $set: {
+          lasttext: {
+            _id: message._id,
+            userid: message.userid,
+            text: validFiles.length > 0 ? 'gửi cho bạn 1 tệp đính kèm' : message.text,
+            timestamp: message.timestamp
+          }
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedChat) {
+      console.error('Chat not found with ID:', chatid);
+      return null;
+    }
+
+    console.log('Message saved successfully');
+    return message;
+  } catch (error) {
+    console.error("Error updating chat message:", error);
+    if (error.name === 'CastError') {
+      console.error('Cast Error Details:', {
+        path: error.path,
+        value: error.value,
+        kind: error.kind
+      });
+    }
+    return null;
+  }
+};
+
+
+
+
 
 module.exports = { onConnection };
