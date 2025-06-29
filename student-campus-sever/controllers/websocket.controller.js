@@ -10,7 +10,8 @@ const Chat = require('../schemas/chat.model')
 const {acceptUserRequest,denyUserRequest}  = require('../controllers/friendrequest.controller.routes')
 const {likePost,unlikePost,addcomment} = require('../controllers/post.controller')
 const {getusername} = require('../controllers/user.controller');
-const { default: axios } = require('axios');
+const {createGroupChat} = require('../controllers/chat.controller')
+
 const onConnection = (ws, req) => {
     ws.on('message', async (data) => {
         const message = JSON.parse(data);
@@ -47,7 +48,7 @@ const onConnection = (ws, req) => {
                 return;
             }
 
-            // Lấy username từ from
+         
             const fromName = await getUserNameById(from);
 
             if (toSocket?.readyState === WebSocket.OPEN) {
@@ -283,7 +284,7 @@ const onConnection = (ws, req) => {
             }
             }
         }
-       if (message.type === 'file_to') {
+      if (message.type === 'file_to') {
             console.log('Received file_to message:', message);
             const { chatid, from, to, context, file } = message;
 
@@ -312,13 +313,14 @@ const onConnection = (ws, req) => {
                     typeof f.url === 'string';
             });
 
-            console.log('Processed files:', validFiles);
+            // console.log('Processed files:', validFiles);
 
             const toSocket = clients.get(to);
             const savetext = await addChatMessage(chatid, from, context, validFiles);
 
             const fromName = await getusername(from);
             if (savetext) {
+                console.log('save chat: ', savetext)
                 const _id = savetext._id;
 
                 if (toSocket?.readyState === WebSocket.OPEN) {
@@ -329,11 +331,90 @@ const onConnection = (ws, req) => {
                         from,
                         fromName,
                         _id,
-                        files: validFiles // Include the files in the response
+                        files: validFiles 
                     }));
                 }
             }
         }
+        if (message.type === 'create_group') {
+                const userIds = message.userIds;
+                
+                console.log(userIds)
+                const grname = message.groupName;
+
+                
+                const onlineFriends = userIds.filter(id => {
+                    const hasId = clients.has(id);
+                    const hasIdStr = clients.has(id.toString());
+                    console.log(`ID ${id} - has: ${hasId}, hasStr: ${hasIdStr}`);
+                    return hasId || hasIdStr;
+                });
+
+            
+                const res = await createGroupChat(userIds, grname);
+
+                if (res && res._id) {
+                    
+
+                   
+                    onlineFriends.forEach(id => {
+                        const socket = clients.get(id) || clients.get(id.toString());
+                        if (socket && socket.readyState === WebSocket.OPEN) {
+                            socket.send(JSON.stringify(
+                                {
+                                    type: 'create_group',
+                                    message: `Bạn vừa được thêm vào nhóm chat ${grname}`,
+                                }
+                            ));
+                        }
+                    });
+                }else {
+                    console.log(res)
+                }
+            }
+
+            if (message.type === 'leave_group') {
+                const { chatid, from, groupName } = message;
+                const res = await leaveGroupChat(chatid, from);
+                 
+                if (res.success && res.chat && Array.isArray(res.chat.participants)) {
+                    for (const memberId of res.chat.participants) {
+                        const socket = clients.get(memberId.toString());
+                        if (socket && socket.readyState === WebSocket.OPEN) {
+                            socket.send(JSON.stringify({
+                                type: 'leave_group',
+                                message: `Một thành viên đã rời khỏi ${groupName}`,
+                                chatid,
+                                userId: from
+                            }));
+                        }
+                    }
+                }
+                const fromSocket = clients.get(from.toString());
+                if (fromSocket && fromSocket.readyState === WebSocket.OPEN) {
+                    fromSocket.send(JSON.stringify({
+                        type: 'leave_group',
+                        message: res.message,
+                        chatid,
+                        success: res.success
+                    }));
+                }
+            }
+
+            if (message.type === 'add_to_group') {
+                const { chatid, to, from } = message;
+                const res = await addMemberToGroupChat(chatid, to);
+                const addedSocket = clients.get(to.toString());
+                if (addedSocket && addedSocket.readyState === WebSocket.OPEN) {
+                    addedSocket.send(JSON.stringify({
+                        type: 'add_to_group',
+                        message: `Bạn vừa được thêm vào nhóm chat`,
+                        chatid,
+                        addedBy: from,
+                        to
+                    }));
+                }
+            }
                     
     });
 
@@ -401,20 +482,22 @@ const logNotifications = async (from, to, type) => {
             }
         }
 
-        const doc = new Notifications({
+         const doc = new Notifications({
             senderId: from,
             receiverId: to,
             createAt: new Date(),
             status: 'unread',
             type: type,
             context: message
-        });
+            });
 
-        return await doc.save();
-    } catch (error) {
-        console.error('[Notification Error]', error);
-        return { message: 'Internal error' };
-    }
+                return await doc.save();
+            } catch (error) {
+                console.error('[Notification Error]', error);
+                return { message: 'Internal error' };
+            }
+
+    
 };
 
 const logNotificationsPost = async (from, to, postid, type) => {
@@ -437,7 +520,7 @@ const logNotificationsPost = async (from, to, postid, type) => {
                 message = 'Thông báo mới.';
         }
 
-        // Kiểm tra đã tồn tại thông báo like từ người dùng này cho bài viết này chưa
+        
         if (type === 'likes_post') {
             const existingLike = await Notifications.findOne({
                 type: 'likes_post',
@@ -576,32 +659,26 @@ const CreateChatRoom = async (users) => {
 
 const addChatMessage = async (chatid, from, text, files = null) => {
   try {
-    console.log('Adding chat message:', { chatid, from, text, files });
-
     const message = {
       _id: new mongoose.Types.ObjectId(),
       userid: from,
       text: text || '',
       timestamp: new Date(),
     };
-
     let validFiles = [];
-
     if (files) {
       let processedFiles = [];
-
       if (typeof files === 'string') {
         try {
           processedFiles = JSON.parse(files);
         } catch (parseError) {
-          console.error('Error parsing files string:', parseError);
+        
         }
       } else if (Array.isArray(files)) {
         processedFiles = files;
       } else if (typeof files === 'object' && files !== null) {
         processedFiles = [files];
       }
-
       validFiles = processedFiles
         .filter(file => file && typeof file === 'object')
         .map(file => ({
@@ -610,14 +687,11 @@ const addChatMessage = async (chatid, from, text, files = null) => {
           size: Number(file.size || 0),
           url: String(file.url || '')
         }))
-        .filter(file => file.name && file.type && file.url);
-
+        .filter(file => file.name && file.url);
       if (validFiles.length > 0) {
         message.files = validFiles;
       }
     }
-
-    console.log('Final message object:', JSON.stringify(message, null, 2));
 
     const updatedChat = await Chat.findByIdAndUpdate(
       new mongoose.Types.ObjectId(chatid),
@@ -636,27 +710,63 @@ const addChatMessage = async (chatid, from, text, files = null) => {
     );
 
     if (!updatedChat) {
-      console.error('Chat not found with ID:', chatid);
       return null;
     }
-
-    console.log('Message saved successfully');
     return message;
   } catch (error) {
-    console.error("Error updating chat message:", error);
-    if (error.name === 'CastError') {
-      console.error('Cast Error Details:', {
-        path: error.path,
-        value: error.value,
-        kind: error.kind
-      });
-    }
     return null;
   }
 };
 
 
+const leaveGroupChat = async (chatid, from) => {
+    try {
+        const chat = await Chat.findById(chatid);
+        if (!chat) {
+            return { success: false, message: 'Chat not found' };
+        }
 
+        if (!chat.isGroupChat) {
+            return { success: false, message: 'Not a group chat' };
+        }
 
+        const userIndex = chat.participants.findIndex(
+            id => id.toString() === from.toString()
+        );
+        if (userIndex === -1) {
+            return { success: false, message: 'User not in group' };
+        }
 
-module.exports = { onConnection };
+        chat.participants.splice(userIndex, 1);
+
+       
+
+        await chat.save();
+        return { success: true, message: 'Left group successfully', chat };
+    } catch (error) {
+        return { success: false, message: 'Internal error', error };
+    }
+};
+
+const addMemberToGroupChat = async (chatid, userId,from) => {
+  try {
+    const chat = await Chat.findById(chatid);
+    if (!chat) {
+      return { success: false, message: 'Chat not found' };
+    }
+    if (!chat.isGroupChat) {
+      return { success: false, message: 'Not a group chat' };
+    }
+    // Kiểm tra user đã có trong group chưa
+    if (chat.participants.some(id => id.toString() === userId.toString())) {
+      return { success: false, message: 'User already in group' };
+    }
+    chat.participants.push(userId);
+    await chat.save();
+    return { success: true, message: 'Member added successfully', chat };
+  } catch (error) {
+    return { success: false, message: 'Internal error', error };
+  }
+};
+
+module.exports = { onConnection, leaveGroupChat, addMemberToGroupChat };

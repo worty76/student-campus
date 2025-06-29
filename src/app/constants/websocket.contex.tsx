@@ -11,7 +11,7 @@ interface OnlineFriend {
   online?: boolean;
 }
 interface WebSocketMessage {
-  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to';
+  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
   from?: string;
   to?: string;
   message?: string;
@@ -22,9 +22,17 @@ interface WebSocketMessage {
   friends?: OnlineFriend[];
   chatid?:string,
   file?: file[]
+  userIds?: Friends[],
+  groupName?: string
+  isGroupChat?: boolean; 
+  
 
 }
-
+interface Friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
+}
 interface file  {
    name: string;
     type: string;
@@ -186,6 +194,31 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
           addToast({
             title: 'Thông Báo',
             message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+        if (data.type === 'create_group'){
+            addToast({
+            title: 'Thông Báo',
+            message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+
+        }
+        if (data.type === 'leave_group') {
+          addToast({
+            title: 'Thông Báo',
+            message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+        if (data.type === 'add_to_group') {
+          addToast({
+            title: 'Thông Báo',
+            message: `${data.fromName || data.from || 'Ai đó'} đã thêm bạn vào nhóm ${data.groupName || ''}`,
             avatar: '👤',
             color: 'bg-blue-500'
           });

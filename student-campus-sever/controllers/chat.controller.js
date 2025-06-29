@@ -38,6 +38,69 @@ const renderUserChat = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+const createGroupChat = async (userIds, groupName) => {
+  try {
+    if (!userIds || !Array.isArray(userIds) || userIds.length < 3) {
+      return {
+        success: false,
+        status: 400,
+        message: 'Cần chính xác 3 user ID để tạo group chat'
+      };
+    }
+
+    if (!groupName || groupName.trim() === '') {
+      return {
+        success: false,
+        status: 400,
+        message: 'Tên group không được để trống'
+      };
+    }
+
+    const uniqueUserIds = [...new Set(userIds)];
+    if (uniqueUserIds.length < 3) {
+      return {
+        success: false,
+        status: 400,
+        message: 'Không được có user ID trùng lặp'
+      };
+    }
+
+    
+    const newGroupChat = new Chat({
+      participants: uniqueUserIds,
+      isGroupChat: true,
+      GroupName: groupName.trim(),
+      chatContext: [],
+      isBlock: false
+    });
+
+    const savedChat = await newGroupChat.save();
+    await savedChat.populate('participants', 'username email');
+
+    return {
+      success: true,
+      status: 201,
+      message: 'Tạo group chat thành công',
+      data: {
+        chatId: savedChat._id,
+        groupName: savedChat.GroupName,
+        participants: savedChat.participants,
+        isGroupChat: savedChat.isGroupChat,
+        createdAt: savedChat.createdAt
+      }
+    };
+
+  } catch (error) {
+    console.error('Error creating group chat:', error);
+    return {
+      success: false,
+      status: 500,
+      message: 'Lỗi server khi tạo group chat',
+      error: error.message
+    };
+  }
+};
+
 
 const uploadChatFile = async (req, res) => {
   try {
@@ -66,15 +129,7 @@ const uploadChatFile = async (req, res) => {
   }
 };
 
-const createNewChat = async () =>{
-
-    try {
-        const userIDs = req.body
-        
-    } catch (error) {
-        
-    }
-}
 
 
-module.exports = {renderUserChat,uploadChatFile}
+
+module.exports = {renderUserChat,uploadChatFile,createGroupChat}

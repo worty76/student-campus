@@ -11,6 +11,10 @@ const ChatSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+   GroupName: {
+    type: String,
+    required: false
+  },
   chatContext: [{
     _id: {
       type: mongoose.Schema.Types.ObjectId,

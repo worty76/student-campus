@@ -10,7 +10,8 @@ import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
 import downloadFileFromObject  from '@/app/api/file_handler';
 import Image from "next/image";
-
+import CreateGroupModal from "@/components/chat/CreateGroup";
+import { Users } from "lucide-react"; 
 interface OnlineFriend {
   _id: string;
   username: string;
@@ -19,17 +20,27 @@ interface OnlineFriend {
 }
 
 interface WebSocketMessage {
-  type: 'init' | 'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to' | 'file_to';
+  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
   from?: string;
   to?: string;
   message?: string;
-  fromName?: string;
+  fromName?: string; // Thêm tên người gửi
   reqid?:string;
   postid?:string;
   context?: string;
   friends?: OnlineFriend[];
-  chatid?:string;
-  files?: file[]
+  chatid?:string,
+  file?: file[]
+  userIds?: Friends[],
+  groupName?: string
+  isGroupChat?: boolean; 
+  
+
+}
+interface Friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
 }
 
 interface file{
@@ -58,8 +69,9 @@ interface Chat {
   participants: Participant[][] | Participant[];
   isGroupChat: boolean;
   chatContext: Text[];
-  lastMessage?: Text;
+  lasttext?: Text;
   updatedAt?: string;
+  GroupName?:string;
 }
 
 interface AttachedFile {
@@ -92,7 +104,10 @@ export default function MessagesPage() {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [chatKey, setChatKey] = useState(0);
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [selectedFriendToAdd, setSelectedFriendToAdd] = useState<string>("");
   // File attachment states
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -104,6 +119,8 @@ export default function MessagesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const dragCounter = useRef(0);
+
+  
 
   useEffect(() => {
     selectedChatRef.current = selectedChat;
@@ -117,7 +134,7 @@ export default function MessagesPage() {
     setChatKey(prev => prev + 1);
   }, []);
 
-  // Memoized isValidChat function
+  
   const isValidChat = useCallback((chat: Chat) => {
     const flatParticipants = flattenParticipants(chat.participants);
     return (
@@ -127,7 +144,7 @@ export default function MessagesPage() {
     );
   }, []);
 
-  // Memoized getUserMessage function
+ 
   const getUserMessage = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -224,7 +241,7 @@ export default function MessagesPage() {
           Authorization: token ? `Bearer ${token}` : "",
         },
       });
-      console.log(response)
+      console.log(response.data.file.url)
       return response.data.file.url || response.data.url;
     } catch (error) {
       console.error('File upload error:', error);
@@ -402,7 +419,7 @@ export default function MessagesPage() {
 
   const getChatPartnerName = (chat: Chat) => {
     const flatParticipants = flattenParticipants(chat.participants);
-    if (chat.isGroupChat) return `Nhóm ${flatParticipants.length} người`;
+    if (chat.isGroupChat) return chat.GroupName;
     const partner = flatParticipants.find(p => p._id !== currentUserId);
     return partner?.username || "Người dùng không xác định";
   };
@@ -468,8 +485,6 @@ export default function MessagesPage() {
       setInput("");
       setAttachedFiles([]);
 
-      reloadChatInterface();
-
       if (fileUrls.length > 0) {
         sendMessage({
           type: 'file_to',
@@ -477,8 +492,11 @@ export default function MessagesPage() {
           from: currentUserId,
           to,
           context: messageToSend,
-          file: fileUrls
+          file: fileUrls,
+          isGroupChat: selectedChat.isGroupChat
         });
+        // Không reload lại giao diện khi gửi file, chỉ reload khi nhận được phản hồi từ server
+        // reloadChatInterface(); // <-- XÓA DÒNG NÀY nếu có
       } else {
         sendMessage({
           type: 'text_to',
@@ -486,7 +504,9 @@ export default function MessagesPage() {
           from: currentUserId,
           to,
           context: messageToSend,
+          isGroupChat:selectedChat.isGroupChat
         });
+        reloadChatInterface(); // Chỉ reload khi gửi text
       }
     } catch (error) {
       console.error("Send message error:", error);
@@ -495,24 +515,35 @@ export default function MessagesPage() {
     }
   };
 
-  const renderselectedchat = () => {
+
+
+const renderselectedchat = () => {
     return(
       <div key={chatKey} className="w-2/4 flex flex-col h-full overflow-hidden relative">
         {selectedChat ? (
           <>
             <div className="p-4 border-b font-semibold text-blue-700 flex items-center gap-2">
-              <Image
-                width={480}
-                height={480}
-                src={getChatPartnerAvatar(selectedChat)}
-                alt={getChatPartnerName(selectedChat)}
-                className="w-8 h-8 rounded-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "/schoolimg.jpg";
-                }}
-              />
+              {/* Chỉ hiển thị Image nếu không phải group chat */}
+              {selectedChat.isGroupChat !== true && (
+                <Image
+                  width={480}
+                  height={480}
+                  src={getChatPartnerAvatar(selectedChat)}
+                  alt={getChatPartnerName(selectedChat)|| 'người dùng'}
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/schoolimg.jpg";
+                  }}
+                />
+              )}
               <div className="flex flex-col">
-                <span>{getChatPartnerName(selectedChat)}</span>
+                <div className="flex items-center gap-2">
+                  <span>{getChatPartnerName(selectedChat)}</span>
+                  {/* Kiểm tra isGroupChat và hiển thị icon Users */}
+                  {selectedChat.isGroupChat === true && (
+                    <Users size={16} className="text-blue-600" />
+                  )}
+                </div>
               </div>
             </div>
             
@@ -539,8 +570,20 @@ export default function MessagesPage() {
                   {selectedChat.chatContext.map((message, index) => {
                     const userId = localStorage.getItem('userId');
                     const flatParticipants = flattenParticipants(selectedChat.participants);
-                    const otherUser = flatParticipants.find(p => p._id !== userId);
-                    const isOtherUser = message.userid === otherUser?._id;
+                    
+                    // Xử lý logic cho group chat và individual chat
+                    let isOtherUser;
+                    if (selectedChat.isGroupChat === true) {
+                      // Trong group chat, tất cả tin nhắn không phải của user hiện tại đều là "other user"
+                      isOtherUser = message.userid !== userId;
+                    } else {
+                      // Trong individual chat, chỉ tin nhắn của người kia là "other user"
+                      const otherUser = flatParticipants.find(p => p._id !== userId);
+                      isOtherUser = message.userid === otherUser?._id;
+                    }
+                    
+                    // Tìm thông tin người gửi tin nhắn để hiển thị avatar đúng
+                    const messageSender = flatParticipants.find(p => p._id === message.userid);
                     
                     return (
                       <div
@@ -552,7 +595,10 @@ export default function MessagesPage() {
                             <Image
                               width={480}
                               height={480}
-                              src={getChatPartnerAvatar(selectedChat)}
+                              src={selectedChat.isGroupChat === true ? 
+                                (messageSender?.avatar_link || "/schoolimg.jpg") : 
+                                getChatPartnerAvatar(selectedChat)
+                              }
                               alt="Avatar"
                               className="w-8 h-8 rounded-full mr-2 mb-1 flex-shrink-0"
                               onError={(e) => {
@@ -562,6 +608,13 @@ export default function MessagesPage() {
                           )}
 
                           <div className="flex flex-col">
+                            {/* Hiển thị tên người gửi trong group chat */}
+                            {selectedChat.isGroupChat === true && isOtherUser && (
+                              <div className="text-xs text-gray-600 mb-1 ml-2">
+                                {messageSender?.username || messageSender?.username || 'Người dùng'}
+                              </div>
+                            )}
+                            
                             <div
                               className={`px-4 py-2 rounded-2xl max-w-xs lg:max-w-md break-words ${
                                 isOtherUser
@@ -572,7 +625,8 @@ export default function MessagesPage() {
                               {message.text && (
                                 <p className="text-sm leading-relaxed">{message.text}</p>
                               )}
-                              {renderFileMessage(message)}
+                              {/* Đảm bảo renderFileMessage được gọi cho tất cả tin nhắn */}
+                             {Array.isArray(message.files) && message.files.length > 0 && renderFileMessage(message)}
                             </div>
 
                             <p
@@ -717,7 +771,7 @@ export default function MessagesPage() {
     scrollToBottom();
   }, [selectedChat?.chatContext, scrollToBottom, chatKey]);
 
-  // Fixed useEffect - now getUserMessage is memoized properly
+ 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userId = (localStorage.getItem('userId') || "").trim();
@@ -725,21 +779,21 @@ export default function MessagesPage() {
       getUserData();        
       getUserMessage();
     }
-  }, []); // Empty dependency array since getUserMessage is now memoized
+  }, []); 
 
-  useEffect(() => {
-    const handler = (message: WebSocketMessage) => {
-      console.log('Received WebSocket message:', message);
-      
-      if (message.type === 'online_friend') {
-        if (Array.isArray(message.friends) && message.friends.length > 0 && typeof message.friends[0] === "object") {
-          setFriends(message.friends as OnlineFriend[]);
-        } else {
-          setFriends([]);
-        }
+ useEffect(() => {
+  const handler = (message: WebSocketMessage) => {
+    console.log('Received WebSocket message:', message);
+    
+    if (message.type === 'online_friend') {
+      if (Array.isArray(message.friends) && message.friends.length > 0 && typeof message.friends[0] === "object") {
+        setFriends(message.friends as OnlineFriend[]);
+      } else {
+        setFriends([]);
       }
+    }
 
-      if (message.type === 'text_to' || message.type === 'file_to') {
+    if (message.type === 'text_to' || message.type === 'file_to') {
         console.log('Received message:', message);
         
         const newMessage: Text = {
@@ -747,55 +801,73 @@ export default function MessagesPage() {
           userid: message.from || "",
           text: message.context || "",
           timestamp: new Date().toISOString(),
-          ...(message.files && { file: message.files })
+          ...(message.file && { file: message.file })
         };
 
-        if (selectedChatRef.current && selectedChatRef.current._id === message.chatid) {
-          setSelectedChat(prev => {
-            if (!prev || prev._id !== message.chatid) return prev;
-            
-            const messageExists = prev.chatContext.some(msg => 
-              msg.userid === newMessage.userid && 
-              msg.text === newMessage.text &&
-              Math.abs(new Date(msg.timestamp).getTime() - new Date(newMessage.timestamp).getTime()) < 1000
-            );
-            
-            if (messageExists) return prev;
-            
-            return {
-              ...prev,
-              chatContext: [...(prev.chatContext || []), newMessage],
-            };
-          });
-        }
+      setChats(prevChats =>
+        prevChats.map(chat =>
+          chat._id === message.chatid ? {
+            ...chat,
+            chatContext: [
+              ...(chat.chatContext || []),
+              newMessage
+            ],
+            lastMessage: newMessage,
+            updatedAt: new Date().toISOString()
+          } : chat
+        )
+      );
 
+      reloadChatInterface();
+      
+      setTimeout(() => {
+        getUserMessage();
+      }, 100);
+    }
+
+    if (message.type === 'create_group') {
+      getUserMessage();
+    }
+
+
+    if (message.type === 'add_to_group') {
+      getUserMessage();
+      // Thêm thông báo vào UI chat hiện tại nếu có message
+      if (typeof message.message === 'string' && message.message && message.chatid) {
         setChats(prevChats =>
           prevChats.map(chat =>
-            chat._id === message.chatid ? {
-              ...chat,
-              chatContext: [
-                ...(chat.chatContext || []),
-                newMessage
-              ],
-              lastMessage: newMessage,
-              updatedAt: new Date().toISOString()
-            } : chat
+            chat._id === message.chatid
+              ? {
+                  ...chat,
+                  chatContext: [
+                    ...(chat.chatContext || []),
+                    {
+                      _id: `system-${Date.now()}`,
+                      userid: 'system',
+                      text: message.message || '',
+                      timestamp: new Date().toISOString(),
+                      files: [],
+                    } as Text,
+                  ],
+                }
+              : chat
           )
         );
-
-        reloadChatInterface();
-        
-        setTimeout(() => {
-          getUserMessage();
-        }, 100);
       }
-    };
+    }
 
-    const removeHandler = addMessageHandler(handler);
-    return () => { 
-      if (removeHandler) removeHandler(); 
-    };
-  }, [addMessageHandler, getUserMessage, reloadChatInterface]);
+     if (message.type === 'leave_group') {
+      getUserMessage();
+  
+    }
+
+  };
+
+  const removeHandler = addMessageHandler(handler);
+  return () => { 
+    if (removeHandler) removeHandler(); 
+  };
+}, [addMessageHandler, getUserMessage, reloadChatInterface]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -859,39 +931,40 @@ export default function MessagesPage() {
                     .map((chat) => {
                       const partnerName = getChatPartnerName(chat);
                       const partnerAvatar = getChatPartnerAvatar(chat);
-                      const lastMessage = chat.lastMessage || chat.chatContext?.[chat.chatContext.length - 1];
+                      const lastMessage = chat.lasttext || chat.chatContext?.[chat.chatContext.length - 1];
                      
                       return (
-                        <div 
-                          key={`${chat._id}-${chatKey}`}
-                          className={`flex items-center gap-3 p-3 hover:bg-blue-100 rounded cursor-pointer border-b border-blue-100 ${
-                            selectedChat?._id === chat._id ? "bg-blue-200" : ""
-                          }`}
-                          onClick={() => setSelectedChat(chat)}
-                        >
-                          <Image
-                            src={partnerAvatar}
-                            alt={partnerName}
-                            width={480}
-                            height={480}
-                            className="w-12 h-12 rounded-full object-cover border"
-                            onError={(e) => {
-                              e.currentTarget.src = "/schoolimg.jpg";
-                            }}
-                          />
+  <div 
+    key={`${chat._id}-${chatKey}`}
+    className={`flex items-center gap-3 p-3 hover:bg-blue-100 rounded cursor-pointer border-b border-blue-100 ${
+      selectedChat?._id === chat._id ? "bg-blue-200" : ""
+    }`}
+    onClick={() => setSelectedChat(chat)}
+  >
+                          {chat.isGroupChat === true ? (
+                            <div className="w-12 h-12 rounded-full bg-blue-300 flex items-center justify-center">
+                              <Users className="text-white w-6 h-6" />
+                            </div>
+                          ) : (
+                            <Image
+                              src={partnerAvatar}
+                              alt={partnerName|| ' '}
+                              width={480}
+                              height={480}
+                              className="w-12 h-12 rounded-full object-cover border"
+                              onError={(e) => {
+                                e.currentTarget.src = "/schoolimg.jpg";
+                              }}
+                            />
+                          )}
+
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-blue-900 truncate">
                               {partnerName}
                             </div>
                             {lastMessage && (
-                              <div className="text-sm text-gray-500 truncate">
-                                {lastMessage.files ? (
-                                  <div className="flex items-center gap-1">
-                                    Vừa gửi cho bạn 1 đính kèm
-                                  </div>
-                                ) : (
-                                  lastMessage.text
-                                )}
+                              <div className="text-xs text-gray-600 whitespace-pre-wrap break-all">
+                                {lastMessage.text}
                               </div>
                             )}
                           </div>
@@ -939,61 +1012,200 @@ export default function MessagesPage() {
               )}
             </div>
             {tab === "messages" && (
-              <Button className="m-4 bg-blue-600 text-white">Tin nhắn mới</Button>
+              <Button
+              onClick={() => setIsModalOpen(true)}
+              className="m-4 bg-blue-600 text-white">Tạo nhóm chat</Button>
             )}
+            
           </div>
+           <CreateGroupModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+              />
 
           {/* Middle: Chat */}
           {renderselectedchat()}
 
           {/* Right: Info */}
-          <div className="w-1/4 border-l bg-blue-50 flex flex-col items-center p-6 h-full overflow-hidden">
-            {selectedChat ? (
-              <>
-                <Image
-                  width={480}
-                            height={480}
-                  src={getChatPartnerAvatar(selectedChat)}
-                  alt={getChatPartnerName(selectedChat)}
-                  className="w-24 h-24 rounded-full object-cover border mb-4"
-                  onError={(e) => {
-                    e.currentTarget.src = "/schoolimg.jpg";
-                  }}
-                />
-                <div className="font-bold text-blue-900 text-lg mb-2">
-                  {getChatPartnerName(selectedChat)}
-                </div>
-                <div className="text-gray-500 mb-4 text-sm text-center">
-                  {selectedChat.isGroupChat ? 
-                    `Nhóm có ${flattenParticipants(selectedChat.participants).length} thành viên` : 
-                    "Cuộc trò chuyện riêng tư"
-                  }
-                </div>
-                <Button
+         <div className="w-1/4 border-l bg-blue-50 flex flex-col items-center p-6 h-full overflow-hidden">
+  {selectedChat ? (
+    <>
+      {selectedChat.isGroupChat ? (
+        <div className="w-24 h-24 mb-4 rounded-full bg-blue-200 flex items-center justify-center">
+          <Users className="w-12 h-12 text-blue-700" />
+        </div>
+      ) : (
+        <Image
+          width={480}
+          height={480}
+          src={getChatPartnerAvatar(selectedChat)}
+          alt={getChatPartnerName(selectedChat || " ") ?? "Người dùng"}
+          className="w-24 h-24 rounded-full object-cover border mb-4"
+          onError={(e) => {
+            e.currentTarget.src = "/schoolimg.jpg";
+          }}
+        />
+      )}
 
-                
-                className="bg-blue-600 text-white w-full mb-2"    
-                onClick={() =>{
-                  const userId = localStorage.getItem('userId');
-                  const flatParticipants = flattenParticipants(selectedChat.participants);
-                  const otherUser = flatParticipants.find(p => p._id !== userId);
-                  console.log(otherUser?._id)
-                  router.push(`/user/profile/${otherUser?._id}`)
-                }}>Xem hồ sơ</Button>
-                <Button className="bg-blue-600 text-white w-full mb-2">Tạo Nhóm</Button>
-                <Button variant="outline" className="w-full">Chặn</Button>
-              </>
-            ) : (
-              <>
-                <div className="w-24 h-24 rounded-full bg-blue-200 mb-4" />
-                <div className="font-bold text-blue-900 text-lg mb-2">Thông tin</div>
-                <div className="text-gray-500 mb-4 text-sm">Chọn một cuộc trò chuyện để xem chi tiết</div>
-                <Button className="bg-blue-600 text-white w-full mb-2" disabled>Xem hồ sơ</Button>
-                <Button className="bg-blue-600 text-white w-full mb-2" disabled>Tạo Nhóm</Button>
-                <Button variant="outline" className="w-full" disabled>Chặn</Button>
-              </>
-            )}
-          </div>
+      <div className="font-bold text-blue-900 text-lg mb-2">
+        {selectedChat.isGroupChat
+          ? selectedChat.GroupName
+          : getChatPartnerName(selectedChat)}
+      </div>
+
+      <div className="text-gray-500 mb-4 text-sm text-center">
+        {selectedChat.isGroupChat
+          ? `Nhóm có ${flattenParticipants(selectedChat.participants).length} thành viên`
+          : "Cuộc trò chuyện riêng tư"}
+      </div>
+
+      {selectedChat.isGroupChat && (
+        <>
+          <Button
+            variant="secondary"
+            className="w-full mb-2"
+            onClick={() => setShowMembers(!showMembers)}
+          >
+            {showMembers ? "Ẩn thành viên" : "Thành viên"}
+          </Button>
+
+          {/* Nút thêm thành viên */}
+          <Button
+            variant="outline"
+            className="w-full mb-2"
+            onClick={() => setShowAddMemberModal(true)}
+          >
+            Thêm thành viên
+          </Button>
+
+          {showMembers && (
+            <div className="w-full max-h-48 overflow-y-auto bg-white rounded border p-2 mb-2">
+              {flattenParticipants(selectedChat.participants).map((user) => (
+                <div key={user._id} className="text-sm text-gray-700 py-1 px-2 hover:bg-blue-100 rounded">
+                  {user.username}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Modal chọn bạn để thêm vào nhóm */}
+          {showAddMemberModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <div className="bg-white rounded-lg p-6 w-80">
+                <div className="font-bold mb-2">Chọn bạn để thêm vào nhóm</div>
+                <div className="max-h-48 overflow-y-auto">
+                  {userData.friends && userData.friends.length > 0 ? (
+                    userData.friends
+                      .filter(f => !flattenParticipants(selectedChat.participants).some(p => p._id === f._id))
+                      .map(friend => (
+                        <div
+                          key={friend._id}
+                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-blue-100 ${selectedFriendToAdd === friend._id ? 'bg-blue-200' : ''}`}
+                          onClick={() => setSelectedFriendToAdd(friend._id)}
+                        >
+                          <Image
+                            width={32}
+                            height={32}
+                            src={friend.avatar_link || "/schoolimg.jpg"}
+                            alt={friend.username}
+                            className="w-8 h-8 rounded-full object-cover border"
+                          />
+                          <span className="font-medium text-blue-900">{friend.username}</span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-gray-400">Không có bạn bè để thêm</div>
+                  )}
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    className="flex-1 bg-blue-600 text-white"
+                    disabled={!selectedFriendToAdd}
+                    onClick={() => {
+                      if (!selectedChat) return;
+                      sendMessage({
+                        type: "add_to_group",
+                        chatid: selectedChat._id,
+                        to: selectedFriendToAdd,
+                        from: currentUserId
+                      });
+                      setShowAddMemberModal(false);
+                      setSelectedFriendToAdd("");
+                    }}
+                  >
+                    Thêm
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    variant="outline"
+                    onClick={() => {
+                      setShowAddMemberModal(false);
+                      setSelectedFriendToAdd("");
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {selectedChat.isGroupChat ? (
+        <Button
+          variant="destructive"
+          className="w-full mb-2"
+          onClick={() => {
+            if (!selectedChat) return;
+            const userId = localStorage.getItem("userId");
+            sendMessage({
+              type: "leave_group",
+              chatid: selectedChat._id,
+              from: userId || undefined,
+              groupName: selectedChat.GroupName || "nhóm"
+            });
+          }}
+        >
+          Rời nhóm
+        </Button>
+      ) : (
+        <div>
+        <Button
+          className="bg-blue-600 text-white w-full mb-2"
+          onClick={() => {
+            const userId = localStorage.getItem("userId");
+            const flatParticipants = flattenParticipants(selectedChat.participants);
+            const otherUser = flatParticipants.find((p) => p._id !== userId);
+            router.push(`/user/profile/${otherUser?._id}`);
+          }}
+        >
+          Xem hồ sơ
+        </Button>
+        </div>
+      )}
+
+     
+    </>
+  ) : (
+    <>
+      <div className="w-24 h-24 rounded-full bg-blue-200 mb-4" />
+      <div className="font-bold text-blue-900 text-lg mb-2">Thông tin</div>
+      <div className="text-gray-500 mb-4 text-sm">
+        Chọn một cuộc trò chuyện để xem chi tiết
+      </div>
+      <Button className="bg-blue-600 text-white w-full mb-2" disabled>
+        Xem hồ sơ
+      </Button>
+      <Button className="bg-blue-600 text-white w-full mb-2" disabled>
+        Tạo Nhóm
+      </Button>
+      <Button variant="outline" className="w-full" disabled>
+        Chặn
+      </Button>
+    </>
+  )}
+</div>
         </div>
       </div>
     </div>

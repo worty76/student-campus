@@ -23,6 +23,8 @@ interface Post {
   createdAt: string;
   likes: string[];
   comments: Comments[];
+  userInfo: userInfo
+  
 }
 interface Attachment {
   file?: FileAttachment;
@@ -203,7 +205,7 @@ const UserProfilePage = () => {
               <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
             ) : (
              posts.map((post) => (
-                <RenderPost key={post._id} post={post} userData={userData} />
+                  <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
               ))
             )}
             

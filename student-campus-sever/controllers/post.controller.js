@@ -185,15 +185,45 @@ const RenderPost = async (req, res) => {
 
 
 const getUserPosts = async (req, res) => {
-    try {   
+    try {
         const { id } = req.params;
-        
-        console.debug('Fetching posts for user:', id);
-        const posts = await Post.find({ userId: new ObjectId(id) }).sort({ createdAt: -1 });
-        console.debug('Fetched posts:', posts);
-        res.status(200).json({ success: true, posts });
+        const cleanid = id.trim();
+        if (!cleanid) {
+            console.log('there is no user id');
+            return res.status(400).json({ success: false, message: 'No user id provided' });
+        }
+        const user = await User.findById(cleanid);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        // Chỉ trả về post của user
+        const userPosts = await Post.find({ userId: cleanid }).sort({ createdAt: -1 });
+        const postsWithUser = await Promise.all(
+            userPosts.map(async (post) => {
+                const userInfo = await User.findById(post.userId).select('_id username avatar_link').lean();
+                const likes = Array.isArray(post.likes)
+                    ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
+                    : [];
+                return {
+                    ...post.toObject(),
+                    likes,
+                    userInfo: userInfo
+                        ? {
+                            _id: userInfo._id,
+                            username: userInfo.username,
+                            avatar_link: userInfo.avatar_link
+                        }
+                        : null
+                };
+            })
+        );
+
+        res.status(200).json({ success: true, posts: postsWithUser });
     } catch (error) {
-        console.error('Error in getUserPosts:', error); 
+        console.error('Error in getUserPosts:', error);
         res.status(500).json({ message: 'Error fetching user posts', error: error.message });
     }
 };
