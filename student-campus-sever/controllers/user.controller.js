@@ -1,6 +1,6 @@
+console.log("user.controller.js loaded");
 const mongoose =  require('mongoose')
 const bcrypt = require('bcrypt');
-
 const jwt = require('jsonwebtoken');
 const client = require('../DTB/mongoconnection')
 const { ObjectId } = require("mongodb");
@@ -61,52 +61,54 @@ const createAccount = async (req, res) => {
 
 
 const LoginRequest = async (req, res) => {
-      const { items } = req.body;
-      const email = items.email;
-      const password = items.password;
-      console.log(items)
+  const { items } = req.body;
+  const email = items.email;
+  const password = items.password;
+  console.log(items)
 
-      try {
-          
-            const foundUser = await User.findOne({ email: email });
-            if (!foundUser) {
-                  console.log('Invalid email or password')
-                  return res.status(401).json({ message: 'Invalid email or password' });
-            }
+  try {
+    const foundUser = await User.findOne({ email: email });
+    if (!foundUser) {
+      console.log('Invalid email or password')
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-            // Compare password
-            const isMatch = await bcrypt.compare(password, foundUser.password);
-            if (!isMatch) {
-                  console.log('not match')
-                  return res.status(401).json({ message: 'Invalid email or password' });
-            }
+    // Compare password
+    const isMatch = await bcrypt.compare(password, foundUser.password);
+    if (!isMatch) {
+      console.log('not match')
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-            // Generate JWT token
-            const token = jwt.sign(
-                  { userId: foundUser._id, email: foundUser.email },
-                  JWT_SECRET,
-                  { expiresIn: '72h' }
-            );
-            
-            const logindata = {
-                  token:token,
-                  user: {
-                        _id: foundUser._id,
-                        username: foundUser.username,
-                        email: foundUser.email,
-                        Faculty: foundUser.Faculty,
-                        Major: foundUser.Major,
-                        Year: foundUser.Year,
-                        friends: foundUser.friends,
-                        createtime: foundUser.createtime,
-                        avatar_link: foundUser.avatar_link
-                  }
-            }
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: foundUser._id, email: foundUser.email },
+      JWT_SECRET,
+      { expiresIn: '72h' }
+    );
+    
+    // friends có thể là mảng ObjectId, khi trả về JSON cần chuyển sang string
+    const friends = foundUser.friends ? foundUser.friends.map(f => f.toString()) : [];
 
-            return res.status(200).json({ message: 'Login successful', logindata });
-      } catch (error) {
-            return res.status(500).json({ message: 'Server error', error: error.message });
+    const logindata = {
+      token: token,
+      user: {
+        _id: foundUser._id,
+        username: foundUser.username,
+        email: foundUser.email,
+        Faculty: foundUser.Faculty,
+        Major: foundUser.Major,
+        Year: foundUser.Year,
+        friends: friends,
+        createtime: foundUser.createtime,
+        avatar_link: foundUser.avatar_link
       }
+    }
+
+    return res.status(200).json({ message: 'Login successful', logindata });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
 }
 
 const getUserData = async (req, res) => {
@@ -138,7 +140,10 @@ const getUserData = async (req, res) => {
             Faculty: user.Faculty,
             friends: reswithFriendName,
             email: user.email,
-            avatar_link: user.avatar_link
+            avatar_link: user.avatar_link,
+            profilePrivacy: user.profilePrivacy,
+            messagePrivacy: user.messagePrivacy,
+            notifcationSettings: user.notifcationSettings,
 
            }      
            
@@ -345,8 +350,6 @@ const renderFriendyouKnow = async (req, res) => {
   }
 };
 
-
-
 const SearchFriend = async (req, res) => {
   const { query, id } = req.body;
   console.log("Searching by:", id);
@@ -436,7 +439,83 @@ const SearchFriend = async (req, res) => {
   }
 };
 
+const updatePassword = async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid user ID' });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Old password is incorrect' });
+    }
+
+    // Cập nhật mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+const updatePrivacySettings = async (req, res) => {
+  const { id } = req.params;
+  const { profileVisibility, messagePermission, notifications } = req.body;
+  console.log("Updating privacy settings for user ID:", id);
+  console.log("New settings:", { profileVisibility, messagePermission, notifications });
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid user ID' });
+  }
+
+  const updateFields = {};
+  if (profileVisibility !== undefined) updateFields.profilePrivacy = profileVisibility;
+  if (messagePermission !== undefined) updateFields.messagePrivacy = messagePermission;
+  if (notifications !== undefined) updateFields.notifcationSettings = notifications;
+
+  if (Object.keys(updateFields).length === 0) {
+    return res.status(400).json({ success: false, message: 'No privacy settings provided' });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true }
+    ).select('profilePrivacy messagePrivacy notifcationSettings');
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Privacy settings updated', settings: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
 
 
 
-module.exports = {createAccount,LoginRequest,getUserData,editUserInfo ,renderFriendyouKnow,SearchFriend,getusername}
+module.exports = {
+  createAccount,
+  LoginRequest,
+  getUserData,
+  editUserInfo,
+  renderFriendyouKnow,
+  SearchFriend,
+  getusername,
+  updatePrivacySettings,
+  updatePassword
+};

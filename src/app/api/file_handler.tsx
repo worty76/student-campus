@@ -10,9 +10,15 @@ interface FileMeta2 {
   name: string;
   type: string;
 }
+interface FileMeta3 {
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+}
 
 interface FileWrapper {
-  file: FileMeta | FileMeta2;
+  file: FileMeta | FileMeta2 | FileMeta3;
 }
 
 export default async function downloadFileFromObject(fileObj: FileWrapper): Promise<void> {

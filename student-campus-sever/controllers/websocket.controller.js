@@ -23,7 +23,6 @@ const onConnection = (ws, req) => {
             return;
         }
 
-     
         async function getUserNameById(userId) {
             try {
                 const user = await getusername(userId);
@@ -48,19 +47,18 @@ const onConnection = (ws, req) => {
                 return;
             }
 
-         
             const fromName = await getUserNameById(from);
 
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
-                    type: 'Friend_request',
+                    type: 'friend_request',
                     message: `Bạn có lời mời kết bạn từ ${fromName}`,
                     from,
                     fromName
                 }));
             }
 
-            const notires = await logNotifications(from, to, message.type);
+            const notires = await logNotifications(from, fromName, to, message.type);
             console.log('notifications result:', notires);
             console.log('Friend request result:', res);
         }
@@ -92,7 +90,7 @@ const onConnection = (ws, req) => {
                 }));
             }
 
-            const notires = await logNotifications(from, to, message.type);
+            const notires = await logNotifications(from, fromName, to, message.type);
             console.log(createChatBetween)
         }
 
@@ -126,6 +124,7 @@ const onConnection = (ws, req) => {
             const { postid, from, to } = message;
             const fromSocket = clients.get(from);
             const toSocket = clients.get(to);
+            console.log('typecheck',message.type)
             const res = await likePost(postid, from);
 
             if (res === 'postid and userId are required' || res === 'User already liked this post or post not found') {
@@ -146,7 +145,8 @@ const onConnection = (ws, req) => {
                     fromName
                 }));
             }
-            const notires = await logNotificationsPost(from, to, postid, message.type);
+            // Sửa lại thứ tự tham số ở đây
+            const notires = await logNotificationsPost(from, to, fromName, postid, message.type);
             console.log('notifications result:', notires);
         }
 
@@ -189,7 +189,8 @@ const onConnection = (ws, req) => {
                     fromName
                 }));
             }
-            const notires = await logNotificationsPost(from, to, postid, message.type);
+            // Sửa lại thứ tự tham số ở đây
+            const notires = await logNotificationsPost(from, to, fromName, postid, message.type);
             console.log('notifications result:', notires);
         }
 
@@ -434,21 +435,22 @@ const onConnection = (ws, req) => {
     }));
 };
 
-const logNotifications = async (from, to, type) => {
+const logNotifications = async (from, fromName, to, type) => {
     try {
+        console.log(`Logging notification: ${type} from ${fromName} to ${to}`);
         let message;
         switch (type) {
             case 'friend_request':
-                message = `Bạn có một lời mời kết bạn mới từ ${from}`;
+                message = `Bạn có một lời mời kết bạn mới từ ${fromName}`;
                 break;
             case 'accept_request':
-                message = `${from} đã chấp nhận lời mời kết bạn của bạn`;
+                message = `${fromName} đã chấp nhận lời mời kết bạn của bạn`;
                 break;
             case 'likes_post':
-                message = `${from} đã thích bài viết của bạn.`;
+                message = `${fromName} đã thích bài viết của bạn.`;
                 break;
             case 'Comment':
-                message = `${from} đã bình luận bài viết của bạn.`;
+                message = `${fromName} đã bình luận bài viết của bạn.`;
                 break;
             default:
                 message = 'Thông báo mới.';
@@ -500,21 +502,22 @@ const logNotifications = async (from, to, type) => {
     
 };
 
-const logNotificationsPost = async (from, to, postid, type) => {
+const logNotificationsPost = async (from, to, fromName, postid, type) => {
     try {
+        console.log(`Logging notification: ${type} from ${fromName} to ${to}`);
         let message;
         switch (type) {
             case 'friend_request':
-                message = `Bạn có một lời mời kết bạn mới từ ${from}`;
+                message = `Bạn có một lời mời kết bạn mới từ ${fromName}`;
                 break;
             case 'accept_request':
-                message = `${from} đã chấp nhận lời mời kết bạn của bạn`;
+                message = `${fromName} đã chấp nhận lời mời kết bạn của bạn`;
                 break;
             case 'likes_post':
-                message = `${from} đã thích bài viết của bạn.`;
+                message = `${fromName} đã thích bài viết của bạn.`;
                 break;
             case 'Comment':
-                message = `${from} đã bình luận bài viết của bạn.`;
+                message = `${fromName} đã bình luận bài viết của bạn.`;
                 break;
             default:
                 message = 'Thông báo mới.';

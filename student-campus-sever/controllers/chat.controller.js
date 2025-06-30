@@ -9,16 +9,16 @@ const renderUserChat = async (req, res) => {
         const { userId } = req.params;
         console.log("Fetching chats for user:", userId);
 
-        // Validate userId
+     
         if (!userId) {
             return res.status(400).json({ error: "Missing userId parameter" });
         }
 
-        // Fetch chats where user is a participant
+        
         const chats = await Chat.find({ participants: userId })
             .populate({
                 path: 'participants',
-                select: 'username avatar_link'
+                select: 'username avatar_link messagePrivacy',
             });
 
         const result = chats.map(chat => {

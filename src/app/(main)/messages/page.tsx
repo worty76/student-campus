@@ -54,6 +54,7 @@ interface Participant {
   _id: string;
   username: string;
   avatar_link: string;
+  messagePrivacy?: string
 }
 
 interface Text {
@@ -515,180 +516,190 @@ export default function MessagesPage() {
     }
   };
 
-
+const isChatBlockedByPrivacy = (chat: Chat) => {
+  if (chat.isGroupChat) return false;
+  const flatParticipants = flattenParticipants(chat.participants);
+  return flatParticipants.some(p => p.messagePrivacy === 'noone');
+};
 
 const renderselectedchat = () => {
-    return(
-      <div key={chatKey} className="w-2/4 flex flex-col h-full overflow-hidden relative">
-        {selectedChat ? (
-          <>
-            <div className="p-4 border-b font-semibold text-blue-700 flex items-center gap-2">
-              {/* Chỉ hiển thị Image nếu không phải group chat */}
-              {selectedChat.isGroupChat !== true && (
-                <Image
-                  width={480}
-                  height={480}
-                  src={getChatPartnerAvatar(selectedChat)}
-                  alt={getChatPartnerName(selectedChat)|| 'người dùng'}
-                  className="w-8 h-8 rounded-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "/schoolimg.jpg";
-                  }}
-                />
-              )}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span>{getChatPartnerName(selectedChat)}</span>
-                  {/* Kiểm tra isGroupChat và hiển thị icon Users */}
-                  {selectedChat.isGroupChat === true && (
-                    <Users size={16} className="text-blue-600" />
-                  )}
-                </div>
+  const chatBlocked = selectedChat && isChatBlockedByPrivacy(selectedChat);
+
+  return (
+    <div key={chatKey} className="w-2/4 flex flex-col h-full overflow-hidden relative">
+      {selectedChat ? (
+        <>
+          <div className="p-4 border-b font-semibold text-blue-700 flex items-center gap-2">
+            {/* Chỉ hiển thị Image nếu không phải group chat */}
+            {selectedChat.isGroupChat !== true && (
+              <Image
+                width={480}
+                height={480}
+                src={getChatPartnerAvatar(selectedChat)}
+                alt={getChatPartnerName(selectedChat) || 'người dùng'}
+                className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/schoolimg.jpg";
+                }}
+              />
+            )}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span>{getChatPartnerName(selectedChat)}</span>
+                {/* Kiểm tra isGroupChat và hiển thị icon Users */}
+                {selectedChat.isGroupChat === true && (
+                  <Users size={16} className="text-blue-600" />
+                )}
               </div>
             </div>
-            
-            <div 
-              ref={chatContainerRef}
-              className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin" 
-              style={{maxHeight: 'calc(100vh - 200px)'}}
-              onDragEnter={handleDragEnter}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              {isDragOver === true && dragCounter.current === 1 && (
-                <div className="absolute inset-0 bg-opacity-20 z-50 flex items-center justify-center">
-                  <div className="bg-white rounded-lg p-6 text-center">
-                    <Paperclip size={48} className="mx-auto mb-4 text-blue-600" />
-                    <div className="text-lg font-medium text-blue-700">Thả file để đính kèm</div>
-                    <div className="text-sm text-gray-600">Hỗ trợ tất cả loại file, tối đa 10MB</div>
-                  </div>
-                </div>
-              )}
-              {selectedChat.chatContext && selectedChat.chatContext.length > 0 ? (
-                <>
-                  {selectedChat.chatContext.map((message, index) => {
-                    const userId = localStorage.getItem('userId');
-                    const flatParticipants = flattenParticipants(selectedChat.participants);
-                    
-                    // Xử lý logic cho group chat và individual chat
-                    let isOtherUser;
-                    if (selectedChat.isGroupChat === true) {
-                      // Trong group chat, tất cả tin nhắn không phải của user hiện tại đều là "other user"
-                      isOtherUser = message.userid !== userId;
-                    } else {
-                      // Trong individual chat, chỉ tin nhắn của người kia là "other user"
-                      const otherUser = flatParticipants.find(p => p._id !== userId);
-                      isOtherUser = message.userid === otherUser?._id;
-                    }
-                    
-                    // Tìm thông tin người gửi tin nhắn để hiển thị avatar đúng
-                    const messageSender = flatParticipants.find(p => p._id === message.userid);
-                    
-                    return (
-                      <div
-                        key={`${message._id}-${index}-${chatKey}`}
-                        className={`flex mb-4 ${isOtherUser ? 'justify-start' : 'justify-end'}`}
-                      >
-                        <div className={`flex items-end max-w-xs lg:max-w-md ${isOtherUser ? 'flex-row' : 'flex-row-reverse'}`}>
-                          {isOtherUser && (
-                            <Image
-                              width={480}
-                              height={480}
-                              src={selectedChat.isGroupChat === true ? 
-                                (messageSender?.avatar_link || "/schoolimg.jpg") : 
-                                getChatPartnerAvatar(selectedChat)
-                              }
-                              alt="Avatar"
-                              className="w-8 h-8 rounded-full mr-2 mb-1 flex-shrink-0"
-                              onError={(e) => {
-                                e.currentTarget.src = "/schoolimg.jpg";
-                              }}
-                            />
-                          )}
+          </div>
 
-                          <div className="flex flex-col">
-                            {/* Hiển thị tên người gửi trong group chat */}
-                            {selectedChat.isGroupChat === true && isOtherUser && (
-                              <div className="text-xs text-gray-600 mb-1 ml-2">
-                                {messageSender?.username || messageSender?.username || 'Người dùng'}
-                              </div>
-                            )}
-                            
-                            <div
-                              className={`px-4 py-2 rounded-2xl max-w-xs lg:max-w-md break-words ${
-                                isOtherUser
-                                  ? 'bg-gray-100 text-gray-900 rounded-bl-md'
-                                  : 'bg-blue-500 text-white rounded-br-md'
-                              }`}
-                            >
-                              {message.text && (
-                                <p className="text-sm leading-relaxed">{message.text}</p>
-                              )}
-                              {/* Đảm bảo renderFileMessage được gọi cho tất cả tin nhắn */}
-                             {Array.isArray(message.files) && message.files.length > 0 && renderFileMessage(message)}
-                            </div>
-
-                            <p
-                              className={`text-xs text-gray-500 mt-1 ${
-                                isOtherUser ? 'text-left ml-2' : 'text-right mr-2'
-                              }`}
-                            >
-                              {new Date(message.timestamp).toLocaleTimeString('vi-VN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-gray-400 text-center">
-                    <div>Chưa có tin nhắn nào</div>
-                    <div className="text-sm mt-2">
-                      Bắt đầu cuộc trò chuyện với {getChatPartnerName(selectedChat)}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* File preview area */}
-            {attachedFiles.length > 0 && (
-              <div className="p-4 bg-gray-100 border-t">
-                <div className="text-sm font-medium text-gray-700 mb-2">File đính kèm:</div>
-                <div className="flex flex-wrap gap-2">
-                  {attachedFiles.map((attachedFile, index) => (
-                    <div key={index} className="relative bg-white rounded-lg p-2 border flex items-center gap-2 max-w-xs">
-                      {attachedFile.preview ? (
-                        <Image 
-                          width={480}
-                          height={480}
-                          src={attachedFile.preview} alt="" className="w-8 h-8 rounded object-cover" />
-                      ) : (
-                        getFileIcon(attachedFile.file.type)
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs truncate">{attachedFile.file.name}</div>
-                        <div className="text-xs text-gray-500">{formatFileSize(attachedFile.file.size)}</div>
-                      </div>
-                      <button
-                        onClick={() => removeFile(index)}
-                        className="text-gray-400 hover:text-red-500"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
+          <div
+            ref={chatContainerRef}
+            className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin"
+            style={{ maxHeight: 'calc(100vh - 200px)' }}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {isDragOver === true && dragCounter.current === 1 && (
+              <div className="absolute inset-0 bg-opacity-20 z-50 flex items-center justify-center">
+                <div className="bg-white rounded-lg p-6 text-center">
+                  <Paperclip size={48} className="mx-auto mb-4 text-blue-600" />
+                  <div className="text-lg font-medium text-blue-700">Thả file để đính kèm</div>
+                  <div className="text-sm text-gray-600">Hỗ trợ tất cả loại file, tối đa 10MB</div>
                 </div>
               </div>
             )}
-            
+            {selectedChat.chatContext && selectedChat.chatContext.length > 0 ? (
+              <>
+                {selectedChat.chatContext.map((message, index) => {
+                  const userId = localStorage.getItem('userId');
+                  const flatParticipants = flattenParticipants(selectedChat.participants);
+
+                  // Xử lý logic cho group chat và individual chat
+                  let isOtherUser;
+                  if (selectedChat.isGroupChat === true) {
+                    isOtherUser = message.userid !== userId;
+                  } else {
+                    const otherUser = flatParticipants.find(p => p._id !== userId);
+                    isOtherUser = message.userid === otherUser?._id;
+                  }
+
+                  // Tìm thông tin người gửi tin nhắn để hiển thị avatar đúng
+                  const messageSender = flatParticipants.find(p => p._id === message.userid);
+
+                  return (
+                    <div
+                      key={`${message._id}-${index}-${chatKey}`}
+                      className={`flex mb-4 ${isOtherUser ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div className={`flex items-end max-w-xs lg:max-w-md ${isOtherUser ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {isOtherUser && (
+                          <Image
+                            width={480}
+                            height={480}
+                            src={selectedChat.isGroupChat === true ?
+                              (messageSender?.avatar_link || "/schoolimg.jpg") :
+                              getChatPartnerAvatar(selectedChat)
+                            }
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full mr-2 mb-1 flex-shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.src = "/schoolimg.jpg";
+                            }}
+                          />
+                        )}
+
+                        <div className="flex flex-col">
+                          {/* Hiển thị tên người gửi trong group chat */}
+                          {selectedChat.isGroupChat === true && isOtherUser && (
+                            <div className="text-xs text-gray-600 mb-1 ml-2">
+                              {messageSender?.username || messageSender?.username || 'Người dùng'}
+                            </div>
+                          )}
+
+                          <div
+                            className={`px-4 py-2 rounded-2xl max-w-xs lg:max-w-md break-words ${
+                              isOtherUser
+                                ? 'bg-gray-100 text-gray-900 rounded-bl-md'
+                                : 'bg-blue-500 text-white rounded-br-md'
+                            }`}
+                          >
+                            {message.text && (
+                              <p className="text-sm leading-relaxed">{message.text}</p>
+                            )}
+                            {/* Đảm bảo renderFileMessage được gọi cho tất cả tin nhắn */}
+                            {Array.isArray(message.files) && message.files.length > 0 && renderFileMessage(message)}
+                          </div>
+
+                          <p
+                            className={`text-xs text-gray-500 mt-1 ${
+                              isOtherUser ? 'text-left ml-2' : 'text-right mr-2'
+                            }`}
+                          >
+                            {new Date(message.timestamp).toLocaleTimeString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-gray-400 text-center">
+                  <div>Chưa có tin nhắn nào</div>
+                  <div className="text-sm mt-2">
+                    Bắt đầu cuộc trò chuyện với {getChatPartnerName(selectedChat)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* File preview area */}
+          {attachedFiles.length > 0 && !chatBlocked && (
+            <div className="p-4 bg-gray-100 border-t">
+              <div className="text-sm font-medium text-gray-700 mb-2">File đính kèm:</div>
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((attachedFile, index) => (
+                  <div key={index} className="relative bg-white rounded-lg p-2 border flex items-center gap-2 max-w-xs">
+                    {attachedFile.preview ? (
+                      <Image
+                        width={480}
+                        height={480}
+                        src={attachedFile.preview} alt="" className="w-8 h-8 rounded object-cover" />
+                    ) : (
+                      getFileIcon(attachedFile.file.type)
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs truncate">{attachedFile.file.name}</div>
+                      <div className="text-xs text-gray-500">{formatFileSize(attachedFile.file.size)}</div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Nếu bị chặn bởi messagePrivacy thì không render form gửi tin nhắn và các nút */}
+          {chatBlocked ? (
+            <div className="p-4 border-t bg-gray-100 text-center text-gray-500 font-semibold">
+              Không thể kết nối tới người này. Người dùng đã tắt chức năng nhận tin nhắn.
+            </div>
+          ) : (
             <form
               className="flex items-center gap-2 p-4 border-t bg-white"
               onSubmit={handleSubmit}
@@ -715,8 +726,8 @@ const renderselectedchat = () => {
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="bg-blue-600 text-white px-4"
                 disabled={(!input.trim() && attachedFiles.length === 0) || isUploading}
               >
@@ -727,45 +738,46 @@ const renderselectedchat = () => {
                 )}
               </Button>
             </form>
-          </>
-        ) : (
-          <>
-            <div className="p-4 border-b font-semibold text-blue-700 flex items-center gap-2">
-              <span>Chọn cuộc trò chuyện</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-blue-50 flex flex-col items-center justify-center">
-              <div className="text-gray-400">Chọn một cuộc trò chuyện để bắt đầu</div>
-            </div>
-            <form
-              className="flex items-center gap-2 p-4 border-t bg-white"
-              onSubmit={e => {
-                e.preventDefault();
-                setInput("");
-              }}
+          )}
+        </>
+      ) : (
+        <>
+          <div className="p-4 border-b font-semibold text-blue-700 flex items-center gap-2">
+            <span>Chọn cuộc trò chuyện</span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-blue-50 flex flex-col items-center justify-center">
+            <div className="text-gray-400">Chọn một cuộc trò chuyện để bắt đầu</div>
+          </div>
+          <form
+            className="flex items-center gap-2 p-4 border-t bg-white"
+            onSubmit={e => {
+              e.preventDefault();
+              setInput("");
+            }}
+          >
+            <Button type="button" variant="ghost" size="sm" className="p-2" disabled>
+              <Paperclip size={18} className="text-gray-400" />
+            </Button>
+            <Input
+              className="flex-1"
+              placeholder="Nhập tin nhắn..."
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              disabled
+            />
+            <Button
+              type="submit"
+              className="bg-blue-600 text-white px-4"
+              disabled
             >
-              <Button type="button" variant="ghost" size="sm" className="p-2" disabled>
-                <Paperclip size={18} className="text-gray-400" />
-              </Button>
-              <Input
-                className="flex-1"
-                placeholder="Nhập tin nhắn..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                disabled
-              />
-              <Button 
-                type="submit" 
-                className="bg-blue-600 text-white px-4" 
-                disabled
-              >
-                <Send size={18} />
-              </Button>
-            </form>
-          </>
-        )}
-      </div>
-    )
-  }
+              <Send size={18} />
+            </Button>
+          </form>
+        </>
+      )}
+    </div>
+  );
+}
 
   useEffect(() => {
     scrollToBottom();
@@ -773,13 +785,59 @@ const renderselectedchat = () => {
 
  
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userId = (localStorage.getItem('userId') || "").trim();
-      setCurrentUserId(userId);
-      getUserData();        
-      getUserMessage();
-    }
-  }, []); 
+  if (typeof window !== 'undefined') {
+    const userId = (localStorage.getItem('userId') || "").trim();
+    setCurrentUserId(userId);
+    getUserData();
+
+    const fetchUserMessage = async () => {
+      try {
+        setIsLoading(true);
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+          console.error('No userId found');
+          return;
+        }
+
+        const response = await axios.get(`${BASEURL}/api/get/user/chat/${userId}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          }
+        });
+
+        let chatData = [];
+        if (response.data) chatData = response.data;
+        else if (response.data.chats) chatData = response.data.chats;
+        else if (Array.isArray(response.data)) chatData = response.data;
+
+        const validChats = Array.isArray(chatData) ? chatData.filter(chat => isValidChat(chat)) : [];
+        setChats(validChats);
+
+        // So sánh kỹ trước khi setSelectedChat để tránh vòng lặp
+        if (selectedChat) {
+          const updatedSelectedChat = validChats.find(chat => chat._id === selectedChat._id);
+          // Chỉ update nếu context hoặc thông tin chat thực sự thay đổi
+          if (
+            updatedSelectedChat &&
+            JSON.stringify(updatedSelectedChat.chatContext) !== JSON.stringify(selectedChat.chatContext)
+          ) {
+            setSelectedChat(updatedSelectedChat);
+          }
+        }
+
+      } catch (error) {
+        console.error("Error fetching user messages:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserMessage();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isValidChat, selectedChat?._id]);
 
  useEffect(() => {
   const handler = (message: WebSocketMessage) => {

@@ -182,8 +182,6 @@ const RenderPost = async (req, res) => {
 
 
 
-
-
 const getUserPosts = async (req, res) => {
     try {
         const { id } = req.params;
@@ -228,6 +226,45 @@ const getUserPosts = async (req, res) => {
     }
 };
 
+const getPostById = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        if (!postId) {
+            return res.status(400).json({ success: false, message: 'No post id provided' });
+        }
+        const post = await Post.findById(postId)
+            .populate('userId', '_id username avatar_link')
+            .populate('comments.userId', '_id username avatar_link');
+        if (!post) {
+            return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+        // Format userInfo for post and comments
+        const postObj = post.toObject();
+        postObj.userInfo = postObj.userId
+            ? {
+                _id: postObj.userId._id,
+                username: postObj.userId.username,
+                avatar_link: postObj.userId.avatar_link
+            }
+            : null;
+        if (Array.isArray(postObj.comments)) {
+            postObj.comments = postObj.comments.map(comment => ({
+                ...comment,
+                userInfo: comment.userId
+                    ? {
+                        _id: comment.userId._id,
+                        username: comment.userId.username,
+                        avatar_link: comment.userId.avatar_link
+                    }
+                    : null
+            }));
+        }
+        res.status(200).json({ success: true, post: postObj });
+    } catch (error) {
+        console.error('Error in getPostById:', error);
+        res.status(500).json({ message: 'Error fetching post', error: error.message });
+    }
+};
 const updatepost = async (req, res) => {
     try {
         const { text, existingAttachments } = req.body;
@@ -373,17 +410,32 @@ const renderPostBaseOnUser = async (req, res) => {
             console.log('there is no user id');
             return res.status(400).json({ success: false, message: 'No user id provided' });
         }
+
+        // Lấy page và limit từ query, mặc định page=1, limit=10
+        const page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+        const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10;
+        const skip = (page - 1) * limit;
+
         const groups = await Group.find({ members: { $in: [cleanid] } });
         const user = await User.findById(cleanid);
         const userFriendsPost = user.friends || [];
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 30);
 
-        const friendPosts = await Post.find({ userId: { $in: userFriendsPost }, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+        // Lấy post của bạn bè (chỉ lấy nếu profilePrivacy của bạn bè là 'public' hoặc 'friends')
+        const friends = await User.find({ _id: { $in: userFriendsPost } }).select('_id profilePrivacy');
+        const visibleFriendIds = friends
+            .filter(f => f.profilePrivacy === 'everyone' || f.profilePrivacy === 'friends')
+            .map(f => String(f._id));
+
+        let friendPosts = [];
+        if (visibleFriendIds.length > 0) {
+            friendPosts = await Post.find({ userId: { $in: visibleFriendIds }, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+        }
+
         const postsWithUser = await Promise.all(
             friendPosts.map(async (post) => {
                 const user = await User.findById(post.userId).select('_id username avatar_link').lean();
-                // Flatten likes to array of userIds
                 const likes = Array.isArray(post.likes)
                     ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
                     : [];
@@ -401,11 +453,11 @@ const renderPostBaseOnUser = async (req, res) => {
             })
         );
 
+        // Lấy post của group
         const groupPosts = await Post.find({ _id: { $in: groups.flatMap(g => g.posts) }, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
         const postGroupWithUser = await Promise.all(
             groupPosts.map(async (post) => {
                 const user = await User.findById(post.userId).select('_id username avatar_link').lean();
-           
                 const likes = Array.isArray(post.likes)
                     ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
                     : [];
@@ -423,15 +475,60 @@ const renderPostBaseOnUser = async (req, res) => {
             })
         );
 
-       
-        const allPosts = [...postsWithUser, ...postGroupWithUser];
+        // Lấy post của chính user (nếu profilePrivacy cho phép)
+        let userPosts = [];
+        if (user.profilePrivacy !== 'private') {
+            // Nếu là friends thì chỉ hiện cho bạn bè
+            if (user.profilePrivacy === 'friends') {
+                // Nếu người xem là chính user hoặc là bạn bè thì mới cho xem
+                if (cleanid === req.user?.id || userFriendsPost.map(String).includes(req.user?.id)) {
+                    userPosts = await Post.find({ userId: cleanid, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+                }
+            } else {
+                // public
+                userPosts = await Post.find({ userId: cleanid, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+            }
+        }
+        const userPostsWithUser = await Promise.all(
+            userPosts.map(async (post) => {
+                const user = await User.findById(post.userId).select('_id username avatar_link').lean();
+                const likes = Array.isArray(post.likes)
+                    ? post.likes.map(like => (like._id ? String(like._id) : String(like)))
+                    : [];
+                return {
+                    ...post.toObject(),
+                    likes,
+                    userInfo: user
+                        ? {
+                            _id: user._id,
+                            username: user.username,
+                            avatar_link: user.avatar_link
+                        }
+                        : null
+                };
+            })
+        );
+
+        // Gộp và loại trùng
+        const allPosts = [...postsWithUser, ...postGroupWithUser, ...userPostsWithUser];
         const uniquePostsMap = new Map();
         allPosts.forEach(post => {
             uniquePostsMap.set(String(post._id), post);
         });
-        const finalPosts = Array.from(uniquePostsMap.values());
+        const finalPosts = Array.from(uniquePostsMap.values())
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        res.status(200).json({ success: true, posts: finalPosts });
+        // Phân trang
+        const paginatedPosts = finalPosts.slice(skip, skip + limit);
+
+        res.status(200).json({ 
+            success: true, 
+            posts: paginatedPosts,
+            page,
+            limit,
+            total: finalPosts.length,
+            hasMore: skip + limit < finalPosts.length
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: 'Error fetching posts', error: error.message });
@@ -520,5 +617,6 @@ module.exports = {
     renderPostBaseOnUser,
     likePost,
     unlikePost,
-    addcomment
+    addcomment,
+    getPostById
 };

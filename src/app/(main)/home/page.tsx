@@ -10,6 +10,7 @@ import { BASEURL } from "@/app/constants/url";
 import axios from "axios";
 import RenderPost from "@/components/home/post";
 
+
 // TypeScript interfaces for the post data
 interface FileAttachment {
   url: string;
@@ -38,13 +39,10 @@ interface Post {
   comments: Comments[];
 }
 
-
 interface Comments {
   userinfo: userInfo;
   context: string;
 }
-
-
 
 interface userInfo {
   _id: string;
@@ -69,6 +67,19 @@ interface UserdataProps {
   friends?: friends[];
 }
 
+// Thêm interface cho group nếu chưa có
+interface UserGroup {
+    _id: string;
+    name: string;
+    creater: string;
+    icon?: string;
+    desc?: string;
+    members: string[];
+    posts: string[];
+    createAt: string | Date;
+    tags: string[];
+}
+
 const userInfo = {
   name: "Nguyễn Văn A",
   avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -87,51 +98,86 @@ const HomePage = () => {
   const [isAddmodalopen, setisAddmodalopen] = useState(false);
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Thêm state cho group
+  const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
 
   useEffect(() => {
     const storedId = localStorage.getItem("userId");
     if (storedId) {
       setUserId(storedId);
-      getpost();
+      getpost(1, false);
       getUserData();
+      getUsersGroupData(); // <-- gọi hàm này
     }
   }, []);
 
-  const getpost = async () => {
-  try {
-    const token =
-      sessionStorage.getItem("token") || localStorage.getItem("token");
-    const storedId = localStorage.getItem("userId");
+  const getpost = async (pageNum = 1, append = false) => {
+    try {
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
+      const storedId = localStorage.getItem("userId");
 
-    if (!storedId || storedId === "null") {
-      console.warn("Invalid userId:", storedId);
-      setPosts([]);
-      return;
-    }
-
-    const response = await axios.get(
-      `${BASEURL}/api/get/personal/feed/${storedId}`,
-      {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
+      if (!storedId || storedId === "null") {
+        setPosts([]);
+        return;
       }
-    );
 
-    if (response.status === 200 && response.data.success) {
-      const posts = response.data.posts;
-      console.log("Posts:", posts);
-      setPosts(posts);
-    } else {
-      setPosts([]);
+      setLoading(true);
+      // Có thể thêm limit nếu muốn, ví dụ: &limit=10
+      const response = await axios.get(
+        `${BASEURL}/api/get/personal/feed/${storedId}?page=${pageNum}&limit=10`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data.success) {
+        const newPosts = response.data.posts;
+        setHasMore(response.data.hasMore); // Sử dụng hasMore từ backend
+        if (append) {
+          setPosts((prev) => [...prev, ...newPosts]);
+        } else {
+          setPosts(newPosts);
+        }
+      } else {
+        setHasMore(false);
+        if (!append) setPosts([]);
+      }
+    } catch (error) {
+      console.log("Error fetching posts:", error);
+      setHasMore(false);
+      if (!append) setPosts([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    setPosts([]);
-  }
-};
-
-
+  };
+  const getUsersGroupData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const res = await axios.get(
+        `${BASEURL}/api/get/user/group/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res && res.data) {
+        console.log("User groups data:", res.data);
+        setUserGroups(res.data as UserGroup[]);
+      }
+    } catch (error) {
+      console.error("Error in getUsersGroupData:", error);
+    }
+  };
   const getUserData = async () => {
     try {
       const token =
@@ -156,7 +202,24 @@ const HomePage = () => {
     }
   };
 
- 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
+        !loading &&
+        hasMore
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading, hasMore]);
+
+  useEffect(() => {
+    if (page === 1) return;
+    getpost(page, true);
+  }, [page]);
 
   return (
     <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen pb-20 flex flex-col items-center relative overflow-x-hidden">
@@ -192,62 +255,30 @@ const HomePage = () => {
                 Community Groups
               </h4>
               <ul className="space-y-3">
-                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex items-center mb-1">
-                    <span className="text-lg mr-2">🗨️</span>
-                    <span className="font-semibold text-blue-800">IT Q&A</span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    1.2k members • 32 new posts
-                  </span>
-                  <span className="text-sm text-gray-700 mt-1">
-                    A place to discuss programming, software, hardware
-                    knowledge...
-                  </span>
-                </li>
-                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex items-center mb-1">
-                    <span className="text-lg mr-2">📚</span>
-                    <span className="font-semibold text-blue-800">
-                      Study Materials
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    980 members • 12 new posts
-                  </span>
-                  <span className="text-sm text-gray-700 mt-1">
-                    Share documents, books, and course outlines.
-                  </span>
-                </li>
-                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex items-center mb-1">
-                    <span className="text-lg mr-2">🎮</span>
-                    <span className="font-semibold text-blue-800">
-                      Entertainment & Events
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    540 members • 5 new posts
-                  </span>
-                  <span className="text-sm text-gray-700 mt-1">
-                    Updates on events, tournaments, and extracurricular
-                    activities.
-                  </span>
-                </li>
-                <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex items-center mb-1">
-                    <span className="text-lg mr-2">💼</span>
-                    <span className="font-semibold text-blue-800">
-                      Jobs & Internships
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    300 members • 2 new posts
-                  </span>
-                  <span className="text-sm text-gray-700 mt-1">
-                    Recruitment info, internships, and interview experiences.
-                  </span>
-                </li>
+                {userGroups.length === 0 ? (
+                  <li className="text-gray-500">Bạn chưa tham gia nhóm nào.</li>
+                ) : (
+                  userGroups.map((group) => (
+                    <li
+                      key={group._id}
+                      className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center mb-1">
+                        <span className="text-lg mr-2">🗨️</span>
+                        <span className="font-semibold text-blue-800">
+                          {group.name}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {group.members?.length || 0} members
+                      </span>
+                      <span className="text-sm text-gray-700 mt-1">
+                        {/* Sử dụng group.desc thay vì group.description */}
+                        {group.desc || "No description"}
+                      </span>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
             <hr className="my-6 border-t border-gray-500 w-full" />
@@ -313,6 +344,12 @@ const HomePage = () => {
               posts.map((post) => (
                 <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
               ))
+            )}
+            {loading && (
+              <div className="text-center text-blue-500 my-4">Đang tải thêm bài viết...</div>
+            )}
+            {!hasMore && (
+              <div className="text-center text-gray-400 my-4">Đã hết bài viết.</div>
             )}
           </div>
 

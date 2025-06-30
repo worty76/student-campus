@@ -7,8 +7,10 @@ interface PasswordChangeForm {
     newPassword: string;
     confirmPassword: string;
 }
-
-export const PasswordChange = () => {
+interface PasswordChangeProps {
+    onSave: (settings: PasswordChangeForm) => void;
+}
+export const PasswordChange = ({ onSave }: PasswordChangeProps) => {
     const [form, setForm] = useState<PasswordChangeForm>({
         currentPassword: "",
         newPassword: "",
@@ -21,7 +23,11 @@ export const PasswordChange = () => {
 
     const handlePasswordChange = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle password change logic here
+        onSave({
+            currentPassword: form.currentPassword,
+            newPassword: form.newPassword,
+            confirmPassword: form.confirmPassword,
+        });
     };
 
     return (

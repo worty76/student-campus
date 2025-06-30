@@ -171,17 +171,14 @@ const UserProfilePage = () => {
         }
       });
       if (response.status === 200) {
-        const updatedUser = response.data.user;
-        setUserData(updatedUser);
-        setEditedData(updatedUser);
-        setAvatarPreview(updatedUser.avatar_link || updatedUser.avatar || '/schoolimg.jpg');
+        // Gọi lại getUserData để lấy dữ liệu mới nhất (bao gồm friends)
+        await getUserData();
         setIsEditing(false);
         setAvatarFile(null);
         alert('Profile updated successfully!');
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      
     } finally {
       setIsSaving(false);
     }
