@@ -33,6 +33,7 @@ interface Post {
   createdAt: string;
   likes: string[];
   comments: Comments[];
+  userInfo: userInfo
 }
 interface Attachment {
   file?: FileAttachment;
@@ -170,17 +171,14 @@ const UserProfilePage = () => {
         }
       });
       if (response.status === 200) {
-        const updatedUser = response.data.user;
-        setUserData(updatedUser);
-        setEditedData(updatedUser);
-        setAvatarPreview(updatedUser.avatar_link || updatedUser.avatar || '/schoolimg.jpg');
+        // Gọi lại getUserData để lấy dữ liệu mới nhất (bao gồm friends)
+        await getUserData();
         setIsEditing(false);
         setAvatarFile(null);
         alert('Profile updated successfully!');
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      
     } finally {
       setIsSaving(false);
     }
@@ -433,7 +431,7 @@ const UserProfilePage = () => {
               <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
             ) : (
               posts.map((post) => (
-                <RenderPost key={post._id} post={post} userData={userData} />
+                 <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
               ))
             )}
           </div>

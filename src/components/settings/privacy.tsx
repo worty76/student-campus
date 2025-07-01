@@ -2,21 +2,25 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 
 type PrivacySettings = {
-    profileVisibility: "everyone" | "friends" | "onlyme";
-    messagePermission: "everyone" | "friends" | "noone";
+    profileVisibility:   'everyone'|"friends" | "private";
+    messagePermission:  "friends" | "noone";
+    notifications: "yes" | "no"; // Đổi thành yes | no
 };
 
-const Privacy : React.FC = () => {
+interface PrivacyProps {
+    onSave: (settings: PrivacySettings) => void;
+}
+
+const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
     const [privacy, setPrivacy] = useState<PrivacySettings>({
-        profileVisibility: "everyone",
-        messagePermission: "everyone",
+        profileVisibility: "friends",
+        messagePermission: "friends",
+        notifications: "yes", // Khởi tạo là "yes"
     });
-    const [saved, setSaved] = useState(false);
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        onSave(privacy);
     };
 
     return (
@@ -60,12 +64,26 @@ const Privacy : React.FC = () => {
                     <option value="noone">Không ai</option>
                 </select>
             </div>
-           <Button type="submit" className="mt-4 bg-blue-500 text-white hover:bg-blue-600">
-            Lưu cài đặt
+            <div className="max-w-md mb-4">
+                <label className="block mb-1 font-medium">
+                    Nhận thông báo
+                </label>
+                <input
+                    type="checkbox"
+                    checked={privacy.notifications === "yes"}
+                    onChange={(e) =>
+                        setPrivacy((prev) => ({
+                            ...prev,
+                            notifications: e.target.checked ? "yes" : "no",
+                        }))
+                    }
+                    className="mr-2"
+                />
+                <span>{privacy.notifications === "yes" ? "Bật" : "Tắt"}</span>
+            </div>
+            <Button type="submit" className="mt-4 bg-blue-500 text-white hover:bg-blue-600">
+                Lưu cài đặt
             </Button>
-            {saved && (
-                <span className="ml-4 text-green-600 font-medium">Đã lưu!</span>
-            )}
         </form>
     );
 };

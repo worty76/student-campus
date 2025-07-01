@@ -4,8 +4,14 @@ import Toast from '@/components/home/toastnoti';
 
 type WebSocketStatus = 'Disconnected' | 'Connecting' | 'Connected' | 'Error' | 'Reconnecting';
 
+interface OnlineFriend {
+  _id: string;
+  username: string;
+  avatar_link: string;
+  online?: boolean;
+}
 interface WebSocketMessage {
-  type: 'init' | 'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment';
+  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
   from?: string;
   to?: string;
   message?: string;
@@ -13,7 +19,25 @@ interface WebSocketMessage {
   reqid?:string;
   postid?:string;
   context?: string;
+  friends?: OnlineFriend[];
+  chatid?:string,
+  file?: file[]
+  userIds?: Friends[],
+  groupName?: string
+  isGroupChat?: boolean; 
+  
 
+}
+interface Friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
+}
+interface file  {
+   name: string;
+    type: string;
+    size: number;
+    url: string;
 }
 
 type MessageHandler = (data: WebSocketMessage) => void;
@@ -39,7 +63,7 @@ const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
   const socketRef = useRef<WebSocket | null>(null);
-  const [status, setStatus] = useState<WebSocketStatus>('Disconnected');
+  const [status, setStatus] = useState<WebSocketStatus>('Disconnected'); 
   const messageHandlersRef = useRef<Set<MessageHandler>>(new Set());
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userIdRef = useRef<string | null>(null);
@@ -158,8 +182,49 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
           });
         }
 
+        if (data.type === 'text_to' || data.type === 'text_to') {
+          addToast({
+            title: 'Thông Báo',
+            message: `${data.fromName || data.from || 'Ai đó'} : ${data.context}`,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+         if (data.type === 'file_to' ) {
+          addToast({
+            title: 'Thông Báo',
+            message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+        if (data.type === 'create_group'){
+            addToast({
+            title: 'Thông Báo',
+            message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
 
-        // Gọi các message handlers
+        }
+        if (data.type === 'leave_group') {
+          addToast({
+            title: 'Thông Báo',
+            message: data.message,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+        if (data.type === 'add_to_group') {
+          addToast({
+            title: 'Thông Báo',
+            message: `${data.fromName || data.from || 'Ai đó'} đã thêm bạn vào nhóm ${data.groupName || ''}`,
+            avatar: '👤',
+            color: 'bg-blue-500'
+          });
+        }
+
+
         messageHandlersRef.current.forEach((handler) => {
           try {
             handler(data);
@@ -173,7 +238,6 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
       }
     };
 
-    // Inline reconnect logic
     function attemptReconnectInternal() {
       if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
         console.log('Max reconnection attempts reached');

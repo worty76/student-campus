@@ -5,24 +5,42 @@ interface FileMeta {
   filetype: string;
 }
 
-interface FileWrapper {
-  file: FileMeta;
+interface FileMeta2 {
+  url: string;
+  name: string;
+  type: string;
 }
+interface FileMeta3 {
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+interface FileWrapper {
+  file: FileMeta | FileMeta2 | FileMeta3;
+}
+
 export default async function downloadFileFromObject(fileObj: FileWrapper): Promise<void> {
   const { file } = fileObj;
 
-  if (!file?.url || !file?.filename || !file?.filetype) {
+  // Chuẩn hóa dữ liệu
+  const url = file.url;
+  const filename = 'filename' in file ? file.filename : file.name;
+  const filetype = 'filetype' in file ? file.filetype : file.type.split('/').pop() || 'unknown';
+
+  if (!url || !filename || !filetype) {
     console.warn('Thiếu thông tin file');
     return;
   }
 
   try {
-    const response = await fetch(file.url);
+    console.log(url)
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Không thể tải file');
 
     const blob = await response.blob();
-    const fileExtension = file.filetype.toLowerCase();
-    const downloadFilename = `${file.filename}.${fileExtension}`;
+    const downloadFilename = `${filename}.${filetype.toLowerCase()}`;
 
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);

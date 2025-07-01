@@ -7,8 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import Image from 'next/image'
 import axios from 'axios';
 import {BASEURL} from "@/app/constants/url";
-
-
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -19,41 +18,42 @@ export default function RegisterPage() {
   const [year, setYear] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const router = useRouter();
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-
-     const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault(); // Ngăn form reload trang
-
-        try {
-          const items = {
-            username: name,
-            email: email,
-            password: password,
-            faculty: faculty,
-            major: major,
-            year: year
-          };
-
-          const response = await axios.post(
-            `${BASEURL}api/auth/register`,
-            { items: items },
-            {
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-
-          if(response){
-            console.log(response.data)
-            window.location.href = '/login';
-
-          }
-        } catch (error) {
-          alert(error);
-        }
+    try {
+      const items = {
+        username: name,
+        email: email,
+        password: password,
+        faculty: faculty,
+        major: major,
+        year: year
       };
+
+      const response = await axios.post(
+        `${BASEURL.replace(/\/?$/, "/")}api/auth/register`,
+        { items: items },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response && response.data) {
+        console.log(response.data);
+        // Nếu đăng ký thành công, chuyển hướng sau 2s
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
 
 

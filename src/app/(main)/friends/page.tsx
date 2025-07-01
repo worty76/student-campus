@@ -44,11 +44,47 @@ interface FilterOptions {
 }
 interface FriendRequest {
     _id: string;
+    senderId: string;
+    receiverId: string;
     username: string;
-    Faculty: string;
-    Major: string;
-    Year: string;
-    rqid: string;
+    avatar_link: string;
+    status: string;
+}
+interface WebSocketMessage {
+  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
+  from?: string;
+  to?: string;
+  message?: string;
+  fromName?: string;
+  reqid?: string;
+  postid?: string;
+  context?: string;
+  friends?: OnlineFriend[];
+  chatid?: string;
+  file?: FileData[];
+  userIds?: Friends[];
+  groupName?: string;
+  isGroupChat?: boolean;
+}
+
+interface FileData {
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+}
+
+interface OnlineFriend {
+  _id: string;
+  username: string;
+  avatar_link: string;
+  online?: boolean;
+}
+
+interface Friends {
+  _id: string;
+  username: string;
+  avatar_link?: string;
 }
 
 const FriendsNCommunitys = () => {
@@ -65,18 +101,50 @@ const FriendsNCommunitys = () => {
   });
   const [tab, setTab] = useState<'suggest' | 'requests'>('suggest');
   const [friend_request,setFriendRequests] =useState<FriendRequest[]>([]);
-  const { sendMessage, status } = useWebSocket();
+  const { sendMessage,addMessageHandler ,  status } = useWebSocket();
   const [queryerror, setQueryerror] = useState(false);
   const router = useRouter();
-  // Thêm state để theo dõi các lời mời đã được chấp nhận
+  
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
 
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [friends, setFriends] = useState<string[]>([]);
+
+useEffect(() => {
+  // Lấy danh sách bạn bè từ localStorage (giả sử lưu là mảng các _id)
+  const storedFriends = localStorage.getItem('friends');
+  if (storedFriends) {
+    try {
+      setFriends(JSON.parse(storedFriends));
+    } catch {
+      setFriends([]);
+    }
+  }
+}, []);
+
+   useEffect(() => {
+          const handler = (message: WebSocketMessage) => {
+            if (
+              message?.type === "friend_request" ||
+              message?.type === "accept_request"
+            ) {
+              console.log("Nhận được tin nhắn từ WebSocket:", message);
+             
+              getlistfriendrq();  
+              getSuggestionsFriend();
+            }
+          };
+      
+          const removeHandler = addMessageHandler(handler);
+          return removeHandler;
+        }, [addMessageHandler]);
   useEffect(() => {
     getSuggestionsFriend();
   }, []);
 
   // Filter data khi filters hoặc searcchdata thay đổi
   useEffect(() => {
+  
   const filtered = searcchdata.filter(friend => {
     return (
       (!filters.faculty || friend.Faculty.toLowerCase().includes(filters.faculty.toLowerCase())) &&
@@ -164,8 +232,6 @@ const FriendsNCommunitys = () => {
 
   const handleSendFriendRequest = async (receiverId: string) => {
     try {
-      
-      
       console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
       const toid = receiverId;
@@ -174,6 +240,8 @@ const FriendsNCommunitys = () => {
         from: fromid || '123',
         to: toid || '123',
       });
+      // Đánh dấu đã gửi lời mời
+      setSentRequests(prev => new Set(prev).add(receiverId));
     } catch (err) {
       console.error("Gửi kết bạn thất bại:", err);
       alert("Lỗi khi gửi lời mời kết bạn.");
@@ -181,26 +249,23 @@ const FriendsNCommunitys = () => {
   };
 
   const handleAcceptFriendRequest = async (receiverId: string , reqid: string) => {
-     try {
-      
-      
-      console.log('WebSocket status:', status);
-      const fromid = localStorage.getItem('userId');
-      const toid = receiverId;
-      const rqid = reqid;
-      sendMessage({
-        type: 'accept_request',
-        from: fromid || '123',
-        to: toid || '123',
-        reqid: rqid || '123'
-      });
-      
-      // Thêm userId vào danh sách đã chấp nhận
-      setAcceptedRequests(prev => new Set(prev).add(receiverId));
-    } catch (err) {
-      console.error("Gửi kết bạn thất bại:", err);
-      alert("Lỗi khi chấp nhận kết bạn.");
-    }
+  try {
+    console.log('WebSocket status:', status);
+    const fromid = localStorage.getItem('userId');
+    const toid = receiverId ;
+    const rqid = reqid;
+    sendMessage({
+      type: 'accept_request',
+      from:  fromid|| '123',
+      to: toid || '123',
+      reqid: rqid || '123'
+    });
+    // Đánh dấu đã chấp nhận
+    setAcceptedRequests(prev => new Set(prev).add(receiverId));
+  } catch (err) {
+    console.error("Gửi kết bạn thất bại:", err);
+    alert("Lỗi khi chấp nhận kết bạn.");
+  }
   };
 
   const handleRejectFriendRequest = async (friendId: string,reqid: string) => {
@@ -239,7 +304,7 @@ const FriendsNCommunitys = () => {
         }
     });
     if(response){
-        console.log(response)
+        console.log(response.data.data)
         setFriendRequests(response.data.data)
     }
     } catch (error) {
@@ -253,8 +318,20 @@ const FriendsNCommunitys = () => {
 
   // Render button based on friend type and search state
   const renderFriendButton = (friend: SuggestionFriend | SearchFriend) => {
+    // Kiểm tra đã là bạn bè chưa
+    if (friends.includes(friend._id)) {
+      return (
+        <Button
+          disabled
+          className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+          size="sm"
+        >
+          Bạn Bè
+        </Button>
+      );
+    } 
     if (searchrs && isSearchFriend(friend)) {
-      // Kiểm tra nếu đã chấp nhận lời mời này
+      // Nếu đã chấp nhận lời mời thì hiện "Đã chấp nhận"
       if (acceptedRequests.has(friend._id)) {
         return (
           <Button
@@ -262,11 +339,11 @@ const FriendsNCommunitys = () => {
             className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
             size="sm"
           >
-            Đã chấp nhận lời mời
+            Đã chấp nhận
           </Button>
         );
       }
-      
+
       // Logic cho kết quả search
       if (friend.type === 'sender' && friend.status === "pending") {
         return (
@@ -282,22 +359,24 @@ const FriendsNCommunitys = () => {
         return (
           <div className="flex space-x-2">
             <Button
-              onClick={() => handleAcceptFriendRequest(friend._id,friend.rqid)}
+              onClick={() => handleAcceptFriendRequest(friend._id, friend.rqid)}
               className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
               size="sm"
+              disabled={acceptedRequests.has(friend._id)}
             >
-              Chấp nhận
+              {acceptedRequests.has(friend._id) ? 'Đã chấp nhận' : 'Chấp nhận'}
             </Button>
             <Button
-              onClick={() => handleRejectFriendRequest(friend._id,friend.rqid)}
+              onClick={() => handleRejectFriendRequest(friend._id, friend.rqid)}
               className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
               size="sm"
+              disabled={acceptedRequests.has(friend._id)}
             >
               Từ chối
             </Button>
           </div>
         );
-      }else if (friend.status === "accepted" && friend.type === 'sender') {
+      } else if (friend.status === "accepted" && friend.type === 'sender') {
         return (
           <Button
             disabled
@@ -305,6 +384,17 @@ const FriendsNCommunitys = () => {
             size="sm"
           >
             Bạn Bè
+          </Button>
+        );
+      } else if (sentRequests.has(friend._id)) {
+        // Nếu đã gửi lời mời (bằng nút), hiển thị đã gửi
+        return (
+          <Button
+            disabled
+            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            size="sm"
+          >
+            Đã gửi lời mời
           </Button>
         );
       } else {
@@ -320,6 +410,17 @@ const FriendsNCommunitys = () => {
       }
     } else {
       // Logic cho suggestions
+      if (sentRequests.has(friend._id)) {
+        return (
+          <Button
+            disabled
+            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            size="sm"
+          >
+            Đã gửi lời mời
+          </Button>
+        );
+      }
       return (
         <Button
           onClick={() => handleSendFriendRequest(friend._id)}
@@ -363,6 +464,11 @@ const FriendsNCommunitys = () => {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  handleSearchFriend();
+                }
+              }}
               placeholder="Tìm kiếm bạn bè hoặc cộng đồng..."
               className={`w-full px-3 py-2 rounded text-base mb-4 bg-white text-blue-700 placeholder-blue-400
                 ${queryerror === true ? 'border-red-500' : 'border-blue-300'}`}
@@ -372,42 +478,52 @@ const FriendsNCommunitys = () => {
             )}
 
             <div className="flex gap-4 mb-4">
-              {/* ...Select filters... */}
-              <Select value={filters.faculty || 'all'} onValueChange={(value) => handleFilterChange('faculty', value === 'all' ? '' : value)}>
+              {/* Faculty select */}
+              <Select
+                value={filters.faculty || 'all'}
+                onValueChange={value => handleFilterChange('faculty', value === 'all' ? '' : value)}
+              >
                 <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
                   <SelectValue placeholder="Theo khoa" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-blue-700">
                   <SelectItem value="all">Tất cả khoa</SelectItem>
-                  <SelectItem value="Software Engineer">Công nghệ thông tin</SelectItem>
-                  <SelectItem value="Kinh tế">Kinh tế</SelectItem>
-                  <SelectItem value="Y tế">Y tế</SelectItem>
-                  <SelectItem value="Kỹ thuật">Kỹ thuật</SelectItem>
-                  <SelectItem value="Luật">Luật</SelectItem>
+                  <SelectItem value="Software Engineering">Software Engineering</SelectItem>
+                  <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+                  <SelectItem value="Business Administration">Business Administration</SelectItem>
+                  <SelectItem value="Graphic Design">Graphic Design</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={filters.year || 'all'} onValueChange={(value) => handleFilterChange('year', value === 'all' ? '' : value)}>
+              {/* Major select */}
+              <Select
+                value={filters.class || 'all'}
+                onValueChange={value => handleFilterChange('class', value === 'all' ? '' : value)}
+              >
+                <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
+                  <SelectValue placeholder="Chuyên ngành" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-blue-700">
+                  <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
+                  <SelectItem value="Web Development">Web Development</SelectItem>
+                  <SelectItem value="Mobile Development">Mobile Development</SelectItem>
+                  <SelectItem value="Marketing">Marketing</SelectItem>
+                  <SelectItem value="Animation">Animation</SelectItem>
+                </SelectContent>
+              </Select>
+              {/* Year select */}
+              <Select
+                value={filters.year || 'all'}
+                onValueChange={value => handleFilterChange('year', value === 'all' ? '' : value)}
+              >
                 <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
                   <SelectValue placeholder="Năm học" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-blue-700">
                   <SelectItem value="all">Tất cả năm</SelectItem>
-                  <SelectItem value="2021">2021</SelectItem>
-                  <SelectItem value="2022">2022</SelectItem>
-                  <SelectItem value="2023">2023</SelectItem>
-                  <SelectItem value="2024">2024</SelectItem>
-                  <SelectItem value="2025">2025</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filters.class || 'all'} onValueChange={(value) => handleFilterChange('class', value === 'all' ? '' : value)}>
-                <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
-                  <SelectValue placeholder="Lớp" />
-                </SelectTrigger>
-                <SelectContent className="bg-white text-blue-700">
-                  <SelectItem value="all">Tất cả lớp</SelectItem>
-                  <SelectItem value="lop1">Lớp 1</SelectItem>
-                  <SelectItem value="lop2">Lớp 2</SelectItem>
-                  <SelectItem value="lop3">Lớp 3</SelectItem>
+                  <SelectItem value="First Year">First Year</SelectItem>
+                  <SelectItem value="Second Year">Second Year</SelectItem>
+                  <SelectItem value="Third Year">Third Year</SelectItem>
+                  <SelectItem value="Fourth Year">Fourth Year</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex gap-2 ml-auto">
@@ -521,20 +637,17 @@ const FriendsNCommunitys = () => {
                       </span>
                       <div>
                         <span className="font-medium text-blue-800">{req.username}</span>
-                        <div className="text-xs text-gray-500">
-                          {req.Faculty} / {req.Major} / Năm {req.Year}
-                        </div>
                       </div>
                       <div className="ml-auto flex gap-2" onClick={e => e.stopPropagation()}>
                         <Button
-                          onClick={() => handleAcceptFriendRequest(req._id, req.rqid)}
+                          onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
                           className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
                           size="sm"
                         >
                           Chấp nhận
                         </Button>
                         <Button
-                          onClick={() => handleRejectFriendRequest(req._id, req.rqid)}
+                          onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
                           className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
                           size="sm"
                         >
