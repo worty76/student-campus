@@ -18,8 +18,9 @@ const grouprouter = require('./routes/api/group.routes')
 const chatrouter = require('./routes/api/chat.routes')
 const notificationrouter = require('./routes/api/notifications.routes') 
 const documentrouter = require('./routes/api/document.routes')  
+
 app.use(cors({
-  origin: 'http://localhost:3000',  // hoặc '*' để cho tất cả
+  origin: ['http://localhost:3000', 'https://student-campus.vercel.app'],   // hoặc '*' để cho tất cả
   methods: ['GET','POST','PUT','DELETE'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
