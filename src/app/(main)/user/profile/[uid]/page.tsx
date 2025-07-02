@@ -5,7 +5,7 @@ import NavigationBar from '@/app/(main)/layouts/navbar';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import axios from 'axios';
-import { useWebSocket } from '@/app/constants/websocket.contex';
+import { useWebSocket } from '@/app/context/websocket.contex';
 import { BASEURL } from '@/app/constants/url';
 import RenderPost from '@/components/home/post';
 interface FileAttachment {
@@ -69,7 +69,7 @@ const UserProfilePage = () => {
   useEffect(() => {
     const data = localStorage.getItem('friends');
     if (data) setFriends(JSON.parse(data));
-    console.log('data :' + data)
+    // console.log('data :' + data)
   }, [userId]);
   
 
@@ -121,7 +121,7 @@ const UserProfilePage = () => {
       });
       if (response.status === 200 && Array.isArray(response.data.posts)) {
         setPosts(response.data.posts);
-        console.log(response)
+        // console.log(response)
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
@@ -150,30 +150,27 @@ const canViewProfile = () => {
       <NavigationBar />
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh]">
         {/* Sidebar (Profile Info) */}
-        <aside className="w-full md:w-64 bg-white dark:bg-[#161b22] rounded-lg shadow p-6 h-fit">
-          {canViewProfile() ? (
-            <>
-              <div className="mb-6 flex flex-col items-center">
-                <div
-                  className="w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center relative"
-                >
-                  <Image
-                    src={getCurrentAvatarUrl()}
-                    alt="User Avatar"
-                    className="w-20 h-20 object-cover rounded-full"
-                    width={80}
-                    height={80}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/schoolimg.jpg';
-                    }}
-                  />
-                </div>
-                <div className="text-center font-semibold text-lg text-blue-800 dark:text-white mb-1">
-                  {userData?.username}
-                </div>
-                <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {userData?.email}
-                </div>
+        <aside className="w-full md:w-64 bg-[#F8FAFC] dark:bg-[#161b22] rounded-lg shadow p-0 h-fit border border-blue-100">
+  {/* Profile Header */}
+  <div className="rounded-t-lg px-6 py-4 bg-[#E2E8F0] flex flex-col items-center">
+    <div className="w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center relative">
+      <Image
+        src={getCurrentAvatarUrl()}
+        alt="User Avatar"
+        className="w-20 h-20 object-cover rounded-full"
+        width={80}
+        height={80}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = '/schoolimg.jpg';
+        }}
+      />
+    </div>
+    <div className="text-center font-semibold text-lg text-[#1D4ED8] dark:text-white mb-1">
+      {userData?.username}
+    </div>
+    <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+      {userData?.email}
+    </div>
 
                
                   <div className="flex gap-2 mt-2">
@@ -212,29 +209,30 @@ const canViewProfile = () => {
                   )}
                   </div>  
               </div>
-              <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
-              <div>
-                <h4 className="font-semibold text-blue-900 mb-3">Faculty</h4>
-                <div className="text-sm text-gray-700">{userData?.Faculty}</div>
-              </div>
-              <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
-              <div>
-                <h4 className="font-semibold text-blue-900 mb-3">Major</h4>
-                <div className="text-sm text-gray-700">{userData?.Major}</div>
-              </div>
-              <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
-              <div>
-                <h4 className="font-semibold text-blue-900 mb-3">Year</h4>
-                <div className="text-sm text-gray-700">{userData?.Year}</div>
-              </div>
-              <div className="flex justify-center gap-2 mt-4">
-              
-              </div>
-            </>
-          ) : (
-            <div className="text-center text-gray-500">Người dùng không công khai thông tin cá nhân.</div>
-          )}
-        </aside>
+  {/* Info Sections */}
+  <div className="px-6 py-4">
+    <div>
+      <h4 className="font-semibold text-[#1D4ED8] mb-2 flex items-center gap-2">
+        <span>🏫</span> Faculty
+      </h4>
+      <div className="text-sm text-gray-700">{userData?.Faculty}</div>
+    </div>
+    <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
+    <div>
+      <h4 className="font-semibold text-[#1D4ED8] mb-2 flex items-center gap-2">
+        <span>📚</span> Major
+      </h4>
+      <div className="text-sm text-gray-700">{userData?.Major}</div>
+    </div>
+    <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
+    <div>
+      <h4 className="font-semibold text-[#7C3AED] mb-2 flex items-center gap-2">
+        <span>🎓</span> Year
+      </h4>
+      <div className="text-sm text-gray-700">{userData?.Year}</div>
+    </div>
+  </div>
+</aside>
         {/* Main Content (Posts) */}
         <main className="flex-1 bg-white dark:bg-[#161b22] rounded-lg shadow p-8">
           <h1 className="text-2xl font-bold mb-8">Bài viết của bạn</h1>

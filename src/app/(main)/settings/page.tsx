@@ -130,45 +130,47 @@ const SettingsPage = () => {
     }, []);
         
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 dark:bg-[#0d1117] overflow-hidden" >
+        <div className="min-h-screen  dark:bg-[#0d1117] overflow-hidden" >
             <NavigationBar />
             <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh]">
                 {/* Sidebar */}
-                <aside className="w-full md:w-64 bg-white dark:bg-[#161b22] rounded-lg shadow p-6 h-fit">
+                <aside className="w-full md:w-64 bg-[#F8FAFC] dark:bg-[#161b22] rounded-lg shadow p-6 h-fit">
                     <div className="mb-6 flex flex-col items-center">
-                        {userData?.avatar_link ? (
-                            <Image
-                                width={64}
-                                height={64}
-                                src={userData.avatar_link}
-                                alt="Avatar"
-                                className="w-16 h-16 rounded-full object-cover mb-2"
-                            />
-                        ) : (
-                            <div className="w-16 h-16 rounded-full bg-gray-300 mb-2" />
-                        )}
-                        <div className="text-center font-semibold">{userData?.username || 'Tên người dùng'}</div>
-                        <div className="text-center text-xs text-gray-500">{userData?.email || 'Email'}</div>
+                        {/* Header card */}
+                        <div className="w-full mb-4 rounded bg-[#E2E8F0] dark:bg-[#161b22] py-2 flex flex-col items-center">
+                            {userData?.avatar_link ? (
+                                <Image
+                                    width={64}
+                                    height={64}
+                                    src={userData.avatar_link}
+                                    alt="Avatar"
+                                    className="w-16 h-16 rounded-full object-cover mb-2"
+                                />
+                            ) : (
+                                <div className="w-16 h-16 rounded-full bg-gray-300 mb-2" />
+                            )}
+                            <div className="text-center font-semibold text-[#1D4ED8]">{userData?.username || 'Tên người dùng'}</div>
+                            <div className="text-center text-xs text-gray-500">{userData?.email || 'Email'}</div>
+                        </div>
                     </div>
                     <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
-                     <nav className="space-y-2">
+                    <nav className="space-y-2">
                         <Button
                             onClick={() => setItem('password')}
                             className={`w-full text-left px-3 py-2 rounded font-medium ${
                                 item === 'password'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-white'
-                                    : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    ? 'bg-[#E0F2FE] text-[#1D4ED8]'
+                                    : 'bg-transparent text-[#1D4ED8] hover:bg-[#E0F2FE]'
                             }`}
                         >
                             Security
                         </Button>
-                       
                         <Button
                             onClick={() => setItem('privacy')}
                             className={`w-full text-left px-3 py-2 rounded font-medium ${
                                 item === 'privacy'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-white'
-                                    : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    ? 'bg-[#E0F2FE] text-[#7C3AED]'
+                                    : 'bg-transparent text-[#7C3AED] hover:bg-[#E0F2FE]'
                             }`}
                         >
                             Privacy

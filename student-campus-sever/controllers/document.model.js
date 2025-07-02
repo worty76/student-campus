@@ -49,7 +49,7 @@ const uploadDocument = async (req, res) => {
 
 const renderallDocuments = async (req, res) => {
     try {
-        const documents = await Document.find().populate('uploadedBy', 'username');
+        const documents = await Document.find().populate('uploadedBy', 'username _id');
         res.status(200).json(documents);
     } catch (error) {
         console.error('Error fetching documents:', error);

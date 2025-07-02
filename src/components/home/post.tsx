@@ -6,7 +6,7 @@ import { MoreVertical } from "lucide-react";
 import PostUpdate from './postupdate';
 import axios from 'axios';
 import { BASEURL } from '@/app/constants/url';
-import { useWebSocket } from '@/app/constants/websocket.contex';
+import { useWebSocket } from '@/app/context/websocket.contex';
 import { Button } from "@/components/ui/button";
 
 interface FileAttachment {
@@ -226,7 +226,8 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
   return (
     <div
       key={post._id}
-      className="bg-white border border-blue-100 rounded-lg p-4 mb-5 shadow-sm w-full max-w-2xl mx-auto"
+      className="bg-[#F1F5F9] border border-[#CBD5E1] rounded-lg p-4 mb-5 shadow-sm w-full max-w-2xl mx-auto transition-shadow hover:shadow-md"
+      style={{ transition: "box-shadow 0.2s" }}
     >
       {/* Popup chỉnh sửa */}
       {isEditModal && (
@@ -377,12 +378,12 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
       )}
             
       {/* Nút bấm giống Facebook */}
-      <div className="flex justify-between border-t border-blue-100 pt-2 mt-2">
+      <div className="flex justify-between border-t border-[#CBD5E1] pt-2 mt-2">
         <button
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded font-semibold text-base transition-all ${
             isLiked 
-              ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
-              : "text-gray-700 hover:bg-gray-50"
+              ? "text-white bg-[#3B82F6] hover:bg-[#0EA5E9]" 
+              : "text-gray-700 hover:bg-blue-100"
           }`}
           onClick={isLiked ? handleUnLikePost : handleLikePost}
         >
@@ -394,21 +395,18 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
         <button
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded font-semibold text-base transition-all ${
             showComments
-              ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-              : "text-gray-700 hover:bg-gray-50"
+              ? "text-[#3B82F6] bg-blue-50 hover:bg-blue-100"
+              : "text-gray-700 hover:bg-blue-100"
           }`}
           onClick={() => setShowComments((v) => !v)}
         >
           <span className="flex items-center gap-1 text-lg">
-            <span className="inline-block bg-blue-100 text-blue-600 rounded-full px-2 py-0.5 text-xs font-bold">
+            <span className="inline-block bg-blue-100 text-[#3B82F6] rounded-full px-2 py-0.5 text-xs font-bold">
               {comments.length}
             </span>
             💬
           </span>
           Bình luận
-        </button>
-        <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded text-gray-700 font-semibold text-base hover:bg-gray-50 transition-all">
-          <span className="text-lg">📤</span> Chia sẻ
         </button>
       </div>
 

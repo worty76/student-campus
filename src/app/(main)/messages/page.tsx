@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation'
 import { Send, Paperclip, X, FileImage, File, Download } from "lucide-react";
-import { useWebSocket } from '@/app/constants/websocket.contex';
+import { useWebSocket } from '@/app/context/websocket.contex';
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
 import downloadFileFromObject  from '@/app/api/file_handler';
@@ -164,7 +164,7 @@ export default function MessagesPage() {
       });
 
       if (response) {
-        console.log(response.data);
+        // console.log(response.data);
       }
 
       let chatData = [];
@@ -451,7 +451,7 @@ export default function MessagesPage() {
               url: fileUrl
             });
 
-            console.log('fileURls:' , fileUrls)
+            // console.log('fileURls:' , fileUrls)
           } catch (error) {
             console.error('Error uploading file:', error);
             alert(`Không thể tải file ${attachedFile.file.name}`);
@@ -841,7 +841,7 @@ const renderselectedchat = () => {
 
  useEffect(() => {
   const handler = (message: WebSocketMessage) => {
-    console.log('Received WebSocket message:', message);
+    // console.log('Received WebSocket message:', message);
     
     if (message.type === 'online_friend') {
       if (Array.isArray(message.friends) && message.friends.length > 0 && typeof message.friends[0] === "object") {
@@ -852,7 +852,7 @@ const renderselectedchat = () => {
     }
 
     if (message.type === 'text_to' || message.type === 'file_to') {
-        console.log('Received message:', message);
+        // console.log('Received message:', message);
         
         const newMessage: Text = {
           _id: `${Date.now()}-${Math.random()}`,

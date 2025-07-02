@@ -13,7 +13,7 @@ import {
   SelectItem
 } from "@/components/ui/select";
 import axios from "axios";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+import { useWebSocket } from "@/app/context/websocket.contex";
 import { useRouter } from 'next/navigation';
 
 interface SuggestionFriend {
@@ -22,7 +22,6 @@ interface SuggestionFriend {
   Faculty: string;
   Major: string;
   Year: string;
-  
 }
 
 interface SearchFriend {
@@ -33,23 +32,24 @@ interface SearchFriend {
   Year: string;
   type: string;
   rqid: string;
-  status:string;
+  status: string;
 }
 
 interface FilterOptions {
- 
   faculty: string;
   year: string;
   class: string;
 }
+
 interface FriendRequest {
-    _id: string;
-    senderId: string;
-    receiverId: string;
-    username: string;
-    avatar_link: string;
-    status: string;
+  _id: string;
+  senderId: string;
+  receiverId: string;
+  username: string;
+  avatar_link: string;
+  status: string;
 }
+
 interface WebSocketMessage {
   type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
   from?: string;
@@ -99,62 +99,56 @@ const FriendsNCommunitys = () => {
     year: '',
     class: ''
   });
-  const [tab, setTab] = useState<'suggest' | 'requests'>('suggest');
-  const [friend_request,setFriendRequests] =useState<FriendRequest[]>([]);
-  const { sendMessage,addMessageHandler ,  status } = useWebSocket();
+  const [friend_request, setFriendRequests] = useState<FriendRequest[]>([]);
+  const { sendMessage, addMessageHandler } = useWebSocket();
   const [queryerror, setQueryerror] = useState(false);
   const router = useRouter();
   
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
-
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [friends, setFriends] = useState<string[]>([]);
 
-useEffect(() => {
-  // Lấy danh sách bạn bè từ localStorage (giả sử lưu là mảng các _id)
-  const storedFriends = localStorage.getItem('friends');
-  if (storedFriends) {
-    try {
-      setFriends(JSON.parse(storedFriends));
-    } catch {
-      setFriends([]);
-    }
-  }
-}, []);
-
-   useEffect(() => {
-          const handler = (message: WebSocketMessage) => {
-            if (
-              message?.type === "friend_request" ||
-              message?.type === "accept_request"
-            ) {
-              console.log("Nhận được tin nhắn từ WebSocket:", message);
-             
-              getlistfriendrq();  
-              getSuggestionsFriend();
-            }
-          };
-      
-          const removeHandler = addMessageHandler(handler);
-          return removeHandler;
-        }, [addMessageHandler]);
   useEffect(() => {
-    getSuggestionsFriend();
+    const storedFriends = localStorage.getItem('friends');
+    if (storedFriends) {
+      try {
+        setFriends(JSON.parse(storedFriends));
+      } catch {
+        setFriends([]);
+      }
+    }
   }, []);
 
-  // Filter data khi filters hoặc searcchdata thay đổi
   useEffect(() => {
-  
-  const filtered = searcchdata.filter(friend => {
-    return (
-      (!filters.faculty || friend.Faculty.toLowerCase().includes(filters.faculty.toLowerCase())) &&
-      (!filters.year || friend.Year.toString() === filters.year)
-    );
-  },[]);
-  setFilteredData(filtered);
+    const handler = (message: WebSocketMessage) => {
+      if (
+        message?.type === "friend_request" ||
+        message?.type === "accept_request"
+      ) {
+        // console.log("Nhận được tin nhắn từ WebSocket:", message);
+        getlistfriendrq();  
+        getSuggestionsFriend();
+      }
+    };
 
-  getlistfriendrq();
-}, [filters, searcchdata]);
+    const removeHandler = addMessageHandler(handler);
+    return removeHandler;
+  }, [addMessageHandler]);
+
+  useEffect(() => {
+    getSuggestionsFriend();
+    getlistfriendrq();
+  }, []);
+
+  useEffect(() => {
+    const filtered = searcchdata.filter(friend => {
+      return (
+        (!filters.faculty || friend.Faculty.toLowerCase().includes(filters.faculty.toLowerCase())) &&
+        (!filters.year || friend.Year.toString() === filters.year)
+      );
+    });
+    setFilteredData(filtered);
+  }, [filters, searcchdata]);
 
   const getSuggestionsFriend = async () => {
     try {
@@ -164,8 +158,7 @@ useEffect(() => {
 
       if (!userId) return;
 
-      const response = await axios.get(`
-        ${BASEURL}/api/get/hint/friend/${userId}`, {
+      const response = await axios.get(`${BASEURL}/api/get/hint/friend/${userId}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         }
@@ -196,7 +189,7 @@ useEffect(() => {
           },
         });
 
-        console.log(response.data);
+        // console.log(response.data);
         setSearchrs(true);
         setSearchsData(response.data.results);
       } catch (err) {
@@ -206,8 +199,6 @@ useEffect(() => {
       }
     }
   };
-
- 
 
   const handleFilterChange = (filterType: keyof FilterOptions, value: string) => {
     setFilters(prev => ({
@@ -226,13 +217,12 @@ useEffect(() => {
     setSearchsData([]);
     setFilteredData([]);
     setQuery('');
-    // Reset accepted requests khi reset filters
     setAcceptedRequests(new Set());
   };
 
   const handleSendFriendRequest = async (receiverId: string) => {
     try {
-      console.log('WebSocket status:', status);
+      // console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
       const toid = receiverId;
       sendMessage({
@@ -240,7 +230,6 @@ useEffect(() => {
         from: fromid || '123',
         to: toid || '123',
       });
-      // Đánh dấu đã gửi lời mời
       setSentRequests(prev => new Set(prev).add(receiverId));
     } catch (err) {
       console.error("Gửi kết bạn thất bại:", err);
@@ -248,31 +237,28 @@ useEffect(() => {
     }
   };
 
-  const handleAcceptFriendRequest = async (receiverId: string , reqid: string) => {
-  try {
-    console.log('WebSocket status:', status);
-    const fromid = localStorage.getItem('userId');
-    const toid = receiverId ;
-    const rqid = reqid;
-    sendMessage({
-      type: 'accept_request',
-      from:  fromid|| '123',
-      to: toid || '123',
-      reqid: rqid || '123'
-    });
-    // Đánh dấu đã chấp nhận
-    setAcceptedRequests(prev => new Set(prev).add(receiverId));
-  } catch (err) {
-    console.error("Gửi kết bạn thất bại:", err);
-    alert("Lỗi khi chấp nhận kết bạn.");
-  }
+  const handleAcceptFriendRequest = async (receiverId: string, reqid: string) => {
+    try {
+      // console.log('WebSocket status:', status);
+      const fromid = localStorage.getItem('userId');
+      const toid = receiverId;
+      const rqid = reqid;
+      sendMessage({
+        type: 'accept_request',
+        from: fromid || '123',
+        to: toid || '123',
+        reqid: rqid || '123'
+      });
+      setAcceptedRequests(prev => new Set(prev).add(receiverId));
+    } catch (err) {
+      console.error("Gửi kết bạn thất bại:", err);
+      alert("Lỗi khi chấp nhận kết bạn.");
+    }
   };
 
-  const handleRejectFriendRequest = async (friendId: string,reqid: string) => {
-     try {
-      
-      
-      console.log('WebSocket status:', status);
+  const handleRejectFriendRequest = async (friendId: string, reqid: string) => {
+    try {
+      // console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
       const toid = friendId;
       const rqid = reqid;
@@ -282,48 +268,45 @@ useEffect(() => {
         to: toid || '123',
         reqid: rqid || '123'
       });
-       setSearchrs(false);
-       setSearchsData([]);
-      
+      setSearchrs(false);
+      setSearchsData([]);
     } catch (err) {
       console.error("Gửi kết bạn thất bại:", err);
       alert("Lỗi khi chấp nhận kết bạn.");
     }
   };
   
-  const getlistfriendrq = async () =>{
+  const getlistfriendrq = async () => {
     try {
-    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
 
       if (!userId) return;
 
-      const response = await axios.post(`${BASEURL}/api/get/list-friend`, {id:userId},{
+      const response = await axios.post(`${BASEURL}/api/get/list-friend`, {id: userId}, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         }
-    });
-    if(response){
-        console.log(response.data.data)
+      });
+      if (response) {
+        // console.log(response.data.data)
         setFriendRequests(response.data.data)
-    }
+      }
     } catch (error) {
-        console.log(error)
+      console.log(error)
     }
   }
-  // Helper function to check if an item is a SearchFriend
+
   const isSearchFriend = (friend: SuggestionFriend | SearchFriend): friend is SearchFriend => {
     return 'type' in friend;
   };
 
-  // Render button based on friend type and search state
   const renderFriendButton = (friend: SuggestionFriend | SearchFriend) => {
-    // Kiểm tra đã là bạn bè chưa
     if (friends.includes(friend._id)) {
       return (
         <Button
           disabled
-          className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+          className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
           size="sm"
         >
           Bạn Bè
@@ -331,12 +314,11 @@ useEffect(() => {
       );
     } 
     if (searchrs && isSearchFriend(friend)) {
-      // Nếu đã chấp nhận lời mời thì hiện "Đã chấp nhận"
       if (acceptedRequests.has(friend._id)) {
         return (
           <Button
             disabled
-            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
             size="sm"
           >
             Đã chấp nhận
@@ -344,12 +326,11 @@ useEffect(() => {
         );
       }
 
-      // Logic cho kết quả search
       if (friend.type === 'sender' && friend.status === "pending") {
         return (
           <Button
             disabled
-            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
             size="sm"
           >
             Đã gửi lời mời
@@ -360,7 +341,7 @@ useEffect(() => {
           <div className="flex space-x-2">
             <Button
               onClick={() => handleAcceptFriendRequest(friend._id, friend.rqid)}
-              className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
+              className="bg-green-500 text-white hover:bg-green-600 px-3 py-2 rounded-lg text-sm transition-colors"
               size="sm"
               disabled={acceptedRequests.has(friend._id)}
             >
@@ -368,7 +349,7 @@ useEffect(() => {
             </Button>
             <Button
               onClick={() => handleRejectFriendRequest(friend._id, friend.rqid)}
-              className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
+              className="bg-red-500 text-white hover:bg-red-600 px-3 py-2 rounded-lg text-sm transition-colors"
               size="sm"
               disabled={acceptedRequests.has(friend._id)}
             >
@@ -380,18 +361,17 @@ useEffect(() => {
         return (
           <Button
             disabled
-            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
             size="sm"
           >
             Bạn Bè
           </Button>
         );
       } else if (sentRequests.has(friend._id)) {
-        // Nếu đã gửi lời mời (bằng nút), hiển thị đã gửi
         return (
           <Button
             disabled
-            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
             size="sm"
           >
             Đã gửi lời mời
@@ -401,7 +381,7 @@ useEffect(() => {
         return (
           <Button
             onClick={() => handleSendFriendRequest(friend._id)}
-            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-1 rounded"
+            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition-colors"
             size="sm"
           >
             Kết bạn
@@ -409,12 +389,11 @@ useEffect(() => {
         );
       }
     } else {
-      // Logic cho suggestions
       if (sentRequests.has(friend._id)) {
         return (
           <Button
             disabled
-            className="bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm"
             size="sm"
           >
             Đã gửi lời mời
@@ -424,7 +403,7 @@ useEffect(() => {
       return (
         <Button
           onClick={() => handleSendFriendRequest(friend._id)}
-          className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-1 rounded"
+          className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition-colors"
           size="sm"
         >
           Kết bạn
@@ -433,143 +412,228 @@ useEffect(() => {
     }
   };
 
-  // Data để hiển thị (filtered nếu có search, suggestions nếu không)
-   const displayData = searchrs ? filteredData : suggestionFriends;
+  const displayData = searchrs ? filteredData : suggestionFriends;
 
-    return (
-    <div className="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
+  return (
+    <div>
       <NavigationBar />
-      <div className="relative top-[10vh] max-w-5xl mx-auto py-8 px-4">
-      {/* Tab Buttons - full width, same as search/filter */}
-        <div className="flex gap-2 mb-6 w-full">
-          <Button
-            className={`flex-1 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded shadow-none border-none ${tab === 'suggest' ? 'ring-2 ring-blue-400' : ''}`}
-            onClick={() => setTab('suggest')}
-            variant="ghost"
-          >
-            Gợi ý kết bạn
-          </Button>
-          <Button
-            className={`flex-1 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded shadow-none border-none ${tab === 'requests' ? 'ring-2 ring-blue-400' : ''}`}
-            onClick={() => setTab('requests')}
-            variant="ghost"
-          >
-            Lời mời kết bạn
-          </Button>
-        </div>
-        {/* Search Input and Filters (only show in "suggest" tab) */}
-        {tab === 'suggest' && (
-          <>
-            <Input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  handleSearchFriend();
-                }
-              }}
-              placeholder="Tìm kiếm bạn bè hoặc cộng đồng..."
-              className={`w-full px-3 py-2 rounded text-base mb-4 bg-white text-blue-700 placeholder-blue-400
-                ${queryerror === true ? 'border-red-500' : 'border-blue-300'}`}
-            />
-            {queryerror === true && (
-              <p className="text-red-500 text-sm mt-1">Vui lòng nhập từ khóa tìm kiếm.</p>
-            )}
-
-            <div className="flex gap-4 mb-4">
-              {/* Faculty select */}
-              <Select
-                value={filters.faculty || 'all'}
-                onValueChange={value => handleFilterChange('faculty', value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
-                  <SelectValue placeholder="Theo khoa" />
-                </SelectTrigger>
-                <SelectContent className="bg-white text-blue-700">
-                  <SelectItem value="all">Tất cả khoa</SelectItem>
-                  <SelectItem value="Software Engineering">Software Engineering</SelectItem>
-                  <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
-                  <SelectItem value="Business Administration">Business Administration</SelectItem>
-                  <SelectItem value="Graphic Design">Graphic Design</SelectItem>
-                </SelectContent>
-              </Select>
-              {/* Major select */}
-              <Select
-                value={filters.class || 'all'}
-                onValueChange={value => handleFilterChange('class', value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
-                  <SelectValue placeholder="Chuyên ngành" />
-                </SelectTrigger>
-                <SelectContent className="bg-white text-blue-700">
-                  <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
-                  <SelectItem value="Web Development">Web Development</SelectItem>
-                  <SelectItem value="Mobile Development">Mobile Development</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Animation">Animation</SelectItem>
-                </SelectContent>
-              </Select>
-              {/* Year select */}
-              <Select
-                value={filters.year || 'all'}
-                onValueChange={value => handleFilterChange('year', value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="w-40 border-blue-300 bg-white text-blue-700">
-                  <SelectValue placeholder="Năm học" />
-                </SelectTrigger>
-                <SelectContent className="bg-white text-blue-700">
-                  <SelectItem value="all">Tất cả năm</SelectItem>
-                  <SelectItem value="First Year">First Year</SelectItem>
-                  <SelectItem value="Second Year">Second Year</SelectItem>
-                  <SelectItem value="Third Year">Third Year</SelectItem>
-                  <SelectItem value="Fourth Year">Fourth Year</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2 ml-auto">
-                <Button
-                  onClick={handleSearchFriend}
-                  variant="outline"
-                  className="border-blue-500 text-blue-700 hover:bg-blue-50"
-                >
-                  Tìm kiếm
-                </Button>
-                <Button
-                  onClick={resetFilters}
-                  variant="outline"
-                  className="border-blue-500 text-blue-700 hover:bg-blue-50"
-                >
-                  Reset
-                </Button>
-              </div>
+      <div className="container mx-auto relative top-[5vh] max-w-7xl py-8 px-2 sm:px-4">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* Sidebar - Bộ lọc */}
+          <div className="w-full lg:w-80 bg-[#F8FAFC] rounded-xl shadow-lg p-0 h-[500px] lg:h-[700px] sticky top-24 flex flex-col mb-6 lg:mb-0">
+            {/* Header Search */}
+            <div className="rounded-t-xl px-6 py-4 bg-[#E2E8F0]">
+              <h3 className="text-lg font-semibold text-[#1D4ED8] mb-0 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-[#1D4ED8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Tìm kiếm bạn bè
+              </h3>
             </div>
-          </>
-        )}
+            <div className="px-6 py-4">
+              <Input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleSearchFriend();
+                  }
+                }}
+                placeholder="Nhập tên để tìm kiếm..."
+                className={`w-full px-4 py-3 rounded-lg text-base mb-3 bg-gray-50 border-2 transition-colors
+                  ${queryerror ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-blue-300 focus:border-blue-500'}`}
+              />
+              {queryerror && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Vui lòng nhập từ khóa tìm kiếm
+                </p>
+              )}
+              <Button
+                onClick={handleSearchFriend}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition-colors"
+                disabled={loading}
+              >
+                {loading ? 'Đang tìm...' : 'Tìm kiếm'}
+              </Button>
+            </div>
 
-        
+            {/* Header Bộ lọc */}
+            <div className="rounded-t-xl px-6 py-4 bg-[#E0F2FE] border-t border-blue-100">
+              <h3 className="text-lg font-semibold text-[#7C3AED] mb-0 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-[#7C3AED]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Bộ lọc
+              </h3>
+            </div>
+            <div className="px-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Khoa</label>
+                  <Select
+                    value={filters.faculty || 'all'}
+                    onValueChange={value => handleFilterChange('faculty', value === 'all' ? '' : value)}
+                  >
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white transition-colors">
+                      <SelectValue placeholder="Chọn khoa" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all">Tất cả khoa</SelectItem>
+                      <SelectItem value="Software Engineering">Software Engineering</SelectItem>
+                      <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+                      <SelectItem value="Business Administration">Business Administration</SelectItem>
+                      <SelectItem value="Graphic Design">Graphic Design</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        <hr className="my-4 border-blue-200" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Chuyên ngành</label>
+                  <Select
+                    value={filters.class || 'all'}
+                    onValueChange={value => handleFilterChange('class', value === 'all' ? '' : value)}
+                  >
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white transition-colors">
+                      <SelectValue placeholder="Chọn chuyên ngành" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
+                      <SelectItem value="Web Development">Web Development</SelectItem>
+                      <SelectItem value="Mobile Development">Mobile Development</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                      <SelectItem value="Animation">Animation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        {/* Content */}
-        <div className="mt-8">
-          {tab === 'suggest' ? (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold text-blue-700">
-                  {searchrs ? `Kết quả tìm kiếm (${filteredData.length})` : 'Gợi ý bạn bè'}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Năm học</label>
+                  <Select
+                    value={filters.year || 'all'}
+                    onValueChange={value => handleFilterChange('year', value === 'all' ? '' : value)}
+                  >
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white transition-colors">
+                      <SelectValue placeholder="Chọn năm học" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all">Tất cả năm</SelectItem>
+                      <SelectItem value="First Year">First Year</SelectItem>
+                      <SelectItem value="Second Year">Second Year</SelectItem>
+                      <SelectItem value="Third Year">Third Year</SelectItem>
+                      <SelectItem value="Fourth Year">Fourth Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button
+                onClick={resetFilters}
+                variant="outline"
+                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-2 rounded-lg transition-colors mt-4"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Đặt lại bộ lọc
+              </Button>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col gap-6 h-auto lg:h-[700px]">
+            {/* Lời mời kết bạn */}
+            <div className="bg-[var(--color-card)] rounded-xl shadow-lg p-4 sm:p-6 flex-1 max-h-[200px] lg:max-h-[220px] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                  <svg className="w-6 h-6 mr-3 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Lời mời kết bạn
+                  {friend_request.length > 0 && (
+                    <span className="ml-2 bg-pink-100 text-pink-800 text-sm px-2 py-1 rounded-full">
+                      {friend_request.length}
+                    </span>
+                  )}
                 </h2>
-                {searchrs && (
-                    <div className="text-sm text-blue-600 flex items-center gap-2">
-                    {filters.faculty && <span className="mr-2">Khoa: {filters.faculty}</span>}
-                    {filters.year && <span className="mr-2">Năm: {filters.year}</span>}
-                    {filters.class && <span className="mr-2">Lớp: {filters.class}</span>}
+              </div>
+              
+              <div className="space-y-3">
+                {friend_request.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p className="text-lg">Không có lời mời kết bạn nào</p>
+                    <p className="text-sm">Các lời mời kết bạn sẽ xuất hiện ở đây</p>
+                  </div>
+                ) : (
+                  friend_request.map((req) => (
+                    <div
+                      key={req._id}
+                      className="flex items-center bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 hover:from-pink-100 hover:to-purple-100 transition-all duration-200 cursor-pointer border border-pink-100"
+                      onClick={() => router.push(`/user/profile/${req._id}`)}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg mr-4 shadow-md">
+                        {req.username?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-semibold text-gray-800 text-lg">{req.username}</span>
+                        <p className="text-sm text-gray-600">Muốn kết bạn với bạn</p>
+                      </div>
+                      <div className="flex gap-3" onClick={e => e.stopPropagation()}>
+                        <Button
+                          onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
+                          className="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
+                          size="sm"
+                        >
+                          Chấp nhận
+                        </Button>
+                        <Button
+                          onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
+                          className="bg-red-500 text-white hover:bg-red-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
+                          size="sm"
+                        >
+                          Từ chối
+                        </Button>
+                      </div>
                     </div>
+                  ))
                 )}
               </div>
-              <hr className="border-gray-200" />
-              <ul className="space-y-3">
+            </div>
+
+            {/* Gợi ý kết bạn */}
+            <div className="bg-[var(--color-card)] rounded-xl shadow-lg p-4 sm:p-6 flex-1 max-h-[320px] lg:max-h-[440px] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                  <svg className="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                  {searchrs ? 'Kết quả tìm kiếm' : 'Gợi ý kết bạn'}
+                  {searchrs && (
+                    <span className="ml-2 bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
+                      {filteredData.length} kết quả
+                    </span>
+                  )}
+                </h2>
+                {searchrs && (
+                  <div className="text-sm text-gray-600 flex items-center gap-4">
+                    {filters.faculty && <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Khoa: {filters.faculty}</span>}
+                    {filters.year && <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Năm: {filters.year}</span>}
+                    {filters.class && <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Lớp: {filters.class}</span>}
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-3">
                 {loading ? (
-                  <p className="text-gray-500 text-sm">Đang tải...</p>
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-500 mt-4">Đang tải...</p>
+                  </div>
                 ) : (
                   (query
                     ? displayData.filter(friend =>
@@ -583,83 +647,47 @@ useEffect(() => {
                         )
                       : displayData
                     ).map((friend) => (
-                      <li
+                      <div
                         key={friend._id}
-                        className="flex items-center bg-blue-50 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer"
-                       onClick={() => {
+                        className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer border border-blue-100"
+                        onClick={() => {
                           localStorage.setItem('profileData', JSON.stringify(friend));
                           router.push(`/user/profile/${friend._id}`);
-                      }}
+                        }}
                       >
-                        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold mr-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg mr-4 shadow-md">
                           {friend.username?.charAt(0).toUpperCase() || "U"}
-                        </span>
-                        <div>
-                          <span className="font-medium text-blue-800">{friend.username}</span>
-                          <div className="text-xs text-gray-500">
-                            {friend.Faculty} / {friend.Major} / Năm {friend.Year}
+                        </div>
+                        <div className="flex-1">
+                          <span className="font-semibold text-gray-800 text-lg">{friend.username}</span>
+                          <div className="text-sm text-gray-600 flex items-center gap-2">
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs">{friend.Faculty}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs">{friend.Major}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs">Năm {friend.Year}</span>
                           </div>
                         </div>
                         <div className="ml-auto" onClick={e => e.stopPropagation()}>
-                          
                           {renderFriendButton(friend)}
                         </div>
-                      </li>
+                      </div>
                     ))
                   ) : (
-                    <p className="text-sm text-blue-600">
-                      {searchrs ? 'Không tìm thấy kết quả phù hợp.' : 'Không có gợi ý nào.'}
-                    </p>
+                    <div className="text-center py-8 text-gray-500">
+                      <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <p className="text-lg">
+                        {searchrs ? 'Không tìm thấy kết quả phù hợp' : 'Không có gợi ý nào'}
+                      </p>
+                      <p className="text-sm">
+                        {searchrs ? 'Thử thay đổi từ khóa hoặc bộ lọc' : 'Các gợi ý kết bạn sẽ xuất hiện ở đây'}
+                      </p>
+                    </div>
                   )
                 )}
-              </ul>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold text-blue-700">
-                  Lời mời kết bạn
-                </h2>
               </div>
-              <hr className="border-gray-200" />
-              <ul className="space-y-3">
-                {friend_request.length === 0 ? (
-                  <p className="text-sm text-blue-600">Không có lời mời kết bạn nào.</p>
-                ) : (
-                  friend_request.map((req) => (
-                    <li
-                      key={req._id}
-                      className="flex items-center bg-blue-50 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/user/profile/${req._id}`)}
-                    >
-                      <span className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-blue-500 flex items-center justify-center text-white font-bold mr-3">
-                        {req.username?.charAt(0).toUpperCase() || "U"}
-                      </span>
-                      <div>
-                        <span className="font-medium text-blue-800">{req.username}</span>
-                      </div>
-                      <div className="ml-auto flex gap-2" onClick={e => e.stopPropagation()}>
-                        <Button
-                          onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
-                          className="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded"
-                          size="sm"
-                        >
-                          Chấp nhận
-                        </Button>
-                        <Button
-                          onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
-                          className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded"
-                          size="sm"
-                        >
-                          Từ chối
-                        </Button>
-                      </div>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
