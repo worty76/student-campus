@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
 import Toast from '@/components/home/toastnoti';
-
+import { WSS } from '../constants/url';
 type WebSocketStatus = 'Disconnected' | 'Connecting' | 'Connected' | 'Error' | 'Reconnecting';
 
 interface OnlineFriend {
@@ -108,7 +108,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
     setStatus('Connecting');
 
-    const socket = new WebSocket('ws://localhost:3001');
+    const socket = new WebSocket(WSS || '');
     socketRef.current = socket;
 
     socket.onopen = () => {
