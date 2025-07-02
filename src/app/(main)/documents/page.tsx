@@ -203,13 +203,13 @@ export default function DocumentsPage() {
     );
 
     return (
-        <div className="min-h-[120vh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div >
             <div className="max-w-5xl mx-auto px-4 py-8 pt-[10vh]">
                 <NavigationBar />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
                     <div className="md:col-span-1">
-                        <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-8">
+                        <div className="bg-[#F8FAFC] rounded-2xl shadow-xl p-6 sticky top-8">
                             {/* Upload Button */}
                             <div className="mb-6">
                                 <Button
@@ -222,14 +222,14 @@ export default function DocumentsPage() {
                             </div>
                             
                             {/* Filter Header */}
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                                    <Filter className="mr-2 text-blue-500" size={24} />
+                            <div className="flex items-center justify-between mb-6 bg-[#E0F2FE] px-4 py-2 rounded-xl">
+                                <h2 className="text-xl font-bold text-[#1D4ED8] flex items-center">
+                                    <Filter className="mr-2 text-[#1D4ED8]" size={24} />
                                     Bộ Lọc
                                 </h2>
                                 <button
                                     onClick={clearFilters}
-                                    className="text-sm text-blue-500 hover:text-blue-700 font-medium"
+                                    className="text-sm text-[#1D4ED8] hover:text-[#7C3AED] font-medium"
                                 >
                                     Xóa bộ lọc
                                 </button>
@@ -237,30 +237,30 @@ export default function DocumentsPage() {
                             <div className="space-y-6">
                                 {/* Search */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2">
                                         Tìm kiếm
                                     </label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7C3AED]" size={18} />
                                         <input
                                             type="text"
                                             placeholder="Tìm tài liệu..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                                            className="w-full pl-10 pr-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1D4ED8] focus:outline-none transition-colors"
                                         />
                                     </div>
                                 </div>
                                 {/* Subject Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <Book className="mr-2 text-blue-500" size={16} />
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
+                                        <Book className="mr-2 text-[#1D4ED8]" size={16} />
                                         Môn học
                                     </label>
                                     <select
                                         value={subject}
                                         onChange={(e) => setSubject(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1D4ED8] focus:outline-none transition-colors"
                                     >
                                         <option value="">Tất cả môn học</option>
                                         {subjects.map(s => (
@@ -270,14 +270,14 @@ export default function DocumentsPage() {
                                 </div>
                                 {/* Lecturer Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
                                         <User className="mr-2 text-purple-500" size={16} />
                                         Giảng viên
                                     </label>
                                     <select
                                         value={lecturer}
                                         onChange={(e) => setLecturer(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors"
+                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-purple-500 focus:outline-none transition-colors"
                                     >
                                         <option value="">Tất cả giảng viên</option>
                                         {lecturers.map(l => (
@@ -287,14 +287,14 @@ export default function DocumentsPage() {
                                 </div>
                                 {/* Faculty Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
                                         <GraduationCap className="mr-2 text-green-500" size={16} />
                                         Khoa/Năm học
                                     </label>
                                     <select
                                         value={faculty}
                                         onChange={(e) => setFaculty(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
+                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-green-500 focus:outline-none transition-colors"
                                     >
                                         <option value="">Tất cả khoa/năm</option>
                                         {faculties.map(f => (
@@ -304,14 +304,14 @@ export default function DocumentsPage() {
                                 </div>
                                 {/* Year Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
                                         <Calendar className="mr-2 text-orange-500" size={16} />
                                         Năm học
                                     </label>
                                     <select
                                         value={year}
                                         onChange={(e) => setYear(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none transition-colors"
+                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-orange-500 focus:outline-none transition-colors"
                                     >
                                         <option value="">Tất cả năm học</option>
                                         {years.map(y => (

@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
 import Toast from '@/components/home/toastnoti';
-
+import { WSS } from '../constants/url';
 type WebSocketStatus = 'Disconnected' | 'Connecting' | 'Connected' | 'Error' | 'Reconnecting';
 
 interface OnlineFriend {
@@ -108,7 +108,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
     setStatus('Connecting');
 
-    const socket = new WebSocket('ws://localhost:3001');
+    const socket = new WebSocket(WSS || '');
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -166,20 +166,26 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
           });
         }
          if (data.type === 'likes_post' || data.type === 'likes_post') {
-          addToast({
-            title: 'Thông Báo',
-            message: `${data.fromName || data.from || 'Ai đó'} Đã like bài viết của bạn`,
-            avatar: '👤',
-            color: 'bg-blue-500'
-          });
+          const localUserId = typeof window !== "undefined" ? localStorage.getItem('userId') : null;
+          if (localUserId && localUserId !== data.from) {
+            addToast({
+              title: 'Thông Báo',
+              message: `${data.fromName || data.from || 'Ai đó'} Đã like bài viết của bạn`,
+              avatar: '👤',
+              color: 'bg-blue-500'
+            });
+          }
         }
-         if (data.type === 'Comment' || data.type === 'comment') {
-          addToast({
-            title: 'Thông Báo',
-            message: `${data.fromName || data.from || 'Ai đó'} Đã bình luận vào bài viết của bạn`,
-            avatar: '👤',
-            color: 'bg-blue-500'
-          });
+        if (data.type === 'Comment' || data.type === 'comment') {
+          const localUserId = typeof window !== "undefined" ? localStorage.getItem('userId') : null;
+          if (localUserId && localUserId !== data.from) {
+            addToast({
+              title: 'Thông Báo',
+              message: `${data.fromName || data.from || 'Ai đó'} Đã bình luận vào bài viết của bạn`,
+              avatar: '👤',
+              color: 'bg-blue-500'
+            });
+          }
         }
 
         if (data.type === 'text_to' || data.type === 'text_to') {

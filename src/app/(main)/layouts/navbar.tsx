@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+import { useWebSocket } from "@/app/context/websocket.contex";
 
 
 
@@ -51,6 +51,7 @@ interface Friends {
 export default function NavigationBar() {
     const [userId, setUserId] = useState('');
     const [noticounts, setNoticounts] = useState(0);
+ 
     const {addMessageHandler} = useWebSocket();
 
     // Wrap getNotificationCounts in useCallback
@@ -115,13 +116,15 @@ export default function NavigationBar() {
     }, [getNotificationCounts]);
 
     return (
-        <div className="fixed left-0 top-0 w-full bg-white border-t border-gray-200 z-50 shadow-lg flex justify-center">
+        <div className="fixed left-0 top-0 w-full bg-[#1E293B] border-t border-gray-200 z-50 shadow-lg flex justify-center">
             <NavigationMenu className="w-full max-w-xl h-16">
                 <NavigationMenuList className="flex justify-center gap-2 sm:gap-6 py-3 w-full">
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/home"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-blue-600 font-medium hover:text-blue-700 transition-colors text-sm sm:text-base"
+                        
+    
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>🏠</span>
                             <span className="hidden sm:inline">Home</span>
@@ -130,7 +133,9 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/messages"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
+                         
                         >
                             <span>💬</span>
                             <span className="hidden sm:inline">Messages</span>
@@ -139,7 +144,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/documents"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                              className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>📚</span>
                             <span className="hidden sm:inline">Documents</span>
@@ -148,7 +153,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/community"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>🌐</span>
                             <span className="hidden sm:inline">Comunity</span>
@@ -157,7 +162,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/friends"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                              className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>🔍</span>
                             <span className="hidden sm:inline">Friends</span>
@@ -168,7 +173,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem className="relative">
                         <NavigationMenuLink
                             href='/notifications'
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>🔔
                                 {/* Notification badge */}
@@ -184,7 +189,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href={`/user/profile?userid=${userId}`}
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>👤</span>
                             <span className="hidden sm:inline">Profile</span>
@@ -193,7 +198,7 @@ export default function NavigationBar() {
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/settings"
-                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm sm:text-base"
+                            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-white font-medium transition-colors text-sm sm:text-base hover:bg-transparent hover:text-blue-300 focus:bg-transparent focus:text-blue-300 active:bg-transparent active:text-blue-300"
                         >
                             <span>⚙️</span>
                             <span className="hidden sm:inline">Settings</span>

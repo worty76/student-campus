@@ -8,6 +8,7 @@ import Image from 'next/image'
 import axios from 'axios';
 import {BASEURL} from "@/app/constants/url";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -16,8 +17,10 @@ export default function RegisterPage() {
   const [faculty, setFaculty] = useState('');
   const [major, setMajor] = useState('');
   const [year, setYear] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword,] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [registerError, setRegisterError] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -44,18 +47,17 @@ export default function RegisterPage() {
       );
 
       if (response && response.data) {
-        console.log(response.data);
-        // Nếu đăng ký thành công, chuyển hướng sau 2s
+        setRegisterSuccess(true);
         setTimeout(() => {
+          setRegisterSuccess(false);
           router.push("/login");
         }, 2000);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Registration error:", error);
+      setRegisterError(true);
     }
   };
-
-
 
   return (
     <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
@@ -144,22 +146,7 @@ export default function RegisterPage() {
                   className={`pr-10 w-full ${passwordError ===true ? 'border-red-500' : ''}`}
                 />
 
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-600 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.657.336-3.236.938-4.675M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.062-2.675A9.956 9.956 0 0022 9c0 5.523-4.477 10-10 10a9.956 9.956 0 01-4.675-.938" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm7.5 0c-1.74 4.5-6.5 7.5-10.5 7.5S2.24 16.5.5 12C2.24 7.5 7.04 4.5 12 4.5s9.26 3 10.5 7.5z" />
-                    </svg>
-                  )}
-                </button>
+  
               </div>
               {/* Faculty select */}
               <div className="w-full">
@@ -204,7 +191,6 @@ export default function RegisterPage() {
                 </Select>
               </div>
               <Button
-                onClick={handleRegister}
                 type="submit"
                 className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-2 rounded-full font-medium shadow transition-all"
               >
@@ -218,6 +204,36 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal đăng ký thất bại */}
+      <Dialog open={registerError} onOpenChange={setRegisterError}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Đăng ký thất bại</DialogTitle>
+            <DialogDescription>
+              Có lỗi xảy ra hoặc email đã tồn tại. Vui lòng thử lại!
+            </DialogDescription>
+          </DialogHeader>
+          <button
+            onClick={() => setRegisterError(false)}
+            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 w-full"
+          >
+            Đóng
+          </button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal đăng ký thành công */}
+      <Dialog open={registerSuccess} onOpenChange={setRegisterSuccess}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-green-600">Đăng ký thành công</DialogTitle>
+            <DialogDescription>
+              Bạn sẽ được chuyển về trang đăng nhập sau 2 giây.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -10,13 +10,13 @@ const user = {
 };
 
 interface PostAddProps {
- 
   _id: string;
   name: string;
+  avatar?: string;
   onClose: () => void;
 }
 
-const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => {
+const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, avatar, onClose }) => {
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -136,7 +136,7 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, onClose }) => 
       {/* User info */}
       <div className="flex items-center gap-3 px-5 pt-4">
         <Image
-          src={user.avatar}
+          src={avatar || "/api/placeholder/40/40"}
           alt="avatar"
           className="w-10 h-10 rounded-full object-cover bg-blue-100"
           width={80}

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { BASEURL } from "@/app/constants/url";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+import { useWebSocket } from "@/app/context/websocket.contex";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "../../layouts/navbar";
 import { useParams } from "next/navigation";

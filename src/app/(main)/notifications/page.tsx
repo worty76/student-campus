@@ -5,7 +5,7 @@ import NavigationBar from "@/app/(main)/layouts/navbar";
 import Image from "next/image";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+import { useWebSocket } from "@/app/context/websocket.contex";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
 

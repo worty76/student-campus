@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Users, X, Search, MessageCircle, Plus } from "lucide-react";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
-import { useWebSocket } from "@/app/constants/websocket.contex";
+import { useWebSocket } from "@/app/context/websocket.contex";
 import Image from "next/image";
 
 interface Friends {

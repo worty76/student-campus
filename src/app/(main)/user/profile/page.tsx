@@ -68,7 +68,7 @@ const UserProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [isAddmodalopen, setisAddmodalopen] = useState(false);
+  const [, setisAddmodalopen] = useState(false);
   const router = useRouter();
   const facultyOptions = [
     'Software Engineering',
@@ -105,7 +105,7 @@ const UserProfilePage = () => {
         setUserData(userData);
         setEditedData(userData);
         setAvatarPreview(userData.avatar_link || userData.avatar || '/schoolimg.jpg');
-        console.log(userData);
+        // console.log(userData);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -214,7 +214,7 @@ const UserProfilePage = () => {
       });
       if (response.status === 200 && Array.isArray(response.data.posts)) {
         setPosts(response.data.posts);
-        console.log(response)
+        // console.log(response)
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
@@ -227,13 +227,13 @@ const UserProfilePage = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 dark:bg-[#0d1117] overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <NavigationBar />
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh] overflow-hidden ">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh] overflow-hidden">
         {/* Sidebar - Profile Info and Friends */}
         <div className="w-full md:w-64 flex flex-col gap-4">
           {/* Profile Info Container */}
-          <aside className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6">
+          <aside className="bg-[#F8FAFC] dark:bg-[#161b22] rounded-lg shadow p-6 border border-blue-100">
             <div className="mb-6 flex flex-col items-center">
               <div
                 className={`w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center relative ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
@@ -372,71 +372,72 @@ const UserProfilePage = () => {
           </aside>
 
           {/* Friends List Container */}
-          <div className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="font-semibold text-lg text-gray-900 dark:text-white">Bạn bè</span>
-                <span className="ml-2 text-gray-500 text-sm">{userData?.friends?.length || 0} người bạn</span>
-              </div>
-              {/* <a href="#" className="text-blue-600 text-sm hover:underline">Xem tất cả bạn bè</a> */}
+          <div className="bg-[#F8FAFC] dark:bg-[#161b22] rounded-lg shadow p-0 border border-blue-100">
+            <div className="rounded-t-lg px-6 py-3 bg-[#E2E8F0]">
+              <span className="font-semibold text-[#1D4ED8] flex items-center gap-2 text-lg">
+                <span>👥</span>
+                Bạn bè
+              </span>
+              <span className="ml-2 text-gray-500 text-sm">{userData?.friends?.length || 0} người bạn</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-           {userData?.friends?.slice(0, 9).map((friend) => (
-              <button    
-                onClick={() => {
-                  localStorage.setItem('profileData', JSON.stringify(friend));
-                  router.push(`/user/profile/${friend._id}`);
-                }}
-                key={friend._id}
-                className="flex flex-col items-center rounded-lg p-2 transition-all duration-200"
-              >
-                <div className="w-16 h-16 rounded-lg overflow-hidden mb-1 bg-white flex items-center justify-center">
-                  <Image
-                    src={friend.avatar_link || '/schoolimg.jpg'}
-                    alt={friend.username}
-                    width={64}
-                    height={64}
-                    className="object-contain w-full h-full transition duration-200 hover:brightness-110"
-                  />
-                </div>
-                <span className="text-xs text-gray-800 dark:text-gray-200 text-center truncate w-16">
-                  {friend.username}
-                </span>
-              </button>
-            ))}
-
-
-
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-3 gap-3">
+                {userData?.friends?.slice(0, 9).map((friend) => (
+                  <button    
+                    onClick={() => {
+                      localStorage.setItem('profileData', JSON.stringify(friend));
+                      router.push(`/user/profile/${friend._id}`);
+                    }}
+                    key={friend._id}
+                    className="flex flex-col items-center rounded-lg p-2 transition-all duration-200"
+                  >
+                    <div className="w-16 h-16 rounded-lg overflow-hidden mb-1 bg-white flex items-center justify-center">
+                      <Image
+                        src={friend.avatar_link || '/schoolimg.jpg'}
+                        alt={friend.username}
+                        width={64}
+                        height={64}
+                        className="object-contain w-full h-full transition duration-200 hover:brightness-110"
+                      />
+                    </div>
+                    <span className="text-xs text-[#1D4ED8] text-center truncate w-16">
+                      {friend.username}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Main Content (Posts) */}
-        <main className="flex-1 bg-white dark:bg-[#161b22] rounded-lg shadow p-8 flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Bài viết của bạn</h1>
-            <Button
-              onClick={() => {setisAddmodalopen(true)
-                console.log(isAddmodalopen)
-              }}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Đăng bài
-            </Button>
-          </div>
-          {/* Posts List */}
-          <div className="space-y-6">
-            {posts.length === 0 ? (
-              <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
-            ) : (
-              posts.map((post) => (
-                 <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
-              ))
-            )}
-          </div>
-        </main>
-        
+        <main
+      className="flex-1 bg-white dark:bg-[#161b22] rounded-lg shadow p-8 flex flex-col gap-6"
+      style={{ maxHeight: "calc(100vh - 100px)" }} // 100px là chiều cao header + margin, chỉnh lại nếu cần
+    >
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Bài viết của bạn</h1>
+          <Button
+            onClick={() => { setisAddmodalopen(true); }}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
+            Đăng bài
+          </Button>
+        </div>
+        {/* Posts List */}
+        <div className="space-y-6">
+          {posts.length === 0 ? (
+            <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
+          ) : (
+            posts.map((post) => (
+              <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
+            ))
+          )}
+        </div>
+      </div>
+    </main>
       </div>
     </div>
   );

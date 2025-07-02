@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Users, Plus, MessageCircle, Search, ChevronDown } from "lucide-react";
 import NavigationBar from "../layouts/navbar";
 import axios from "axios";
@@ -290,20 +290,18 @@ const getUsersGroupData = async () => {
     );
 
     return (
-        <div className="max-w-6xl mx-auto py-8 px-4">
+        <div className="min-h-screen ">
             <NavigationBar />
-            <div className="max-w-7xl mx-auto py-8 px-4 mt-[2vh]">
-                <h1 className="text-3xl font-bold mb-6 text-blue-700">Cộng đồng nhóm học tập</h1>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="max-w-7xl mx-auto px-4 pt-20">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-6rem)]">
                     {/* Left Container - Search and Groups Management */}
-                    <div className="lg:col-span-1 space-y-6 mt-[5vh]">
-                        {/* Search Section - Separate Container */}
-                        <Card className="border-blue-200">
+                    <div className="lg:col-span-1 space-y-4 overflow-y-auto pr-2">
+                        {/* Search Section */}
+                        <Card className="border-blue-200 bg-[#F8FAFC]">
                             <CardContent className="pt-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Search className="text-blue-600" size={18} />
-                                    <span className="font-medium text-blue-700">Tìm kiếm</span>
+                                    <Search className="text-[#1D4ED8]" size={18} />
+                                    <span className="font-medium text-[#1D4ED8]">Tìm kiếm</span>
                                 </div>
                                 <Input
                                     placeholder="Tìm kiếm nhóm..."
@@ -315,7 +313,13 @@ const getUsersGroupData = async () => {
                         </Card>
 
                         {/* Navigation Toggle Section */}
-                        <Card className="border-blue-200">
+                        <Card className="border-blue-200 bg-[#F8FAFC]">
+                            <div className="rounded-t-lg px-4 py-2 bg-[#E2E8F0]">
+                                <span className="font-semibold text-[#1D4ED8] flex items-center gap-2 text-base">
+                                    <Users size={18} className="text-[#1D4ED8]" />
+                                    Quản lý nhóm
+                                </span>
+                            </div>
                             <CardContent className="pt-4 pb-2">
                                 <div className="flex gap-2 mb-2">
                                     <Button
@@ -349,16 +353,13 @@ const getUsersGroupData = async () => {
                         </Card>
 
                         {/* Create Group Section */}
-                        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-white">
-                            <CardHeader
-                                className="cursor-pointer"
-                                onClick={() => setShowCreateGroup((v) => !v)}
-                            >
-                                <CardTitle className="text-blue-700 flex items-center gap-2">
-                                    <Plus className="text-blue-600" size={20} />
+                        <Card className="border-blue-200 bg-[#F8FAFC]">
+                            <div className="rounded-t-lg px-4 py-2 bg-[#E0F2FE]">
+                                <span className="font-semibold text-[#7C3AED] flex items-center gap-2 text-base">
+                                    <Plus size={18} className="text-[#7C3AED]" />
                                     Tạo nhóm mới
-                                </CardTitle>
-                            </CardHeader>
+                                </span>
+                            </div>
                             {showCreateGroup && (
                                 <CardContent className="space-y-4">
                                     <Input
@@ -463,13 +464,13 @@ const getUsersGroupData = async () => {
 
                         {/* Quick Access to Joined Groups */}
                         {mainTab === "posts" && (
-                            <Card className="border-blue-200">
-                                <CardHeader>
-                                    <CardTitle className="text-blue-700 flex items-center gap-2">
-                                        <Users className="text-blue-600" size={20} />
+                            <Card className="border-blue-200 bg-[#F8FAFC]">
+                                <div className="rounded-t-lg px-4 py-2 bg-[#E2E8F0]">
+                                    <span className="font-semibold text-[#1D4ED8] flex items-center gap-2 text-base">
+                                        <Users size={18} className="text-[#1D4ED8]" />
                                         Nhóm của bạn
-                                    </CardTitle>
-                                </CardHeader>
+                                    </span>
+                                </div>
                                 <CardContent>
                                     <div className="space-y-3">
                                         <button
@@ -521,163 +522,177 @@ const getUsersGroupData = async () => {
                         )}
                     </div>
 
-                   
-                    <div className="lg:col-span-2 space-y-6">
-                        {mainTab === "posts" ? (
-                            /* Posts Feed */
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h2 className="text-xl font-semibold text-blue-700 flex items-center gap-2">
-                                        <MessageCircle className="text-blue-600" size={20} />
-                                        {selectedGroup === "all" ? "Tất cả bài đăng" : `Bài đăng từ ${selectedGroup}`}
-                                    </h2>
-                                    {selectedGroup !== "all" && (
-                                        <Button
-                                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                                            style={{ marginTop: "5vh", marginRight: "3vh" }}
-                                            onClick={() => setisAddmodalopen(true)}
-                                        >
-                                            + Đăng bài
-                                        </Button>
-                                    )}
+                    {/* Right Container - Posts/Groups with Fixed Height */}
+                    <div className="lg:col-span-2 h-full">
+                        <Card className="h-full border-blue-200">
+                            <CardContent className="p-0 h-full flex flex-col">
+                                {/* Header Section */}
+                                <div className="p-6 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-white">
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-xl font-semibold text-blue-700 flex items-center gap-2">
+                                            {mainTab === "posts" ? (
+                                                <>
+                                                    <MessageCircle className="text-blue-600" size={20} />
+                                                    {selectedGroup === "all" ? "Tất cả bài đăng" : `Bài đăng từ ${selectedGroup}`}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Users className={exploreTab === "joined" ? "text-blue-600" : "text-green-600"} size={20} />
+                                                    <span className={exploreTab === "joined" ? "text-blue-700" : "text-green-700"}>
+                                                        {exploreTab === "joined" ? "Nhóm đã tham gia" : "Khám phá các nhóm mới"}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </h2>
+                                        {mainTab === "posts" && selectedGroup !== "all" && (
+                                            <Button
+                                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                onClick={() => setisAddmodalopen(true)}
+                                            >
+                                                + Đăng bài
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
-                                
-                                {filteredPosts.length === 0 && (
-                                    <div className="text-center py-8 text-gray-500">
-                                        Chưa có bài đăng nào trong nhóm này.
-                                    </div>
-                                )}
 
-                                {filteredPosts.map((post) => (
-                                    <RenderPost key={post._id || ''} post={post} userData={post.userInfo  || null} />
-                                ))}
-                            </div>
-                        ) : (
-                            /* Groups Display */
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Users className={exploreTab === "joined" ? "text-blue-600" : "text-green-600"} size={20} />
-                                    <span className={exploreTab === "joined" ? "text-blue-700" : "text-green-700"}>
-                                        {exploreTab === "joined" ? "Nhóm đã tham gia" : "Khám phá các nhóm mới"}
-                                    </span>
-                                </h2>
+                                {/* Scrollable Content Section */}
+                                <div className="flex-1 overflow-y-auto p-6">
+                                    {mainTab === "posts" ? (
+                                        /* Posts Feed */
+                                        <div className="space-y-4">
+                                            {filteredPosts.length === 0 && (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    Chưa có bài đăng nào trong nhóm này.
+                                                </div>
+                                            )}
 
-                                {exploreTab === "joined" ? (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {filteredUserGroups.map((group) => (
-                                            <Card key={group._id} className="border-blue-100 hover:shadow-md transition-shadow">
-                                                <CardContent className="pt-6">
-                                                    <div className="flex items-start gap-4">
-                                                        <span className="text-4xl">{group.icon || "📚"}</span>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <h3 className="font-semibold text-blue-800 text-lg">{group.name}</h3>
-                                                            </div>
-                                                            <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-gray-500 flex items-center gap-1">
-                                                                    <Users size={14} />
-                                                                    {group.members.length} thành viên
-                                                                </span>
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {group.tags?.slice(0, 3).map((tag, idx) => (
-                                                                        <span
-                                                                            key={idx}
-                                                                            className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs"
-                                                                        >
-                                                                            #{tag}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {filteredExploreGroups.map((group) => {
-                                            // Lấy userId hiện tại
-                                            const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-                                            const isJoined = userId && group.members.includes(userId);
-
-                                            return (
-                                                <Card key={group._id} className="border-green-100 hover:shadow-md transition-shadow">
-                                                    <CardContent className="pt-6">
-                                                        <div className="flex items-start gap-4">
-                                                            <span className="text-4xl">{group.icon || "📚"}</span>
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <h3 className="font-semibold text-green-800 text-lg">{group.name}</h3>
-                                                                    {isJoined ? (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            className="bg-gray-300 text-gray-600 cursor-default"
-                                                                            disabled
-                                                                        >
-                                                                            Đã tham gia
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <Button
-                                                                            onClick={() => joinedGroups(group._id)}
-                                                                            size="sm"
-                                                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                                                        >
-                                                                            Tham gia
-                                                                        </Button>
-                                                                    )}
-                                                                </div>
-                                                                <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                                                                        <Users size={14} />
-                                                                        {group.members.length} thành viên
-                                                                    </span>
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {group.tags?.slice(0, 3).map((tag, idx) => (
-                                                                            <span
-                                                                                key={idx}
-                                                                                className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs"
-                                                                            >
-                                                                                #{tag}
+                                            {filteredPosts.map((post) => (
+                                                <RenderPost key={post._id || ''} post={post} userData={post.userInfo  || null} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        /* Groups Display */
+                                        <div className="space-y-4">
+                                            {exploreTab === "joined" ? (
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {filteredUserGroups.map((group) => (
+                                                        <Card key={group._id} className="border-blue-100 hover:shadow-md transition-shadow">
+                                                            <CardContent className="pt-6">
+                                                                <div className="flex items-start gap-4">
+                                                                    <span className="text-4xl">{group.icon || "📚"}</span>
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center justify-between mb-2">
+                                                                            <h3 className="font-semibold text-blue-800 text-lg">{group.name}</h3>
+                                                                        </div>
+                                                                        <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                                                <Users size={14} />
+                                                                                {group.members.length} thành viên
                                                                             </span>
-                                                                        ))}
+                                                                            <div className="flex flex-wrap gap-1">
+                                                                                {group.tags?.slice(0, 3).map((tag, idx) => (
+                                                                                    <span
+                                                                                        key={idx}
+                                                                                        className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs"
+                                                                                    >
+                                                                                        #{tag}
+                                                                                    </span>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                                
-                                {((exploreTab === "joined" && filteredUserGroups.length === 0) ||
-                (exploreTab === "explore" && filteredExploreGroups.length === 0)) && (
-                                    <div className="text-center py-8 text-gray-500">
-                                        Không tìm thấy nhóm nào phù hợp với từ khóa tìm kiếm.
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                         {isAddmodalopen === true && userId && selectedGroup !== "all" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <PostAddGroup
-            groupid={currentGroup}
-            groupname={selectedGroup}
-            _id={userId}
-            name={userInfo?.username || 'bull'}
-            onClose={() => setisAddmodalopen(false)}
-          />
-        </div>
-      )}
+                                                            </CardContent>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {filteredExploreGroups.map((group) => {
+                                                        // Lấy userId hiện tại
+                                                        const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+                                                        const isJoined = userId && group.members.includes(userId);
+
+                                                        return (
+                                                            <Card key={group._id} className="border-green-100 hover:shadow-md transition-shadow">
+                                                                <CardContent className="pt-6">
+                                                                    <div className="flex items-start gap-4">
+                                                                        <span className="text-4xl">{group.icon || "📚"}</span>
+                                                                        <div className="flex-1">
+                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                <h3 className="font-semibold text-green-800 text-lg">{group.name}</h3>
+                                                                                {isJoined ? (
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        className="bg-gray-300 text-gray-600 cursor-default"
+                                                                                        disabled
+                                                                                    >
+                                                                                        Đã tham gia
+                                                                                    </Button>
+                                                                                ) : (
+                                                                                    <Button
+                                                                                        onClick={() => joinedGroups(group._id)}
+                                                                                        size="sm"
+                                                                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                                                                    >
+                                                                                        Tham gia
+                                                                                    </Button>
+                                                                                )}
+                                                                            </div>
+                                                                            <p className="text-gray-600 text-sm mb-3">{group.desc}</p>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                                                    <Users size={14} />
+                                                                                    {group.members.length} thành viên
+                                                                                </span>
+                                                                                <div className="flex flex-wrap gap-1">
+                                                                                    {group.tags?.slice(0, 3).map((tag, idx) => (
+                                                                                        <span
+                                                                                            key={idx}
+                                                                                            className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs"
+                                                                                        >
+                                                                                            #{tag}
+                                                                                        </span>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            
+                                            {((exploreTab === "joined" && filteredUserGroups.length === 0) ||
+                                            (exploreTab === "explore" && filteredExploreGroups.length === 0)) && (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    Không tìm thấy nhóm nào phù hợp với từ khóa tìm kiếm.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
-                    
                 </div>
             </div>
+
+            {/* Modal */}
+            {isAddmodalopen === true && userId && selectedGroup !== "all" && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                    <PostAddGroup
+                        groupid={currentGroup}
+                        groupname={selectedGroup}
+                        _id={userId}
+                        name={userInfo?.username || 'bull'}
+                        onClose={() => setisAddmodalopen(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 }
