@@ -19,13 +19,23 @@ const chatrouter = require('./routes/api/chat.routes')
 const notificationrouter = require('./routes/api/notifications.routes') 
 const documentrouter = require('./routes/api/document.routes')  
 
+const allowedOrigins = ['http://localhost:3000', 'https://student-campus.vercel.app'];
+
 app.use(cors({
-  origin: ['*'],   // hoặc '*' để cho tất cả
-  methods: ['GET','POST','PUT','DELETE'],
+  origin: function (origin, callback) {
+    // Allow no-origin (like Postman or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.options('*', cors());
 
 // Middleware
 app.use(bodyParser.json());
