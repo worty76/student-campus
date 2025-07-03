@@ -20,7 +20,7 @@ const notificationrouter = require('./routes/api/notifications.routes')
 const documentrouter = require('./routes/api/document.routes')  
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://student-campus.vercel.app'],   // hoặc '*' để cho tất cả
+  origin: ['*'],   // hoặc '*' để cho tất cả
   methods: ['GET','POST','PUT','DELETE'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
