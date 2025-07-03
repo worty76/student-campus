@@ -98,8 +98,18 @@ const HomePage = () => {
   const [hasMore, setHasMore] = useState(true);
 
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
+   
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
+  useEffect(() => {
+ 
+ 
     const storedId = localStorage.getItem("userId");
     if (storedId) {
       setUserId(storedId);
@@ -108,6 +118,7 @@ const HomePage = () => {
       getUsersGroupData();
     }
   }, []);
+
 
   const getpost = async (pageNum = 1, append = false) => {
     try {
@@ -240,6 +251,15 @@ const HomePage = () => {
       </div>
     </div>
   );
+
+  // Hàm thêm post mới vào đầu danh sách
+  const handleAddPost = (newPost: Post) => {
+    const postWithId = {
+    ...newPost,
+    _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
+  };
+    setPosts((prev) => [postWithId, ...prev]);
+  };
 
   return (
     <div className="bg-gradient-to-br min-h-screen pb-20 flex flex-col relative overflow-x-hidden">
@@ -433,6 +453,7 @@ const HomePage = () => {
             name={userData?.username || userInfo.name}
             avatar={userData?.avatar_link || userInfo.avatar}
             onClose={() => setisAddmodalopen(false)}
+            onPostAdded={handleAddPost} // Thêm prop này
           />
         </div>
       )}

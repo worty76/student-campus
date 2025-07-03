@@ -93,7 +93,12 @@ const PostPage: React.FC = () => {
             setPost(null);
         }
     };
-
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+        }
+      }, []);
     // Lấy postId từ URL (Next.js app router)
     useEffect(() => {
         if (!postIdFromUrl) return;

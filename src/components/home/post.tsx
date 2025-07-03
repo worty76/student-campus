@@ -110,6 +110,7 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
       }
       const fromid = userId;
       const toid = userData?._id;
+    
       sendMessage({
         type: 'likes_post',
         from: fromid || '123',

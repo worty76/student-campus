@@ -137,6 +137,10 @@ const onConnection = (ws, req) => {
 
             const fromName = await getUserNameById(from);
 
+           
+            // Sửa lại thứ tự tham số ở đây
+
+            if(from !== to){
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'likes_post',
@@ -145,9 +149,11 @@ const onConnection = (ws, req) => {
                     fromName
                 }));
             }
-            // Sửa lại thứ tự tham số ở đây
+
             const notires = await logNotificationsPost(from, to, fromName, postid, message.type);
             console.log('notifications result:', notires);
+            }
+           
         }
 
         if (message.type === 'unlike_post') {
@@ -180,7 +186,8 @@ const onConnection = (ws, req) => {
             }
 
             const fromName = await getUserNameById(from);
-
+            
+            if(from !== to){
             if (toSocket?.readyState === WebSocket.OPEN) {
                 toSocket.send(JSON.stringify({
                     type: 'Comment',
@@ -192,6 +199,8 @@ const onConnection = (ws, req) => {
             // Sửa lại thứ tự tham số ở đây
             const notires = await logNotificationsPost(from, to, fromName, postid, message.type);
             console.log('notifications result:', notires);
+            }
+           
         }
 
        if (message.type === 'online_friend') {

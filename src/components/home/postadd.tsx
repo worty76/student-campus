@@ -8,15 +8,54 @@ const user = {
   avatar: "/api/placeholder/40/40",
   privacy: "Bạn bè ngoại trừ...",
 };
+interface FileAttachment {
+  url: string;
+  filename: string;
+  mimetype: string;
+  filetype: string;
+}
+
+interface Post {
+  _id: string;
+  userId: string;
+  text: string;
+  attachments: Attachment[];
+  createdAt: string;
+  likes: string[];
+  comments: Comments[];
+   userInfo: userInfo; 
+}
+
+interface Attachment {
+  file?: FileAttachment;
+  url?: string;
+  filename?: string;
+  mimetype?: string;
+  filetype?: string;
+}
+
+
+
+interface Comments {
+  userinfo: userInfo;
+  context: string;
+}
+interface userInfo {
+  _id:string;
+  username:string;
+  avatar_link:string;
+}
+
 
 interface PostAddProps {
   _id: string;
   name: string;
   avatar?: string;
   onClose: () => void;
+  onPostAdded?: (post: Post ) => void; 
 }
 
-const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, avatar, onClose }) => {
+const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, avatar, onClose ,onPostAdded }) => {
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,10 +123,9 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, avatar, onClos
       formData.append("files", file);
     });
 
-    
     try {
       const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-       const res = await axios.post(
+      const res = await axios.post(
         `${BASEURL}/api/create/post`,
         formData,
         {
@@ -100,6 +138,21 @@ const PostAdd: React.FC<PostAddProps> = ({ _id = "user123", name, avatar, onClos
 
       if (res && res.status === 201) {
         setUploadStatus('Đăng bài thành công !');
+        
+        if (onPostAdded && res.data && res.data.post) {
+            // Bổ sung thông tin user cho post mới
+            console.log("Post added:", res.data.post);
+            const newPost = {
+              ...res.data.post,
+              
+              userInfo: {
+                _id,
+                username: name,
+                avatar_link: avatar,
+              },
+            };
+            onPostAdded(newPost);
+          }
         setTimeout(() => {
           setContent('');
           setFiles([]);
