@@ -107,6 +107,7 @@ const FriendsNCommunitys = () => {
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [friends, setFriends] = useState<string[]>([]);
+  const [handledRequests, setHandledRequests] = useState<Record<string, 'accepted' | 'rejected'>>({});
 
   useEffect(() => {
     const storedFriends = localStorage.getItem('friends');
@@ -134,7 +135,13 @@ const FriendsNCommunitys = () => {
     const removeHandler = addMessageHandler(handler);
     return removeHandler;
   }, [addMessageHandler]);
-
+  
+  useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+      }
+    }, []);
   useEffect(() => {
     getSuggestionsFriend();
     getlistfriendrq();
@@ -239,7 +246,6 @@ const FriendsNCommunitys = () => {
 
   const handleAcceptFriendRequest = async (receiverId: string, reqid: string) => {
     try {
-      // console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
       const toid = receiverId;
       const rqid = reqid;
@@ -250,6 +256,7 @@ const FriendsNCommunitys = () => {
         reqid: rqid || '123'
       });
       setAcceptedRequests(prev => new Set(prev).add(receiverId));
+      setHandledRequests(prev => ({ ...prev, [reqid]: 'accepted' }));
     } catch (err) {
       console.error("Gửi kết bạn thất bại:", err);
       alert("Lỗi khi chấp nhận kết bạn.");
@@ -258,7 +265,6 @@ const FriendsNCommunitys = () => {
 
   const handleRejectFriendRequest = async (friendId: string, reqid: string) => {
     try {
-      // console.log('WebSocket status:', status);
       const fromid = localStorage.getItem('userId');
       const toid = friendId;
       const rqid = reqid;
@@ -268,6 +274,7 @@ const FriendsNCommunitys = () => {
         to: toid || '123',
         reqid: rqid || '123'
       });
+      setHandledRequests(prev => ({ ...prev, [reqid]: 'rejected' }));
       setSearchrs(false);
       setSearchsData([]);
     } catch (err) {
@@ -584,20 +591,32 @@ const FriendsNCommunitys = () => {
                         <p className="text-sm text-gray-600">Muốn kết bạn với bạn</p>
                       </div>
                       <div className="flex gap-3" onClick={e => e.stopPropagation()}>
-                        <Button
-                          onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
-                          className="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
-                          size="sm"
-                        >
-                          Chấp nhận
-                        </Button>
-                        <Button
-                          onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
-                          className="bg-red-500 text-white hover:bg-red-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
-                          size="sm"
-                        >
-                          Từ chối
-                        </Button>
+                        {handledRequests[req._id] === 'accepted' ? (
+                          <Button disabled className="bg-gray-400 text-white px-4 py-2 rounded-lg text-sm" size="sm">
+                            Đã chấp nhận
+                          </Button>
+                        ) : handledRequests[req._id] === 'rejected' ? (
+                          <Button disabled className="bg-gray-400 text-white px-4 py-2 rounded-lg text-sm" size="sm">
+                            Đã từ chối
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
+                              className="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
+                              size="sm"
+                            >
+                              Chấp nhận
+                            </Button>
+                            <Button
+                              onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
+                              className="bg-red-500 text-white hover:bg-red-600 px-4 py-2 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
+                              size="sm"
+                            >
+                              Từ chối
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))

@@ -332,14 +332,19 @@ const Notifications = () => {
     }
   }, [notifications]);
 
+    useEffect(() => {
+     const token = localStorage.getItem("token");
+     if (!token) {
+       window.location.href = "/login";
+     }
+    }, []);
 
+    const handleTabChange = useCallback((newTab: "all" | "unread") => {
+        setTab(newTab);
+        setSkip(0);
 
-  const handleTabChange = useCallback((newTab: "all" | "unread") => {
-    setTab(newTab);
-    setSkip(0);
-
-    setNotifications([]);
-  }, []);
+        setNotifications([]);
+    }, []);
 
 
   useEffect(() => {

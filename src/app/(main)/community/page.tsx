@@ -111,7 +111,7 @@ export default function CommunityGroupsPage() {
     
     // Sửa type mới cho state
 const [allGroupPosts, setAllGroupPosts] = useState<PostWithGroup[]>([]);
-
+    
     const filteredExploreGroups = exGroups.filter(group =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
         (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
@@ -122,6 +122,13 @@ const filteredPosts = selectedGroup === "all"
     ? allGroupPosts
     : allGroupPosts.filter(post => post.groupName === selectedGroup);
 
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+        }
+      }, []);
     useEffect(() =>{
     const token = localStorage.getItem('token');
      const id = localStorage.getItem('userId');
@@ -143,8 +150,8 @@ const filteredPosts = selectedGroup === "all"
         getUsersGroupData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [])
-
+        }, [])
+    
   
 
     const createNewGroup = async () => {

@@ -7,6 +7,8 @@ import Image from 'next/image';
 import Privacy from '@/components/settings/privacy';
 import axios from 'axios';
 import { BASEURL } from '@/app/constants/url';
+import { useRouter } from 'next/navigation';
+import { useWebSocket } from '@/app/context/websocket.contex';
 interface UserdataProps {
   id?: string,
   username: string,
@@ -26,6 +28,9 @@ const SettingsPage = () => {
     const [item, setItem] = useState('password');
     const [showSuccess, setShowSuccess] = useState(false);
     const [userData, setUserData] = useState<UserdataProps | null>(null);
+    const [loggingOut, setLoggingOut] = useState(false);
+    const router = useRouter();
+    const { disconnect } = useWebSocket();
     const getUserData = async () => {
     try {
       const token =
@@ -125,12 +130,30 @@ const SettingsPage = () => {
         }
     }
 
+    const handleLogout = () => {
+        setLoggingOut(true);
+        disconnect();
+        setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userdata');
+            localStorage.removeItem('friends');
+            router.push('/login');
+        }, 1500); // Đợi 1.5s cho UX mượt
+    };
+
     useEffect(() => {
         getUserData();
     }, []);
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+        }
+      }, []);
         
     return (
-        <div className="min-h-screen  dark:bg-[#0d1117] overflow-hidden" >
+        <div className="min-h-screen dark:bg-[#0d1117] overflow-hidden">
             <NavigationBar />
             <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh]">
                 {/* Sidebar */}
@@ -178,6 +201,7 @@ const SettingsPage = () => {
                         <hr className="border-gray-300 dark:border-gray-700 border-2 my-4" />
                         <Button
                             className="w-full text-left px-3 py-2 rounded font-medium bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={handleLogout}
                         >
                             Logout
                         </Button>
@@ -227,6 +251,17 @@ const SettingsPage = () => {
                     )}
                 </main>
             </div>
+            {loggingOut && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+                    <div className="bg-white dark:bg-gray-900 px-8 py-6 rounded shadow-lg flex flex-col items-center">
+                        <svg className="animate-spin h-8 w-8 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span className="font-semibold text-blue-700 dark:text-blue-300">Đang đăng xuất...</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -183,6 +183,12 @@ export default function DocumentsPage() {
     useEffect(() => {
         FetchDocument();
     }, []);
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+        }
+      }, []);
 
     // Lấy danh sách duy nhất từ documents
     const subjects = useMemo(
