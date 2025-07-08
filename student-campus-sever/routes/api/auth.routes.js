@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router();
 
-const {LoginRequest,createAccount} = require('../../controllers/user.controller')
+const {LoginRequest,createAccount,setCodeAsNewPassword} = require('../../controllers/user.controller')
 const {authenticateToken} = require('../../utils/auth')
 
 
@@ -19,4 +19,5 @@ router.post('/logout', (req, res) => {
   });
 });
 
+router.put('/auth/reset',setCodeAsNewPassword)
 module.exports = router
