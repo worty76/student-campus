@@ -192,8 +192,8 @@ const SettingsPage = () => {
                             onClick={() => setItem('privacy')}
                             className={`w-full text-left px-3 py-2 rounded font-medium ${
                                 item === 'privacy'
-                                    ? 'bg-[#E0F2FE] text-[#7C3AED]'
-                                    : 'bg-transparent text-[#7C3AED] hover:bg-[#E0F2FE]'
+                                    ? 'bg-[#E0F2FE] text-[#1D4ED8]'
+                                    : 'bg-transparent text-[#1D4ED8] hover:bg-[#E0F2FE]'
                             }`}
                         >
                             Privacy

@@ -146,7 +146,7 @@ const canViewProfile = () => {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 dark:bg-[#0d1117] overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br  dark:bg-[#0d1117] overflow-hidden">
       <NavigationBar />
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh]">
         {/* Sidebar (Profile Info) */}
