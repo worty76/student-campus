@@ -1,6 +1,6 @@
 'use client';
 
-import { useState,} from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -13,8 +13,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword] = useState(false);
-  const [loginError, setLoginError] = useState(false); // Thêm state cho modal
- 
+  const [loginError, setLoginError] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [loadingForgot, setLoadingForgot] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false); // Thêm state này
+
   const router = useRouter();
   const { connectWebSocket } = useWebSocket();
   // Cleanup WebSocket khi component unmount
@@ -52,14 +58,41 @@ export default function LoginPage() {
         
         // Chuyển hướng (có thể delay một chút để WebSocket kết nối)
         setTimeout(() => {
-          const userId = response.data.logindata.user._id;
-          router.push(`/home?user=${encodeURIComponent(userId)}`);
-        }, 1000);
+          if (isForgotPassword) {
+            router.push('/settings');
+            setIsForgotPassword(false); // reset lại sau khi chuyển trang
+          } else {
+            const userId = response.data.logindata.user._id;
+            router.push(`/home?user=${encodeURIComponent(userId)}`);
+          }
+        }, 2000);
         setLoginError(false); // Đăng nhập thành công thì ẩn modal lỗi
       }
     } catch (error) {
       setLoginError(true); // Đăng nhập lỗi thì hiện modal
       console.error('Login error:', error);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotSent(false);
+    setLoadingForgot(true);
+    try {
+      await axios.put(`${BASEURL}/api/auth/reset`, { email: forgotEmail });
+      setForgotSent(true);
+      setIsForgotPassword(true); // Đánh dấu là vừa gửi quên mật khẩu
+      setTimeout(() => {
+        setForgotOpen(false);
+        setForgotSent(false);
+        setLoadingForgot(false);
+        setForgotEmail('');
+      }, 1500); // Đợi 1.5s để user đọc thông báo
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setForgotError('Không thể gửi mật khẩu mới. Vui lòng kiểm tra email.');
+      setLoadingForgot(false);
     }
   };
   
@@ -133,12 +166,23 @@ export default function LoginPage() {
                 />
                 
               </div>
+               {/* Quên mật khẩu */}
+              <div className="w-full text-right mt-2">
+                <button
+                  type="button"
+                  className="text-cyan-600 hover:underline text-sm"
+                  onClick={() => setForgotOpen(true)}
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
               <Button
                 type="submit"
                 className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-full font-medium shadow transition-all"
               >
                 LOGIN
               </Button>
+             
             </form>
             
             <div className="my-5 text-center w-full">
@@ -167,6 +211,42 @@ export default function LoginPage() {
           >
             Đóng
           </button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Quên mật khẩu */}
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Quên mật khẩu</DialogTitle>
+            <DialogDescription>
+              Nhập email để nhận mật khẩu mới qua email.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Nhập email của bạn"
+              value={forgotEmail}
+              onChange={e => setForgotEmail(e.target.value)}
+              required
+              disabled={loadingForgot}
+            />
+            <Button type="submit" className="w-full bg-cyan-400 text-white" disabled={loadingForgot}>
+              {loadingForgot ? "Đang gửi..." : "Gửi mật khẩu mới"}
+            </Button>
+          </form>
+          {forgotSent && (
+            <div className="text-green-600 mt-2 text-center">
+              Đã gửi mật khẩu mới! Vui lòng kiểm tra email.<br />
+              Đang chuyển hướng...
+            </div>
+          )}
+          {forgotError && (
+            <div className="text-red-600 mt-2 text-center">
+              {forgotError}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -9,7 +9,54 @@ const cloudinary = require('../utils/cloudiary');
 const fs = require('fs');
 const User = require('../schemas/user.model');
 const friend_request = require('../schemas/friend_rq.model')
+const nodemailer = require('nodemailer');
 
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'hidrabula@gmail.com',
+    pass: 'dgkg ruas hkqd nxmn' 
+  }
+});
+
+function generateSixDigitCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+const setCodeAsNewPassword = async (req, res) => {
+  const { email } = req.body;
+  const code =  generateSixDigitCode();
+  if (!email || !code) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    // Hash the code to use as the new password
+    const hashedPassword = await bcrypt.hash(code, 10);
+    const updatedUser = await User.findOneAndUpdate(
+      { email: email },
+      { $set: { password: hashedPassword } },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Send email to user with the new password (code)
+    await transporter.sendMail({
+      from: '"Student Campus" <hidrabula@gmail.com>',
+      to: email,
+      subject: 'Your New Password',
+      text: `Your new password is: ${code}`,
+      html: `<p>Your new password is: <b>${code}</b></p>`
+    });
+
+    return res.json({ message: 'Password has been updated and sent to your email successfully' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Failed to update password', details: error.message });
+  }
+};
 
 const createAccount = async (req, res) => {
       const { items } = req.body;
@@ -517,5 +564,6 @@ module.exports = {
   SearchFriend,
   getusername,
   updatePrivacySettings,
-  updatePassword
+  updatePassword,
+  setCodeAsNewPassword
 };
