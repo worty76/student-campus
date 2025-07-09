@@ -20,10 +20,10 @@ const notificationrouter = require('./routes/api/notifications.routes')
 const documentrouter = require('./routes/api/document.routes')  
 
 app.use(cors({
-  origin: ['https://student-campus.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+    origin: ['https://student-campus.vercel.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
 }));
 
 // Middleware

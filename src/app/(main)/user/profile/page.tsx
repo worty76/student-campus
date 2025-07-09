@@ -68,7 +68,6 @@ const UserProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [, setisAddmodalopen] = useState(false);
   const router = useRouter();
   const facultyOptions = [
     'Software Engineering',
@@ -234,7 +233,7 @@ const UserProfilePage = () => {
   return (
     <div className="min-h-screen overflow-hidden">
       <NavigationBar />
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[10vh] overflow-hidden">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-[7vh] overflow-hidden">
         {/* Sidebar - Profile Info and Friends */}
         <div className="w-full md:w-64 flex flex-col gap-4">
           {/* Profile Info Container */}
@@ -367,7 +366,7 @@ const UserProfilePage = () => {
               ) : (
                 <Button
                   onClick={handleEdit}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
                 >
                   <Edit3 size={16} />
                   Edit Profile
@@ -424,12 +423,7 @@ const UserProfilePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Bài viết của bạn</h1>
-          <Button
-            onClick={() => { setisAddmodalopen(true); }}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            Đăng bài
-          </Button>
+          
         </div>
         {/* Posts List */}
         <div className="space-y-6">

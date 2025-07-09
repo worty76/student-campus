@@ -210,7 +210,7 @@ export default function DocumentsPage() {
 
     return (
         <div >
-            <div className="max-w-5xl mx-auto px-4 py-8 pt-[10vh]">
+            <div className="max-w-5xl mx-auto px-4 py-8 pt-[7vh]">
                 <NavigationBar />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}

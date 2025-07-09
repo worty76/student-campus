@@ -287,7 +287,9 @@ const HomePage = () => {
                     alt={userInfo.name}
                     width={80}
                     height={80}
+                    quality={100} // Thêm dòng này cho ảnh nét
                     className="w-20 h-20 rounded-full object-cover border-4 border-blue-300 shadow"
+                    style={{ objectFit: "cover" }} // Đảm bảo object-fit cover
                   />
                 </div>
                 <div className="font-semibold text-lg text-blue-800 dark:text-white mb-1 text-center">
@@ -338,7 +340,7 @@ const HomePage = () => {
               {/* About Website Section */}
               <div className="bg-[#F8FAFC] rounded-lg shadow p-0 border border-blue-200">
                 <div className="rounded-t-lg px-6 py-3 bg-[#E0F2FE]">
-                  <h4 className="font-semibold text-[#7C3AED] mb-0 flex items-center gap-2">
+                  <h4 className="font-semibold text-[#1D4ED8] mb-0 flex items-center gap-2">
                     <span className="text-lg">ℹ️</span>
                     About Website
                   </h4>
@@ -358,8 +360,8 @@ const HomePage = () => {
                   </li>
                   <li className="bg-blue-50 rounded-lg p-3 flex flex-col hover:bg-blue-100 transition-colors cursor-pointer">
                     <div className="flex items-center mb-1">
-                      <span className="text-lg mr-2 text-[#7C3AED]">💼</span>
-                      <span className="font-semibold text-[#7C3AED] text-sm">Career</span>
+                      <span className="text-lg mr-2 text-[#1D4ED8]">💼</span>
+                      <span className="font-semibold text-[#1D4ED8] text-sm">Career</span>
                     </div>
                   </li>
                 </ul>
@@ -377,7 +379,9 @@ const HomePage = () => {
                   alt={userInfo.name}
                   width={48}
                   height={48}
+                  quality={100} // Thêm dòng này cho ảnh nét
                   className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
+                  style={{ objectFit: "cover" }} // Đảm bảo object-fit cover
                 />
                 <div className="flex-1">
                   <Input
