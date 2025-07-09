@@ -57,7 +57,31 @@ const setCodeAsNewPassword = async (req, res) => {
     return res.status(500).json({ error: 'Failed to update password', details: error.message });
   }
 };
-
+const sendVerification = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Missing email' });
+  }
+  // Validate email domain
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@fpt\.edu\.vn$/i;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Email must be from fpt.edu.vn domain' });
+  }
+  const code = generateSixDigitCode();
+  try {
+    await transporter.sendMail({
+      from: '"Student Campus"',
+      to: email,
+      subject: 'Mã xác nhận đăng ký tài khoản',
+      text: `Mã xác nhận đăng ký của bạn là: ${code}`,
+      html: `<p>Mã xác nhận đăng ký của bạn là: <b>${code}</b></p>`
+    });
+    return res.json({ message: 'Verification code sent successfully', code });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to send verification code', details: error.message });
+  }
+};
 const createAccount = async (req, res) => {
       const { items } = req.body;
       console.log(items)
@@ -565,5 +589,6 @@ module.exports = {
   getusername,
   updatePrivacySettings,
   updatePassword,
-  setCodeAsNewPassword
+  setCodeAsNewPassword,
+  sendVerification
 };
