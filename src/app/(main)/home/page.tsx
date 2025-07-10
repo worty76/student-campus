@@ -394,7 +394,13 @@ const HomePage = () => {
                   />
                 </div>
               </div>
-              {/* Có thể bỏ nút Đăng bài nếu không cần nữa */}
+              <button
+    className="mt-2 self-end px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow transition"
+    onClick={() => setisAddmodalopen(true)}
+    type="button"
+  >
+    Đăng bài
+  </button>
             </div>
 
             {/* Posts Feed */}

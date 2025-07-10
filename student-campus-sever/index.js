@@ -37,6 +37,11 @@ const {onConnection} = require('./controllers/websocket.controller')
 wss.on('connection',onConnection);
 
 
+app.get('/log', (req, res) => {
+    console.log('hello word');
+
+});
+
 // Start server
 const PORT = 3001;
 server.listen(PORT, () => {

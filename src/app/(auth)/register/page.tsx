@@ -10,6 +10,14 @@ import {BASEURL} from "@/app/constants/url";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+interface User {
+  username: string;
+  email: string;
+  password: string;
+  faculty: string;
+  major: string;
+  year: string;
+}
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,11 +29,27 @@ export default function RegisterPage() {
   const [passwordError, setPasswordError] = useState(false);
   const [registerError, setRegisterError] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [verificationModal, setVerificationModal] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [serverCode, setServerCode] = useState('');
+  const [pendingRegisterData, setPendingRegisterData] = useState<User | null>(null);
+  const [verificationError, setVerificationError] = useState(false);
   const router = useRouter();
+  
+  const getVerifiedEmail = (email: string) => {
+    // Chỉ cho phép email có đuôi @fpt.edu.vn
+    const emailRegex = /^[^\s@]+@fpt\.edu\.vn$/i;
+    return emailRegex.test(email);
+  };
+  
+  
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSendVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (!getVerifiedEmail(email)) {
+      setRegisterError(true);
+      return;
+    }
     try {
       const items = {
         username: name,
@@ -35,27 +59,55 @@ export default function RegisterPage() {
         major: major,
         year: year
       };
-
       const response = await axios.post(
-        `${BASEURL.replace(/\/?$/, "/")}api/auth/register`,
-        { items: items },
+        `${BASEURL.replace(/\/?$/, "/")}api/register/verification`,
+        { email: email },
         {
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
-
-      if (response && response.data) {
-        setRegisterSuccess(true);
-        setTimeout(() => {
-          setRegisterSuccess(false);
-          router.push("/login");
-        }, 2000);
+      if (response && response.data && response.data.code) {
+        setServerCode(response.data.code);
+        setPendingRegisterData(items);
+        setVerificationModal(true);
+      } else {
+        setRegisterError(true);
       }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Error sending verification code:", error);
       setRegisterError(true);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (verificationCode === serverCode) {
+      try {
+        const response = await axios.post(
+          `${BASEURL.replace(/\/?$/, "/")}api/auth/register`,
+          { items: pendingRegisterData },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        if (response && response.data) {
+          setVerificationModal(false);
+          setRegisterSuccess(true);
+          setTimeout(() => {
+            setRegisterSuccess(false);
+            router.push("/login");
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error registering user:", error);
+        setVerificationModal(false);
+        setRegisterError(true);
+      }
+    } else {
+      setVerificationError(true);
     }
   };
 
@@ -107,7 +159,7 @@ export default function RegisterPage() {
               className="h-8 w-8 md:h-20 md:w-20 object-cover rounded-full mb-4 shadow"
             />
             <h2 className="text-xl md:text-2xl font-bold text-cyan-700 mb-4 text-center">JOIN OUR ACADEMIC</h2>
-            <form onSubmit={handleRegister} className="space-y-4 w-full max-w-sm mx-auto">
+            <form onSubmit={handleSendVerification} className="space-y-4 w-full max-w-sm mx-auto">
               <Input
                 type="text"
                 placeholder="Full Name"
@@ -232,6 +284,34 @@ export default function RegisterPage() {
               Bạn sẽ được chuyển về trang đăng nhập sau 2 giây.
             </DialogDescription>
           </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal nhập mã xác thực */}
+      <Dialog open={verificationModal} onOpenChange={setVerificationModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-cyan-700">Nhập mã xác thực</DialogTitle>
+            <DialogDescription>
+              Mã xác thực đã được gửi đến email của bạn. Vui lòng nhập mã để hoàn tất đăng ký.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="text"
+            placeholder="Verification Code"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            className="w-full"
+          />
+          {verificationError && (
+            <div className="text-red-500 text-sm mt-2">Mã xác thực không đúng. Vui lòng thử lại.</div>
+          )}
+          <button
+            onClick={handleVerifyCode}
+            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 w-full"
+          >
+            Xác nhận
+          </button>
         </DialogContent>
       </Dialog>
     </div>
