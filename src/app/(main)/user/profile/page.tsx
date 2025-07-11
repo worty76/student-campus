@@ -8,7 +8,7 @@ import Image from 'next/image';
 import axios from 'axios';
 import { BASEURL } from "@/app/constants/url";
 import { useRouter } from 'next/navigation';
-import RenderPost from '@/components/home/post';
+import RenderPost from '@/components/home/post';import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Comments {
   userinfo: userInfo;
@@ -68,6 +68,8 @@ const UserProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // Thêm state loading
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const router = useRouter();
   const facultyOptions = [
     'Software Engineering',
@@ -104,7 +106,6 @@ const UserProfilePage = () => {
         setUserData(userData);
         setEditedData(userData);
         setAvatarPreview(userData.avatar_link || userData.avatar || '/schoolimg.jpg');
-        // console.log(userData);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -174,7 +175,7 @@ const UserProfilePage = () => {
         await getUserData();
         setIsEditing(false);
         setAvatarFile(null);
-        alert('Profile updated successfully!');
+        setShowSuccessDialog(true); // Hiện dialog thông báo đã lưu
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -213,22 +214,44 @@ const UserProfilePage = () => {
       });
       if (response.status === 200 && Array.isArray(response.data.posts)) {
         setPosts(response.data.posts);
-        // console.log(response)
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
     }
   };
+
   useEffect(() => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/login";
-      }
-    }, []);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
   useEffect(() => {
     getUserData();
     getUserPost();
-  }, [])
+  }, []);
+
+  // Khi userData và posts đã load xong thì tắt loading
+  useEffect(() => {
+    if (userData && posts) {
+      setIsInitialLoading(false);
+    }
+  }, [userData, posts]);
+  
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50">
+        <div className="flex flex-col items-center">
+          <svg className="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <span className="text-blue-700 font-semibold text-lg">Đang tải dữ liệu...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-hidden">
@@ -431,13 +454,35 @@ const UserProfilePage = () => {
             <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
           ) : (
             posts.map((post) => (
-              <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
+              <RenderPost
+                key={post._id}
+                post={post}
+                userData={post.userInfo || ' '}
+                onDelete={getUserPost} // Thêm dòng này để reload lại post khi xóa
+              />
             ))
           )}
         </div>
       </div>
     </main>
       </div>
+      {/* Dialog thông báo đã lưu thành công */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-green-600">Cập nhật thành công</DialogTitle>
+            <DialogDescription>
+              Thông tin cá nhân của bạn đã được lưu lại.
+            </DialogDescription>
+          </DialogHeader>
+          <button
+            onClick={() => setShowSuccessDialog(false)}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+          >
+            Đóng
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

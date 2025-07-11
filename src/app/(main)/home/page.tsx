@@ -96,6 +96,7 @@ const HomePage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
    
@@ -224,6 +225,12 @@ const HomePage = () => {
     getpost(page, true);
   }, [page]);
 
+  useEffect(() => {
+  if (userData && posts.length >= 0) {
+    setIsInitialLoading(false);
+  }
+}, [userData, posts]);
+
   // AdsPanel component for reuse
   const AdsPanel = ({
     imgSrc,
@@ -261,6 +268,20 @@ const HomePage = () => {
     setPosts((prev) => [postWithId, ...prev]);
   };
 
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50">
+        <div className="flex flex-col items-center">
+          <svg className="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <span className="text-blue-700 font-semibold text-lg">Đang tải dữ liệu...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gradient-to-br min-h-screen pb-20 flex flex-col relative overflow-x-hidden">
       {/* Decorative blue gradient top left */}
@@ -279,7 +300,7 @@ const HomePage = () => {
           
           {/* Left Sidebar - User Info (Fixed Position) */}
           <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="fixed top-24 w-80 left-[calc((100vw-1280px)/2)]">
+            <div className="fixed top-24 w-80 left-[calc((100vw-1280px)/2)] max-h-[calc(100vh-6rem)] overflow-y-auto">
               <div className="bg-white dark:bg-[#161b22] rounded-lg shadow p-6 border border-blue-200 w-full flex flex-col items-center mb-6">
                 <div className="w-20 h-20 rounded-full bg-gray-300 mb-3 overflow-hidden flex items-center justify-center">
                   <Image

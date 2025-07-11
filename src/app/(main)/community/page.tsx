@@ -696,6 +696,7 @@ const getUsersGroupData = async () => {
                         groupname={selectedGroup}
                         _id={userId}
                         name={userInfo?.username || 'bull'}
+                        avatar={userInfo?.avatar_link || ''}
                         onClose={() => setisAddmodalopen(false)}
                     />
                 </div>

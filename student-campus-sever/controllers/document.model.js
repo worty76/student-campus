@@ -56,6 +56,29 @@ const renderallDocuments = async (req, res) => {
         res.status(500).json({ message: 'Error fetching documents', error });
     }
 }
+const onDeleteDocuments = async (req, res) => {
+    try {
+        const { docid } = req.params;
+        const { userId } = req.body;
+        const document = await Document.findById(docid);
+
+        if (!document) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+
+        if (document.uploadedBy.toString() !== userId) {
+            return res.status(404).json({ message: 'Not Uploader' });
+        }
+
+        await cloudiary.uploader.destroy(document.file.url, { resource_type: 'raw', type: 'upload', invalidate: true });
+        await Document.findByIdAndDelete(docid);
+        res.status(200).json({ message: 'Document deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        res.status(500).json({ message: 'Error deleting document', error });
+    }
+}
+
 
 const updateDocumentDowload = async (req, res) => {
     try {
@@ -76,4 +99,4 @@ const updateDocumentDowload = async (req, res) => {
     }
 }
 
-module.exports = { uploadDocument, renderallDocuments, updateDocumentDowload };
+module.exports = { uploadDocument, renderallDocuments, updateDocumentDowload ,onDeleteDocuments};
