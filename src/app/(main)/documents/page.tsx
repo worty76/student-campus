@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, UploadCloud, Download, Filter, FileText, TrendingUp, Book, User, GraduationCap, Calendar, Star } from "lucide-react";
+import { Search, UploadCloud, Download, Filter, FileText, TrendingUp, Book, User, GraduationCap, Calendar, Star, Trash2 } from "lucide-react";
 import NavigationBar from "@/app/(main)/layouts/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
 import downloadFileFromObject from "@/app/api/file_handler";
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink } from "@/components/ui/pagination";
+
 
 interface FileMeta3 {
   url: string;
@@ -68,6 +69,9 @@ export default function DocumentsPage() {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const docsPerPage = 6;
+    const [loading, setLoading] = useState(false); // Thêm state loading
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleting, setDeleting] = useState(false); // Thêm state này
 
     const filteredDocs = useMemo(() => {
         return documents.filter((doc) =>
@@ -100,6 +104,35 @@ export default function DocumentsPage() {
         }
     }
 
+    const handleDelete = async (docId: string) => {
+        setDeleting(true); // Bắt đầu xoá
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No token found");    
+                setDeleting(false);
+                return;
+            }
+            const userId = localStorage.getItem("userId");
+            const response = await axios.delete(`${BASEURL}/api/delete/doc/${docId}`, {
+                data: { userId },
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+            if (response.status === 200) {
+                setDocuments(documents.filter(doc => doc._id !== docId));
+                setDeleteSuccess(true); // Hiện dialog thành công
+            } else {
+                alert("Không thể xóa tài liệu này.");
+            }
+        } catch (error) {
+            console.error("Error deleting document:", error);
+        } finally {
+            setDeleting(false); // Kết thúc xoá
+        }
+    }
+
     // Tính toán phân trang
     const paginatedDocs = useMemo(() => {
         const start = (currentPage - 1) * docsPerPage;
@@ -127,6 +160,7 @@ export default function DocumentsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.file) return;
+        setLoading(true); // Bắt đầu loading
         try {
             const userId = localStorage.getItem("userId");
             const token = localStorage.getItem("token");
@@ -156,8 +190,11 @@ export default function DocumentsPage() {
                 academicYear: "",
                 file: null,
             });
+            await FetchDocument(); // Thêm dòng này để reload lại danh sách tài liệu
         } catch (error) {
             console.error("Error uploading file:", error);
+        } finally {
+            setLoading(false); // Kết thúc loading
         }
     };
 
@@ -203,19 +240,27 @@ export default function DocumentsPage() {
       () => Array.from(new Set(documents.map(doc => doc.faculty))).filter(Boolean),
       [documents]
     );
-    const years = useMemo(
-      () => Array.from(new Set(documents.map(doc => doc.academicYear))).filter(Boolean),
-      [documents]
-    );
+    const currentYear = new Date().getFullYear();
+
+const years = useMemo(
+  () =>
+    Array.from(new Set(documents.map(doc => doc.academicYear)))
+      .filter(Boolean)
+      .filter(y => {
+        const n = Number(y);
+        return !isNaN(n) && n <= currentYear;
+      }),
+  [documents, currentYear]
+);
 
     return (
-        <div >
-            <div className="max-w-5xl mx-auto px-4 py-8 pt-[7vh]">
+        <div>
+            <div className="max-w-6xl mx-auto px-4 py-8 pt-[7vh] ">
                 <NavigationBar />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
                     <div className="md:col-span-1">
-                        <div className="bg-[#F8FAFC] rounded-2xl shadow-xl p-6 sticky top-8">
+                        <div className="bg-[#F8FAFC] rounded-2xl shadow-xl p-6 sticky top-8 w-full">
                             {/* Upload Button */}
                             <div className="mb-6">
                                 <Button
@@ -240,10 +285,10 @@ export default function DocumentsPage() {
                                     Xóa bộ lọc
                                 </button>
                             </div>
-                            <div className="space-y-6">
+                            <div className="space-y-6 min-w-0">
                                 {/* Search */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 whitespace-nowrap">
                                         Tìm kiếm
                                     </label>
                                     <div className="relative">
@@ -259,71 +304,91 @@ export default function DocumentsPage() {
                                 </div>
                                 {/* Subject Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center whitespace-nowrap">
                                         <Book className="mr-2 text-[#1D4ED8]" size={16} />
                                         Môn học
                                     </label>
-                                    <select
-                                        value={subject}
-                                        onChange={(e) => setSubject(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1D4ED8] focus:outline-none transition-colors"
-                                    >
-                                        <option value="">Tất cả môn học</option>
-                                        {subjects.map(s => (
-                                            <option key={s} value={s}>{s}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={subject || "all"} onValueChange={val => setSubject(val === "all" ? "" : val)}>
+                                        <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white rounded-xl px-4 py-3 min-h-[48px]">
+                                            <SelectValue placeholder="Tất cả môn học" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl shadow-lg border border-gray-200 bg-white py-2 max-h-48 overflow-y-auto">
+                                            <SelectItem value="all" className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                Tất cả môn học
+                                            </SelectItem>
+                                            {subjects.map(s => (
+                                                <SelectItem key={s} value={s} className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                  {s}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 {/* Lecturer Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center whitespace-nowrap">
                                         <User className="mr-2 text-purple-500" size={16} />
                                         Giảng viên
                                     </label>
-                                    <select
-                                        value={lecturer}
-                                        onChange={(e) => setLecturer(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-purple-500 focus:outline-none transition-colors"
-                                    >
-                                        <option value="">Tất cả giảng viên</option>
-                                        {lecturers.map(l => (
-                                            <option key={l} value={l}>{l}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={lecturer || "all"} onValueChange={val => setLecturer(val === "all" ? "" : val)}>
+                                        <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white rounded-xl px-4 py-3 min-h-[48px]">
+                                            <SelectValue placeholder="Tất cả giảng viên" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl shadow-lg border border-gray-200 bg-white py-2 max-h-48 overflow-y-auto">
+                                            <SelectItem value="all" className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                Tất cả giảng viên
+                                            </SelectItem>
+                                            {lecturers.map(l => (
+                                                <SelectItem key={l} value={l} className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                  {l}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 {/* Faculty Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center whitespace-nowrap">
                                         <GraduationCap className="mr-2 text-green-500" size={16} />
                                         Khoa/Năm học
                                     </label>
-                                    <select
-                                        value={faculty}
-                                        onChange={(e) => setFaculty(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-green-500 focus:outline-none transition-colors"
-                                    >
-                                        <option value="">Tất cả khoa/năm</option>
-                                        {faculties.map(f => (
-                                            <option key={f} value={f}>{f}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={faculty || "all"} onValueChange={val => setFaculty(val === "all" ? "" : val)}>
+                                        <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white rounded-xl px-4 py-3 min-h-[48px]">
+                                            <SelectValue placeholder="Tất cả khoa/năm" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl shadow-lg border border-gray-200 bg-white py-2 max-h-48 overflow-y-auto">
+                                            <SelectItem value="all" className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                Tất cả khoa/năm
+                                            </SelectItem>
+                                            {faculties.map(f => (
+                                                <SelectItem key={f} value={f} className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                  {f}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 {/* Year Filter */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center">
+                                    <label className="block text-sm font-semibold text-[#1D4ED8] mb-2 flex items-center whitespace-nowrap">
                                         <Calendar className="mr-2 text-orange-500" size={16} />
                                         Năm học
                                     </label>
-                                    <select
-                                        value={year}
-                                        onChange={(e) => setYear(e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-[#E2E8F0] rounded-xl focus:border-orange-500 focus:outline-none transition-colors"
-                                    >
-                                        <option value="">Tất cả năm học</option>
-                                        {years.map(y => (
-                                            <option key={y} value={y}>{y}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={year || "all"} onValueChange={val => setYear(val === "all" ? "" : val)}>
+                                        <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-white rounded-xl px-4 py-3 min-h-[48px]">
+                                            <SelectValue placeholder="Tất cả năm học" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl shadow-lg border border-gray-200 bg-white py-2 max-h-48 overflow-y-auto">
+                                            <SelectItem value="all" className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                Tất cả năm học
+                                            </SelectItem>
+                                            {years.map(y => (
+                                                <SelectItem key={y} value={y} className="px-4 py-2 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors">
+                                                  {y}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                         </div>
@@ -420,7 +485,7 @@ export default function DocumentsPage() {
                                                         </span>
                                                     </div>
                                                     <div className="flex space-x-2">
-                                                        {/* XÓA ICON MẮT (Xem) */}
+                                                        {/* Download button */}
                                                         <button
                                                             type="button"
                                                             className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
@@ -434,11 +499,19 @@ export default function DocumentsPage() {
                                                                     size: doc.file.size
                                                                 };
                                                                 await downloadFileFromObject({ file });
-                                                                // Reload lại documents sau khi download
                                                                 FetchDocument();
                                                             }}
                                                         >
                                                             <Download size={18} />
+                                                        </button>
+                                                        {/* Delete button */}
+                                                        <button
+                                                            type="button"
+                                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="Xoá tài liệu"
+                                                            onClick={() => handleDelete(doc._id)}
+                                                        >
+                                                            <Trash2 size={18} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -530,6 +603,15 @@ export default function DocumentsPage() {
                                                     >
                                                         <Download size={20} />
                                                     </button>
+                                                    {/* Delete button */}
+                                                    <button
+                                                        type="button"
+                                                        className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                        title="Xoá tài liệu"
+                                                        onClick={() => handleDelete(doc._id)}
+                                                    >
+                                                        <Trash2 size={20} />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -540,29 +622,38 @@ export default function DocumentsPage() {
                         
                         {/* Upload Status */}
                         {uploadedFiles.length > 0 && (
-                            <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                    <UploadCloud className="mr-2 text-green-500" />
-                                    Tài liệu đã tải lên ({uploadedFiles.length})
-                                </h3>
-                                <div className="space-y-3">
-                                    {uploadedFiles.map((file, index) => (
-                                        <div key={index} className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="text-2xl">{getFileIcon(file.type)}</div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800">{file.name}</p>
-                                                    <p className="text-sm text-gray-600">{file.size} </p>
+                            <Dialog open={uploadedFiles.length > 0} onOpenChange={() => setUploadedFiles([])}>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle className="flex items-center">
+                                            <UploadCloud className="mr-2 text-green-500" />
+                                            Tải lên thành công!
+                                        </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-3 mt-4">
+                                        {uploadedFiles.map((file, index) => (
+                                            <div key={index} className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="text-2xl">{getFileIcon(file.type)}</div>
+                                                    <div>
+                                                        <p className="font-semibold text-black-800">{file.name}</p>
+                                                        <p className="text-sm text-gray-600">{file.size}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center text-green-600 font-semibold">
+                                                    <Star size={16} className="mr-1" />
+                                                    Thành công
                                                 </div>
                                             </div>
-                                            <div className="flex items-center text-green-600 font-semibold">
-                                                <Star size={16} className="mr-1" />
-                                                Thành công
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                                        ))}
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={() => setUploadedFiles([])} className="w-full">
+                                            Đóng
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         )}
                     </div>
                 </div>
@@ -615,7 +706,6 @@ export default function DocumentsPage() {
                                 <SelectItem value="Graphic Design">Graphic Design</SelectItem>
                             </SelectContent>
                         </Select>
-                        {/* Year Select */}
                         <Input
                             name="academicYear"
                             placeholder="Year"
@@ -624,7 +714,7 @@ export default function DocumentsPage() {
                             required
                             type="number"
                             min="1900"
-                            max="2100"
+                            max={new Date().getFullYear()}
                         />
                         <Input
                             type="file"
@@ -633,9 +723,36 @@ export default function DocumentsPage() {
                             required
                         />
                         <DialogFooter>
-                            <Button type="submit" className="w-full">Upload</Button>
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? "Đang tải..." : "Upload"}
+                            </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+            {/* Dialog đang xoá */}
+            <Dialog open={deleting}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center text-blue-600">
+                            <Trash2 className="mr-2" /> Đang xoá tài liệu...
+                        </DialogTitle>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
+            {/* Dialog thông báo xoá thành công */}
+            <Dialog open={deleteSuccess} onOpenChange={setDeleteSuccess}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center text-green-600">
+                            <Trash2 className="mr-2" /> Đã xoá tài liệu thành công!
+                        </DialogTitle>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button onClick={() => setDeleteSuccess(false)} className="w-full">
+                            Đóng
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

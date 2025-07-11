@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [forgotError, setForgotError] = useState('');
   const [loadingForgot, setLoadingForgot] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false); // Thêm state này
+  const [loadingLogin, setLoadingLogin] = useState(false);
 
   const router = useRouter();
   const { connectWebSocket } = useWebSocket();
@@ -28,7 +29,7 @@ export default function LoginPage() {
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-     
+    setLoadingLogin(true); // Bắt đầu loading
     try {
       const items = {
         email: email,
@@ -65,12 +66,14 @@ export default function LoginPage() {
             const userId = response.data.logindata.user._id;
             router.push(`/home?user=${encodeURIComponent(userId)}`);
           }
+          // Đặt setLoadingLogin(false) sau khi chuyển trang
         }, 2000);
         setLoginError(false); // Đăng nhập thành công thì ẩn modal lỗi
       }
     } catch (error) {
-      setLoginError(true); // Đăng nhập lỗi thì hiện modal
+      setLoginError(true);
       console.error('Login error:', error);
+      setLoadingLogin(false); // Chỉ tắt loading khi lỗi
     }
   };
 
@@ -82,13 +85,10 @@ export default function LoginPage() {
     try {
       await axios.put(`${BASEURL}/api/auth/reset`, { email: forgotEmail });
       setForgotSent(true);
-      setIsForgotPassword(true); // Đánh dấu là vừa gửi quên mật khẩu
-      setTimeout(() => {
-        setForgotOpen(false);
-        setForgotSent(false);
-        setLoadingForgot(false);
-        setForgotEmail('');
-      }, 1500); // Đợi 1.5s để user đọc thông báo
+      setIsForgotPassword(true); 
+     
+      setLoadingForgot(false); 
+  
     } catch (err) {
       console.error('Forgot password error:', err);
       setForgotError('Không thể gửi mật khẩu mới. Vui lòng kiểm tra email.');
@@ -179,8 +179,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-full font-medium shadow transition-all"
+                disabled={loadingLogin}
               >
-                LOGIN
+                {loadingLogin ? "Đang đăng nhập..." : "LOGIN"}
               </Button>
              
             </form>
@@ -239,7 +240,7 @@ export default function LoginPage() {
           {forgotSent && (
             <div className="text-green-600 mt-2 text-center">
               Đã gửi mật khẩu mới! Vui lòng kiểm tra email.<br />
-              Đang chuyển hướng...
+             
             </div>
           )}
           {forgotError && (
@@ -247,6 +248,23 @@ export default function LoginPage() {
               {forgotError}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog loading đăng nhập */}
+      <Dialog open={loadingLogin}>
+        <DialogContent className="max-w-xs flex flex-col items-center justify-center">
+          {/* DialogTitle ẩn cho accessibility */}
+          <span className="sr-only">
+            <DialogTitle>Đang đăng nhập</DialogTitle>
+          </span>
+          <div className="flex flex-col items-center py-6">
+            <svg className="animate-spin h-8 w-8 text-cyan-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <span className="text-cyan-700 font-semibold">Đang đăng nhập...</span>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -37,9 +37,8 @@ const {onConnection} = require('./controllers/websocket.controller')
 wss.on('connection',onConnection);
 
 
-app.get('/log', (req, res) => {
-    console.log('hello word');
-
+app.get('/', (req, res) => {
+    res.send('helloworld');
 });
 
 // Start server

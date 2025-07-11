@@ -70,7 +70,7 @@ const sendVerification = async (req, res) => {
   const code = generateSixDigitCode();
   try {
     await transporter.sendMail({
-      from: '"Student Campus"',
+       from: '"Student Campus" <hidrabula@gmail.com>',
       to: email,
       subject: 'Mã xác nhận đăng ký tài khoản',
       text: `Mã xác nhận đăng ký của bạn là: ${code}`,

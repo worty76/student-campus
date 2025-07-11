@@ -34,10 +34,12 @@ export default function RegisterPage() {
   const [serverCode, setServerCode] = useState('');
   const [pendingRegisterData, setPendingRegisterData] = useState<User | null>(null);
   const [verificationError, setVerificationError] = useState(false);
+  const [invalidFptEmail, setInvalidFptEmail] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const router = useRouter();
   
   const getVerifiedEmail = (email: string) => {
-    // Chỉ cho phép email có đuôi @fpt.edu.vn
+   
     const emailRegex = /^[^\s@]+@fpt\.edu\.vn$/i;
     return emailRegex.test(email);
   };
@@ -47,9 +49,10 @@ export default function RegisterPage() {
   const handleSendVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!getVerifiedEmail(email)) {
-      setRegisterError(true);
+      setInvalidFptEmail(true);
       return;
     }
+    setIsRegistering(true); // Hiện dialog đang đăng ký
     try {
       const items = {
         username: name,
@@ -68,6 +71,7 @@ export default function RegisterPage() {
           }
         }
       );
+      setIsRegistering(false); // Tắt dialog khi xong
       if (response && response.data && response.data.code) {
         setServerCode(response.data.code);
         setPendingRegisterData(items);
@@ -76,6 +80,7 @@ export default function RegisterPage() {
         setRegisterError(true);
       }
     } catch (error) {
+      setIsRegistering(false);
       console.error("Error sending verification code:", error);
       setRegisterError(true);
     }
@@ -312,6 +317,38 @@ export default function RegisterPage() {
           >
             Xác nhận
           </button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog email không phải FPT */}
+      <Dialog open={invalidFptEmail} onOpenChange={setInvalidFptEmail}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Email không hợp lệ</DialogTitle>
+            <DialogDescription>
+              Chỉ có thể đăng ký bằng email đuôi <b>@fpt.edu.vn</b>. Vui lòng sử dụng email sinh viên FPT!
+            </DialogDescription>
+          </DialogHeader>
+          <button
+            onClick={() => setInvalidFptEmail(false)}
+            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 w-full"
+          >
+            Đóng
+          </button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isRegistering}>
+        <DialogContent className="max-w-sm flex flex-col items-center">
+          <DialogHeader>
+            <DialogTitle className="text-cyan-600">Đang đăng ký...</DialogTitle>
+            <DialogDescription>
+              Vui lòng chờ trong giây lát.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex justify-center">
+            <span className="loader border-4 border-cyan-400 border-t-transparent rounded-full w-8 h-8 animate-spin"></span>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

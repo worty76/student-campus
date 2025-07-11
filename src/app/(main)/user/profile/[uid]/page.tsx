@@ -242,7 +242,7 @@ const canViewProfile = () => {
                 <div className="text-gray-500 text-center">Bạn chưa có bài viết nào.</div>
               ) : (
                 posts.map((post) => (
-                  <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} />
+                  <RenderPost key={post._id} post={post} userData={post.userInfo || ' '} onDelete={() => getUserPost()} />
                 ))
               )
             ) : (

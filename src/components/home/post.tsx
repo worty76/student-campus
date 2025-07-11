@@ -8,6 +8,7 @@ import axios from 'axios';
 import { BASEURL } from '@/app/constants/url';
 import { useWebSocket } from '@/app/context/websocket.contex';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"; // Thêm dòng này
 
 interface FileAttachment {
   url: string;
@@ -61,7 +62,15 @@ const formatTime = (createdAt: string): string => {
   return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
 };
 
-const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ post, userData }) => {
+// Thay đổi props của RenderPost:
+interface RenderPostProps {
+  post: Post;
+  userData: UserdataProps | null;
+  onDelete?: (postId: string) => void;
+}
+
+// Sửa lại khai báo component:
+const RenderPost: React.FC<RenderPostProps> = ({ post, userData, onDelete }) => {
   const [isEditModal, setIsEditModal] = useState(false);
   const [likes, setLikes] = useState<string[]>(Array.isArray(post.likes) ? post.likes : []);
   const [userId, setUserId] = useState<string>("");
@@ -69,6 +78,8 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
   const [showComments, setShowComments] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<Comments[]>(post.comments || []);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
   const { sendMessage } = useWebSocket();
 
   useEffect(() => {
@@ -153,29 +164,29 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
   };
  
   const handleDeletePost = async () => {
-    if (confirm("Bạn có chắc muốn xóa bài viết này?")) {
-      try {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
+    setShowDeleteDialog(false);
+    try {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
 
-        const response = await axios.delete(
-          `${BASEURL}/api/post/delete/${post._id}?userId=${userId}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token ? `Bearer ${token}` : '',
-            },
-          }
-        );
+      const response = await axios.delete(
+        `${BASEURL}/api/post/delete/${post._id}?userId=${userId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : '',
+          },
+        }
+      );
 
-        if (response.status !== 200) throw new Error('Xóa bài viết thất bại');
-        alert("Bài viết đã được xóa thành công!");
-      } catch (error) {
-        console.error("Lỗi khi xóa bài viết:", error);
-        alert("Có lỗi xảy ra khi xóa bài viết. Vui lòng thử lại sau.");
-      }
+      if (response.status !== 200) throw new Error('Xóa bài viết thất bại');
+      setDeleteSuccess(true);
+      if (onDelete) onDelete(post._id); // Gọi callback reload list post
+    } catch (error) {
+      console.error("Lỗi khi xóa bài viết:", error);
+      alert("Có lỗi xảy ra khi xóa bài viết. Vui lòng thử lại sau.");
     }
-  }
+  };
 
   const handleAddComment = () => {
     if (commentInput.trim()) {
@@ -244,6 +255,49 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
         </div>
       )}
 
+      {/* Dialog xác nhận xóa */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Xác nhận xóa bài đăng</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa bài đăng này không? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleDeletePost}
+              className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => setShowDeleteDialog(false)}
+              className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Hủy
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Dialog thông báo xóa thành công */}
+      <Dialog open={deleteSuccess} onOpenChange={setDeleteSuccess}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-green-600">Đã xóa bài đăng</DialogTitle>
+            <DialogDescription>
+              Bài đăng đã được xóa thành công.
+            </DialogDescription>
+          </DialogHeader>
+          <button
+            onClick={() => setDeleteSuccess(false)}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+          >
+            Đóng
+          </button>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center mb-3">
         <Image
           src={userData?.avatar_link || '/schoolimg.jpg'}
@@ -287,7 +341,7 @@ const RenderPost: React.FC<{ post: Post; userData: UserdataProps | null }> = ({ 
                     Chỉnh sửa
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={handleDeletePost}
+                    onClick={() => setShowDeleteDialog(true)}
                     className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
                   >
                     <span>🗑️</span>

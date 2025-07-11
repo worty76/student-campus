@@ -533,18 +533,18 @@ const logNotificationsPost = async (from, to, fromName, postid, type) => {
         }
 
         
-        if (type === 'likes_post') {
-            const existingLike = await Notifications.findOne({
-                type: 'likes_post',
-                senderId: from,
-                receiverId: to,
-                post: postid
-            });
+        // if (type === 'likes_post') {
+        //     const existingLike = await Notifications.findOne({
+        //         type: 'likes_post',
+        //         senderId: from,
+        //         receiverId: to,
+        //         post: postid
+        //     });
 
-            if (existingLike) {
-                return { message: 'Đã tồn tại thông báo like từ người dùng này cho bài viết này' };
-            }
-        }
+        //     if (existingLike) {
+        //         return { message: 'Đã tồn tại thông báo like từ người dùng này cho bài viết này' };
+        //     }
+        // }
 
         if (type === 'friend_request') {
             const existingFr = await Notifications.findOne({
