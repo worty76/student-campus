@@ -260,13 +260,37 @@ const HomePage = () => {
   );
 
   // Hàm thêm post mới vào đầu danh sách
-  const handleAddPost = (newPost: Post) => {
-    const postWithId = {
+ const handleAddPost = (newPost: Post) => {
+  const now = new Date().toISOString();
+  const userDataLocal = localStorage.getItem("userdata");
+  let userInfoObj = {
+    _id: userId || "",
+    username: userData?.username || "User",
+    avatar_link: userData?.avatar_link || "/schoolimg.jpg",
+  };
+  if (userDataLocal) {
+    try {
+      const parsed = JSON.parse(userDataLocal);
+      userInfoObj = {
+        _id: parsed.id || userId || "",
+        username: parsed.username || userData?.username || "User",
+        avatar_link: parsed.avatar_link || userData?.avatar_link || "/schoolimg.jpg",
+      };
+    } catch {}
+  }
+
+  const postWithFullData: Post = {
     ...newPost,
     _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
+    userId: userId || "",
+    userInfo: userInfoObj,
+    createdAt: newPost.createdAt || now,
+    likes: newPost.likes || [],
+    comments: newPost.comments || [],
+    attachments: newPost.attachments || [],
   };
-    setPosts((prev) => [postWithId, ...prev]);
-  };
+  setPosts((prev) => [postWithFullData, ...prev]);
+};
 
   if (isInitialLoading) {
     return (
