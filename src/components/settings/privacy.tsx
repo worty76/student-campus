@@ -36,21 +36,21 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
             label: "Mọi người",
             description: "Tất cả mọi người có thể xem",
             icon: Globe,
-            color: "text-blue-600 dark:text-blue-400"
+            color: "text-[#0694FA]"
         },
         {
             value: "friends",
             label: "Bạn bè",
             description: "Chỉ bạn bè có thể xem",
             icon: Users,
-            color: "text-green-600 dark:text-green-400"
+            color: "text-green-600"
         },
         {
             value: "onlyme",
             label: "Chỉ mình tôi",
             description: "Chỉ bạn có thể xem",
             icon: Lock,
-            color: "text-red-600 dark:text-red-400"
+            color: "text-[#1E293B]"
         }
     ];
 
@@ -60,14 +60,14 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
             label: "Bạn bè",
             description: "Chỉ bạn bè có thể nhắn tin",
             icon: Users,
-            color: "text-green-600 dark:text-green-400"
+            color: "text-green-600"
         },
         {
             value: "noone",
             label: "Không ai",
             description: "Không ai có thể nhắn tin",
             icon: Lock,
-            color: "text-red-600 dark:text-red-400"
+            color: "text-[#1E293B]"
         }
     ];
 
@@ -76,14 +76,14 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
             {/* Profile Visibility */}
             <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <div className="w-8 h-8 bg-[#0694FA]/10 rounded-lg flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-[#0694FA]" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                        <h3 className="font-semibold text-[#1E293B]">
                             Quyền xem hồ sơ
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[#1E293B]/60">
                             Chọn ai có thể xem thông tin hồ sơ của bạn
                         </p>
                     </div>
@@ -98,8 +98,8 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                                 key={option.value}
                                 className={`relative flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                                     isSelected
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                                        ? 'border-[#0694FA] bg-[#0694FA]/5'
+                                        : 'border-gray-200 bg-white hover:border-gray-300'
                                 }`}
                             >
                                 <input
@@ -118,16 +118,16 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                                 <div className="flex items-center space-x-3 flex-1">
                                     <Icon className={`w-5 h-5 ${option.color}`} />
                                     <div>
-                                        <div className="font-medium text-gray-900 dark:text-white">
+                                        <div className="font-medium text-[#1E293B]">
                                             {option.label}
                                         </div>
-                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        <div className="text-sm text-[#1E293B]/60">
                                             {option.description}
                                         </div>
                                     </div>
                                 </div>
                                 {isSelected && (
-                                    <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <Check className="w-5 h-5 text-[#0694FA]" />
                                 )}
                             </label>
                         );
@@ -138,14 +138,14 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
             {/* Message Permission */}
             <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                        <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Users className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                        <h3 className="font-semibold text-[#1E293B]">
                             Quyền nhắn tin
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[#1E293B]/60">
                             Chọn ai có thể gửi tin nhắn cho bạn
                         </p>
                     </div>
@@ -160,8 +160,8 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                                 key={option.value}
                                 className={`relative flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                                     isSelected
-                                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                                        ? 'border-green-500 bg-green-50'
+                                        : 'border-gray-200 bg-white hover:border-gray-300'
                                 }`}
                             >
                                 <input
@@ -180,16 +180,16 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                                 <div className="flex items-center space-x-3 flex-1">
                                     <Icon className={`w-5 h-5 ${option.color}`} />
                                     <div>
-                                        <div className="font-medium text-gray-900 dark:text-white">
+                                        <div className="font-medium text-[#1E293B]">
                                             {option.label}
                                         </div>
-                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        <div className="text-sm text-[#1E293B]/60">
                                             {option.description}
                                         </div>
                                     </div>
                                 </div>
                                 {isSelected && (
-                                    <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                    <Check className="w-5 h-5 text-green-600" />
                                 )}
                             </label>
                         );
@@ -200,14 +200,14 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
             {/* Notifications */}
             <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                        <Bell className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <Bell className="w-4 h-4 text-yellow-600" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                        <h3 className="font-semibold text-[#1E293B]">
                             Thông báo
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[#1E293B]/60">
                             Quản lý cách bạn nhận thông báo
                         </p>
                     </div>
@@ -215,8 +215,8 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                 
                 <label className={`relative flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                     privacy.notifications === "yes"
-                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                        ? 'border-yellow-500 bg-yellow-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}>
                     <input
                         type="checkbox"
@@ -231,15 +231,15 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                     />
                     <div className="flex items-center space-x-3 flex-1">
                         {privacy.notifications === "yes" ? (
-                            <Bell className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                            <Bell className="w-5 h-5 text-yellow-600" />
                         ) : (
                             <BellOff className="w-5 h-5 text-gray-400" />
                         )}
                         <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="font-medium text-[#1E293B]">
                                 Nhận thông báo
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-[#1E293B]/60">
                                 {privacy.notifications === "yes" 
                                     ? "Bạn sẽ nhận được tất cả thông báo" 
                                     : "Tắt tất cả thông báo"
@@ -248,7 +248,7 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                         </div>
                     </div>
                     <div className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${
-                        privacy.notifications === "yes" ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600'
+                        privacy.notifications === "yes" ? 'bg-yellow-500' : 'bg-gray-300'
                     }`}>
                         <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform duration-200 ${
                             privacy.notifications === "yes" ? 'translate-x-6' : 'translate-x-0.5'
@@ -257,11 +257,11 @@ const Privacy: React.FC<PrivacyProps> = ({ onSave }) => {
                 </label>
             </div>
 
-            <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-6 border-t border-gray-200">
                 <Button 
                     type="submit" 
                     disabled={isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#0694FA] hover:bg-[#1E293B] text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <div className="flex items-center justify-center">

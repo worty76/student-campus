@@ -213,6 +213,63 @@
   animation: pulse-gentle 2s infinite;
 }
 
+/* Custom animations for login page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
 /* Additional post component animations */
 @keyframes slideInFromLeft {
   from {
@@ -428,96 +485,107 @@
   animation: scaleIn 0.6s ease-out forwards;
 }
 
-/* Dark mode enhancements */
-@media (prefers-color-scheme: dark) {
-  .glass {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.125);
+/* Custom animations for registration page */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
-/* Enhanced post component styles */
-.post-card {
-  @apply rounded-lg overflow-hidden shadow-md transition-transform duration-300;
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
 }
 
-.post-card:hover {
-  @apply transform -translate-y-2;
+.animation-delay-2000 {
+  animation-delay: 2s;
 }
 
-.post-content {
-  @apply p-4;
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
 
-.post-title {
-  @apply text-xl font-semibold mb-2;
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
-.post-excerpt {
-  @apply text-gray-700;
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+  background-size: 800px 104px;
 }
 
-/* Additional post component animations */
-.animate-slide-in-from-left-2 {
-  animation: slideInFromLeft 0.4s ease-out forwards;
+/* Enhanced form inputs */
+.form-input-enhanced {
+  @apply transition-all duration-300 ease-in-out border-2 border-gray-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 rounded-xl;
 }
 
-.animate-slide-in-from-top-2 {
-  animation: slideInFromTop 0.3s ease-out forwards;
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.animate-zoom-in {
-  animation: zoomIn 0.3s ease-out forwards;
-}
-
-/* Post hover effects */
-.post-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.post-card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-}
-
-/* Button ripple effect */
-.btn-ripple {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-ripple::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
-}
-
-.btn-ripple:active::before {
-  width: 100px;
-  height: 100px;
-}
-
-/* Enhanced scrollbar for comments */
-.comments-scroll::-webkit-scrollbar {
+/* Custom scrollbar for form container */
+.custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 
-.comments-scroll::-webkit-scrollbar-track {
-  background: transparent;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
 }
 
-.comments-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.3);
-  border-radius: 2px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #0891b2;
+  border-radius: 4px;
 }
 
-.comments-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.5);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0e7490;
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Password strength indicator */
+.password-strength-weak {
+  @apply bg-red-200 text-red-800;
+}
+
+.password-strength-medium {
+  @apply bg-yellow-200 text-yellow-800;
+}
+
+.password-strength-strong {
+  @apply bg-green-200 text-green-800;
+}
+
+/* Improved button hover effects */
+.btn-primary-enhanced {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl;
+}
+
+/* Form field error state */
+.field-error {
+  @apply border-red-500 focus:border-red-500 focus:ring-red-200;
+}
+
+/* Form field success state */
+.field-success {
+  @apply border-green-500 focus:border-green-500 focus:ring-green-200;
 }

@@ -593,7 +593,7 @@ const Notifications = () => {
           )}
 
           {/* Notifications List */}
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] ofverflow-hidden">
             <NotificationList
               notifications={notifications}
               tab={tab}

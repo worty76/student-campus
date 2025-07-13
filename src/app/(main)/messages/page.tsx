@@ -4,7 +4,7 @@ import NavigationBar from "@/app/(main)/layouts/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation'
-import { Send, Paperclip, X, FileImage, File, Download } from "lucide-react";
+import { Send, Paperclip, X, FileImage, File, Download, Smile } from "lucide-react";
 import { useWebSocket } from '@/app/context/websocket.contex';
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
@@ -109,6 +109,7 @@ export default function MessagesPage() {
   const [showMembers, setShowMembers] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedFriendToAdd, setSelectedFriendToAdd] = useState<string>("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   // File attachment states
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -121,6 +122,21 @@ export default function MessagesPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const dragCounter = useRef(0);
 
+  // Emoji list for quick reactions
+  const quickEmojis = [
+    '😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '🤗',
+    '🤔', '😎', '😴', '🤯', '😱', '🥱', '😇', '🙃',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👏',
+    '🔥', '💯', '✨', '⚡', '💫', '🌟', '⭐', '🌈',
+    '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🎯', '💎'
+  ];
+
+  const handleEmojiSelect = (emoji: string) => {
+    setInput(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
   
 
   useEffect(() => {
@@ -128,14 +144,30 @@ export default function MessagesPage() {
   }, [selectedChat]);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current && chatContainerRef.current) {
+      // Scroll chỉ trong chat container, không ảnh hưởng đến scroll của trình duyệt
+      const container = chatContainerRef.current;
+      const element = messagesEndRef.current;
+      
+      // Tính toán vị trí scroll trong container
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const scrollTop = container.scrollTop;
+      const targetScrollTop = scrollTop + (elementRect.top - containerRect.top);
+      
+      // Smooth scroll trong container
+      container.scrollTo({
+        top: targetScrollTop,
+        behavior: "smooth"
+      });
+    }
   }, []);
 
   const reloadChatInterface = useCallback(() => {
     setChatKey(prev => prev + 1);
   }, []);
 
-  
+
   const isValidChat = useCallback((chat: Chat) => {
     const flatParticipants = flattenParticipants(chat.participants);
     return (
@@ -307,6 +339,23 @@ export default function MessagesPage() {
       dragCounter.current = 0;
     };
   }, []);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showEmojiPicker) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.emoji-picker-container')) {
+          setShowEmojiPicker(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -573,7 +622,11 @@ const renderselectedchat = () => {
           <div
             ref={chatContainerRef}
             className="flex-1 p-2 sm:p-4 space-y-2 overflow-y-auto scrollbar-thin"
-            style={{ maxHeight: 'calc(100vh - 200px)' }}
+            style={{ 
+              maxHeight: 'calc(100vh - 200px)',
+              overflowAnchor: 'none',  // Tránh auto-scroll không mong muốn
+              scrollBehavior: 'smooth' // Đảm bảo smooth scroll
+            }}
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -717,7 +770,7 @@ const renderselectedchat = () => {
             </div>
           ) : (
             <form
-              className="flex items-center gap-2 p-2 sm:p-4 border-t bg-white"
+              className="flex items-center gap-2 p-2 sm:p-4 border-t bg-white relative"
               onSubmit={handleSubmit}
             >
               <input
@@ -727,6 +780,8 @@ const renderselectedchat = () => {
                 className="hidden"
                 onChange={handleFileSelect}
               />
+              
+              {/* File attachment button */}
               <Button
                 type="button"
                 variant="ghost"
@@ -736,12 +791,53 @@ const renderselectedchat = () => {
               >
                 <Paperclip size={18} className="text-gray-600" />
               </Button>
+
+              {/* Emoji picker button */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="p-2 relative emoji-picker-container"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                <Smile size={18} className="text-gray-600" />
+              </Button>
+
+              {/* Emoji picker dropdown */}
+              {showEmojiPicker && (
+                <div className="absolute bottom-full left-12 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 w-80 emoji-picker-container">
+                  <div className="text-sm font-medium text-gray-700 mb-2">Chọn emoji:</div>
+                  <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto">
+                    {quickEmojis.map((emoji, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="text-xl hover:bg-gray-100 rounded p-1 transition-colors"
+                        onClick={() => handleEmojiSelect(emoji)}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <button
+                      type="button"
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowEmojiPicker(false)}
+                    >
+                      Đóng
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <Input
                 className="flex-1 text-sm sm:text-base"
                 placeholder="Nhập tin nhắn..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
               />
+              
               <Button
                 type="submit"
                 className="bg-blue-600 text-white px-2 sm:px-4"
@@ -774,6 +870,9 @@ const renderselectedchat = () => {
             <Button type="button" variant="ghost" size="sm" className="p-2" disabled>
               <Paperclip size={18} className="text-gray-400" />
             </Button>
+            <Button type="button" variant="ghost" size="sm" className="p-2" disabled>
+              <Smile size={18} className="text-gray-400" />
+            </Button>
             <Input
               className="flex-1"
               placeholder="Nhập tin nhắn..."
@@ -796,7 +895,15 @@ const renderselectedchat = () => {
 }
 
   useEffect(() => {
-    scrollToBottom();
+    // Chỉ scroll khi có tin nhắn mới và chat container đã được render
+    if (selectedChat?.chatContext && selectedChat.chatContext.length > 0) {
+      // Sử dụng setTimeout để đảm bảo DOM đã được cập nhật
+      const timeoutId = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
   }, [selectedChat?.chatContext, scrollToBottom, chatKey]);
 
  
@@ -969,6 +1076,22 @@ const renderselectedchat = () => {
       console.log(`Chưa có cuộc trò chuyện với ${friendId}`);
     }
   }
+
+  // Effect để scroll đến cuối khi chọn chat mới
+  useEffect(() => {
+    if (selectedChat && chatContainerRef.current) {
+      // Đợi một chút để DOM được render hoàn toàn
+      const timeoutId = setTimeout(() => {
+        const container = chatContainerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 150);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [selectedChat?._id]); // Chỉ trigger khi chọn chat khác
+
   return (
     <div className="min-h-screen bg-gradient-to-br bg-[#F1F1E6]">
       <NavigationBar />
