@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Users, Plus, MessageCircle, Search, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import NavigationBar from "../layouts/navbar";
 import axios from "axios";

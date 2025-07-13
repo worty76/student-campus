@@ -681,7 +681,7 @@ const HomePage = () => {
                   <span>Trending</span>
                 </h4>
                 <div className="space-y-3">
-                  {['#ReactJS', '#NodeJS', '#TypeScript', '#NextJS', '#TailwindCSS'].map((tag, index) => (
+                  {['#ReactJS', '#NodeJS', '#TypeScript', '#NextJS', '#TailwindCSS'].map((tag) => (
                     <div 
                       key={tag}
                       className="flex items-center justify-between p-3 bg-[#F1F1E6] rounded-xl hover:bg-[#F5F5FF] cursor-pointer transition-all duration-200 group"

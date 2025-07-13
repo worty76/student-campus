@@ -17,8 +17,7 @@ import {
   Mail, 
   CheckCircle,
   Loader2,
-  ChevronRight,
-  Home
+
 } from 'lucide-react';
 import './settings.css';
 interface UserdataProps {

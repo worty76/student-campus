@@ -290,14 +290,14 @@ const Notifications = () => {
 
   const getUserNotifications = useCallback(async (reset = false) => {
     if (loading) return; // Prevent multiple simultaneous requests
-
+    
     setLoading(true);
     setError(null);
-
+    
     try {
       const id = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
-
+      
       if (!id || !token) {
         throw new Error("Authentication required");
       }
@@ -308,19 +308,11 @@ const Notifications = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          validateStatus: (status) => status === 200 || status === 404,
         }
       );
 
-      if (response.status === 404) {
-        setNotifications([]);
-        setSkip(0);
-        setError(null);
-        return;
-      }
-
       const data = response.data;
-      // Nếu data không phải là mảng, coi như không có thông báo nào
+      // Nếu trả về 404 hoặc data không phải là mảng, coi như không có thông báo nào
       if (!Array.isArray(data)) {
         setNotifications([]);
         setSkip(0);
@@ -334,9 +326,12 @@ const Notifications = () => {
         setNotifications((prev) => [...prev, ...data]);
         setSkip((prev) => prev + LIMIT);
       }
+      
+
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      // Không setError nếu là lỗi 404
+      
+  
     } finally {
       setLoading(false);
     }
@@ -465,6 +460,7 @@ const Notifications = () => {
       await deleteAllReadNotifications();
       setShowResultDialog("success");
     } catch (e) {
+      console.error("Error deleting all read notifications:", e);
       setShowResultDialog("error");
     }
   }, [deleteAllReadNotifications]);
@@ -475,17 +471,7 @@ const Notifications = () => {
       
       <div className="max-w-4xl mx-auto px-4 py-8 pt-[8vh]">
         {/* Header Section */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="p-4 bg-[#0694FA] rounded-2xl shadow-lg">
-              <Bell className="text-white" size={32} />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-[#1E293B] mb-2">
-            Thông Báo
-          </h1>
-          <p className="text-[#1E293B] text-lg">Cập nhật các hoạt động và tương tác mới nhất</p>
-        </div>
+       
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
