@@ -11,7 +11,7 @@ const notifications = require('../schemas/notification.model')
             .populate('senderId', 'username avatar_link _id');
 
         if (!result || result.length === 0) {
-            return res.status(404).json({ message: 'Không có thông báo nào.' });
+            return res.status(200).json({ message: 'Không có thông báo nào.' });
         }
 
         return res.status(200).json(result);
@@ -72,21 +72,24 @@ const markAllNotificationsAsRead = async (req, res) => {
         return res.status(500).json({ message: 'Lỗi máy chủ khi đánh dấu tất cả thông báo là đã đọc.' });
     }
 };
+const deleteAllUserRead = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await notifications.deleteMany({ receiverId: id, status: 'read' });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Không có thông báo đã đọc nào để xóa.' });
+        }
+        return res.status(200).json({ message: 'Đã xóa tất cả thông báo đã đọc.' });
+    } catch (error) {
+        console.error('[Delete All Read Notifications Error]', error);
+        return res.status(500).json({ message: 'Lỗi máy chủ khi xóa thông báo đã đọc.' });
+    }
+};
 
 
-// const getAllUserNotifications = async (req, res) => {
-//     const { id } = req.params;
-//     try {
-//         const result = await notifications.find({ receiverId: id }).sort({ createAt: -1 });
-
-//         if (!result || result.length === 0) {
-//             return res.status(404).json({ message: 'Không có thông báo nào.' });
-//         }
-
-//         return res.status(200).json(result);
-//     } catch (error) {
-//         console.error('[Get All Notifications Error]', error);
-//         return res.status(500).json({ message: 'Lỗi máy chủ khi lấy tất cả thông báo.' });
-//     }
-// };
-module.exports = {getUserNotifications,markNotificationAsRead,markAllNotificationsAsRead,countUnreadNotifications}
+module.exports = {getUserNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    countUnreadNotifications,
+    deleteAllUserRead}
