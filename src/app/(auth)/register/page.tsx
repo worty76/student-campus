@@ -177,12 +177,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-100 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#F5F9FF] flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         
-        <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+        <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-[#1E293B]/20 rounded-full animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#0694FE]/10 rounded-full animate-pulse animation-delay-4000"></div>
       </div>
 
       {/* School Logo at top left */}
@@ -190,11 +190,11 @@ export default function RegisterPage() {
         <Image
           src="/schoolimg.jpg"
           alt="School Logo"
-          width={48}
-          height={48}
+          width={180}
+          height={180}
           className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-full mr-3 shadow-sm"
         />
-        <span className="text-lg md:text-xl font-bold text-cyan-700 hidden sm:block">Đại học FPT</span>
+        <span className="text-lg md:text-xl font-bold text-[#0694FE] hidden sm:block">Đại học FPT</span>
       </div>
 
       {/* Main container */}
@@ -212,29 +212,29 @@ export default function RegisterPage() {
           <div className="relative z-10 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-8 h-full flex flex-col justify-end">
             <div className="mb-8">
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
-                Create Your Academic Future
+                Tạo Dựng Tương Lai Học Tập
               </h1>
               <p className="text-lg text-white/95 mb-6 drop-shadow">
-                Join thousands of students and access unlimited academic resources in our vibrant learning community.
+                Tham gia cùng hàng nghìn sinh viên và truy cập không giới hạn tài nguyên học tập trong cộng đồng học tập sôi động của chúng tôi.
               </p>
               <div className="flex space-x-4">
                 <div className="flex items-center text-white/90">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm">Free Resources</span>
+                  <span className="text-sm">Tài nguyên miễn phí</span>
                 </div>
                 <div className="flex items-center text-white/90">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm">Study Groups</span>
+                  <span className="text-sm">Nhóm học tập</span>
                 </div>
                 <div className="flex items-center text-white/90">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm">24/7 Support</span>
+                  <span className="text-sm">Hỗ trợ 24/7</span>
                 </div>
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function RegisterPage() {
         </div>
         
         {/* Right - Register form */}
-        <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-gradient-to-br from-white to-gray-50 relative">
+        <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-[#F1F1E6] relative">
           <div className="flex flex-col items-center justify-center w-full h-full px-6 md:px-8 py-6 overflow-y-auto">
             <div className="w-full max-w-sm mx-auto">
               {/* Header */}
@@ -251,8 +251,8 @@ export default function RegisterPage() {
                   <Image
                     src="/schoolimg.jpg"
                     alt="School Avatar"
-                    width={80}
-                    height={80}
+                    width={120}
+                    height={120}
                     className="h-16 w-16 md:h-20 md:w-20 object-cover rounded-full shadow-lg border-4 border-white"
                   />
                 </div>
@@ -457,25 +457,25 @@ export default function RegisterPage() {
                   <SelectContent>
                     <SelectItem value="First Year">
                       <div className="flex items-center justify-between w-full">
-                        <span>First Year</span>
+                        <span>Năm thứ nhất</span>
                         <span className="text-xs text-gray-500">K18</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="Second Year">
                       <div className="flex items-center justify-between w-full">
-                        <span>Second Year</span>
+                        <span>Năm thứ hai</span>
                         <span className="text-xs text-gray-500">K17</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="Third Year">
                       <div className="flex items-center justify-between w-full">
-                        <span>Third Year</span>
+                        <span>Năm thứ ba</span>
                         <span className="text-xs text-gray-500">K16</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="Fourth Year">
                       <div className="flex items-center justify-between w-full">
-                        <span>Fourth Year</span>
+                        <span>Năm thứ tư</span>
                         <span className="text-xs text-gray-500">K15</span>
                       </div>
                     </SelectItem>
@@ -498,7 +498,7 @@ export default function RegisterPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Sending verification...
+                    Đang gửi mã xác thực...
                   </div>
                 ) : (
                   'ĐĂNG KÝ'

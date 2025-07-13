@@ -236,69 +236,29 @@ const HomePage = () => {
     imgSrc,
     link,
     alt,
-    title = "Quảng cáo",
   }: {
     imgSrc: string;
     link: string;
     alt: string;
-    title?: string;
   }) => (
-    <div className=" bg-[#1E293B] border rounded-3xl p-0 shadow-xl w-full max-w-[260px] min-h-[30vh] flex flex-col mb-6 hover:shadow-2xl transition-all duration-300 group overflow-hidden relative">
-      {/* Decorative Ribbon */}
-      <div className="absolute top-0 left-0 bg-gradient-to-r bg-[#1E293B] text-white px-3 py-1 rounded-br-2xl font-bold text-xs shadow-md z-10">
-        <span className="animate-pulse">QUẢNG CÁO</span>
-      </div>
-      {/* Sponsored Badge */}
-      <span className="absolute top-2 right-2 bg-[#1E293B]  px-1.5 py-0.5 rounded-full text-xs font-semibold shadow-sm z-10">
-        Được tài trợ
-      </span>
-      {/* Banner Image */}
+    <div className="bg-white border border-[#1E293B]/10 rounded-2xl shadow-lg w-full overflow-hidden hover:shadow-xl transition-all duration-300 relative">
       <a
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className="block group"
+        className="block"
       >
-        <div className="relative overflow-hidden rounded-t-3xl shadow-md transition-all duration-300 group-hover:scale-[1.03]">
-          <Image
-            src={imgSrc}
-            alt={alt}
-            width={260}
-            height={140}
-            className="w-full h-36 object-cover group-hover:brightness-110 group-hover:scale-105 transition-all duration-300"
-            style={{ objectFit: "cover" }}
-            priority
-          />
-          {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          {/* Alt text as badge */}
-          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow">
-            {alt}
-          </div>
-        </div>
+        <Image
+          src={imgSrc}
+          alt={alt}
+          width={260}
+          height={240}
+          className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
+          style={{ objectFit: "cover" }}
+        />
       </a>
-      {/* Content */}
-      <div className="flex-1 flex flex-col justify-between px-4 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-        </div>
-        <div className="text-gray-600 text-xs mb-3 line-clamp-2">
-          {alt || "Khám phá thêm thông tin hữu ích dành cho bạn!"}
-        </div>
-        <div className="text-center">
-            <a
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold shadow hover:bg-blue-600 transition-all duration-200 hover:scale-105 focus:ring-2 focus:ring-blue-200 text-xs"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-              Tìm hiểu thêm
-            </a>
-        </div>
+      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium">
+        Quảng cáo
       </div>
     </div>
   );
@@ -690,14 +650,14 @@ const HomePage = () => {
                 imgSrc="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/34a17917926931.562c0f7f02c94.jpg"
                 link="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/34a17917926931.562c0f7f02c94.jpg"
                 alt=""
-                title="Quảng cáo"
+               
               />
               
               <AdsPanel
                 imgSrc="https://th.bing.com/th/id/OIP.1e0RvQj_gmhu4P9adBboQAHaLR?w=202&h=308&c=7&r=0&o=7&pid=1.7&rm=3"
                 link="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/34a17917926931.562c0f7f02c94.jpg"
                 alt=""
-                title="Quảng cáo"
+            
               />
             </div>
           </div>
