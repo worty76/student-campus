@@ -243,14 +243,14 @@ const HomePage = () => {
     alt: string;
     title?: string;
   }) => (
-    <div className=" bg-[#1E293B] border rounded-3xl p-0 shadow-xl w-full max-w-[340px] min-h-[36vh] flex flex-col mb-8 hover:shadow-2xl transition-all duration-300 group overflow-hidden relative">
+    <div className=" bg-[#1E293B] border rounded-3xl p-0 shadow-xl w-full max-w-[260px] min-h-[30vh] flex flex-col mb-6 hover:shadow-2xl transition-all duration-300 group overflow-hidden relative">
       {/* Decorative Ribbon */}
-      <div className="absolute top-0 left-0 bg-gradient-to-r bg-[#1E293B] text-white px-4 py-1 rounded-br-2xl font-bold text-xs shadow-md z-10">
+      <div className="absolute top-0 left-0 bg-gradient-to-r bg-[#1E293B] text-white px-3 py-1 rounded-br-2xl font-bold text-xs shadow-md z-10">
         <span className="animate-pulse">QUẢNG CÁO</span>
       </div>
       {/* Sponsored Badge */}
-      <span className="absolute top-3 right-3 bg-[#1E293B]  px-2 py-1 rounded-full text-xs font-semibold shadow-sm z-10">
-        Sponsored
+      <span className="absolute top-2 right-2 bg-[#1E293B]  px-1.5 py-0.5 rounded-full text-xs font-semibold shadow-sm z-10">
+        Được tài trợ
       </span>
       {/* Banner Image */}
       <a
@@ -263,27 +263,27 @@ const HomePage = () => {
           <Image
             src={imgSrc}
             alt={alt}
-            width={320}
-            height={180}
-            className="w-full h-44 object-cover group-hover:brightness-110 group-hover:scale-105 transition-all duration-300"
+            width={260}
+            height={140}
+            className="w-full h-36 object-cover group-hover:brightness-110 group-hover:scale-105 transition-all duration-300"
             style={{ objectFit: "cover" }}
             priority
           />
           {/* Overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {/* Alt text as badge */}
-          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-gray-700 shadow">
+          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow">
             {alt}
           </div>
         </div>
       </a>
       {/* Content */}
-      <div className="flex-1 flex flex-col justify-between px-6 py-4">
+      <div className="flex-1 flex flex-col justify-between px-4 py-3">
         <div className="flex items-center gap-2 mb-2">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <h4 className="font-bold text-gray-800 text-base">{title}</h4>
+          <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
         </div>
-        <div className="text-gray-600 text-sm mb-4 line-clamp-2">
+        <div className="text-gray-600 text-xs mb-3 line-clamp-2">
           {alt || "Khám phá thêm thông tin hữu ích dành cho bạn!"}
         </div>
         <div className="text-center">
@@ -291,9 +291,9 @@ const HomePage = () => {
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-xl font-semibold shadow hover:bg-blue-600 transition-all duration-200 hover:scale-105 focus:ring-2 focus:ring-blue-200"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold shadow hover:bg-blue-600 transition-all duration-200 hover:scale-105 focus:ring-2 focus:ring-blue-200 text-xs"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
               Tìm hiểu thêm
@@ -338,11 +338,28 @@ const HomePage = () => {
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F5FF]">
-        <div className="flex flex-col items-center space-y-6">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-[#0694FA]/30 rounded-full animate-spin border-t-[#0694FA]"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-pulse border-t-[#1E293B]"></div>
+      <div className="bg-[#F1F1E6] min-h-screen pb-20 flex flex-col relative overflow-x-hidden">
+        {/* Enhanced decorative elements */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#0694FA]/10 rounded-full blur-3xl opacity-40 -z-10" />
+        <div className="absolute top-20 right-0 w-72 h-72 bg-[#1E293B]/10 rounded-full blur-3xl opacity-30 -z-10" />
+        <div className="absolute bottom-0 left-1/2 w-80 h-80 bg-[#0694FA]/10 rounded-full blur-3xl opacity-25 -z-10" />
+        
+        {/* Enhanced top gradient bar */}
+        <div className="w-full h-1 bg-[#0694FA] shadow-sm" />
+        
+        {/* Fixed Navigation Bar with enhanced shadow */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-[#1E293B]/10">
+          <NavigationBar />
+        </div>
+
+        {/* Loading Content Area */}
+        <div className="flex-1 flex items-center justify-center pt-20">
+          <div className="flex flex-col items-center space-y-6">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#0694FA]/30 rounded-full animate-spin border-t-[#0694FA]"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-pulse border-t-[#1E293B]"></div>
+            </div>
+            <div className="text-[#0694FA] font-medium text-lg">Đang tải dữ liệu...</div>
           </div>
         </div>
       </div>
@@ -366,37 +383,37 @@ const HomePage = () => {
 
       {/* Main Content Container - with improved spacing */}
       <div className="flex justify-center w-full pt-20">
-        <div className="flex justify-center items-start gap-6 w-full max-w-7xl px-4">
+        <div className="flex justify-center items-start gap-4 w-full max-w-6xl px-4">
           
           {/* Left Sidebar - Enhanced User Info */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="fixed top-24 w-80 left-[calc((100vw-1280px)/2)] max-h-[calc(100vh-6rem)]">
+          <div className="hidden lg:block w-64 flex-shrink-0">
+            <div className="fixed top-24 w-64 left-[calc((100vw-1152px)/2)] max-h-[calc(100vh-6rem)]">
               
               {/* Enhanced User Profile Card */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-[#1E293B]/10 w-full flex flex-col items-center mb-6 hover:shadow-xl transition-all duration-300">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border border-[#1E293B]/10 w-full flex flex-col items-center mb-4 hover:shadow-xl transition-all duration-300">
                 <div className="relative group">
-                  <div className="w-24 h-24 rounded-full bg-[#F1F1E6] mb-4 overflow-hidden flex items-center justify-center ring-4 ring-[#0694FA]/20 ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
+                  <div className="w-20 h-20 rounded-full bg-[#F1F1E6] mb-3 overflow-hidden flex items-center justify-center ring-4 ring-[#0694FA]/20 ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
                     <Image
                       src={userData?.avatar_link || "/schoolimg.jpg"}
                       alt={userInfo.name}
-                      width={96}
-                      height={96}
+                      width={80}
+                      height={80}
                       quality={100}
-                      className="w-24 h-24 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-20 h-20 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
                       style={{ objectFit: "cover" }}
                     />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-white shadow-sm animate-pulse"></div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
                 </div>
                 
                 <div className="text-center space-y-2">
-                  <div className="font-bold text-xl text-[#1E293B]">
+                  <div className="font-bold text-lg text-[#1E293B]">
                     {userData?.username || userInfo.name}
                   </div>
-                  <div className="text-sm text-[#0694FA] font-medium">
+                  <div className="text-xs text-[#0694FA] font-medium">
                     {userData?.email || userInfo.email}
                   </div>
-                  <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-[#1E293B]/70">
+                  <div className="flex items-center justify-center space-x-3 mt-3 text-xs text-[#1E293B]/70">
                     <div className="flex items-center space-x-1">
                       <span className="w-2 h-2 bg-[#0694FA] rounded-full"></span>
                       <span>{userData?.Major || "IT"}</span>
@@ -410,40 +427,40 @@ const HomePage = () => {
               </div>
 
               {/* Enhanced Community Groups Section */}
-              <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 mb-6 overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="bg-[#1E293B] px-6 py-4">
-                  <h4 className="font-bold text-white flex items-center gap-3">
-                    <span className="text-xl">👥</span>
-                    <span>Community Groups</span>
+              <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 mb-4 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="bg-[#1E293B] px-4 py-3">
+                  <h4 className="font-bold text-white flex items-center gap-2 text-sm">
+                    <span className="text-base">👥</span>
+                    <span>Nhóm cộng đồng</span>
                     <span className="ml-auto bg-[#0694FA] px-2 py-1 rounded-full text-xs font-semibold">
                       {userGroups.length}
                     </span>
                   </h4>
                 </div>
-                <div className="px-6 py-4 max-h-72 overflow-y-auto">
+                <div className="px-4 py-3 max-h-60 overflow-y-auto">
                   {userGroups.length === 0 ? (
-                    <div className="text-center py-8 space-y-3">
-                      <div className="text-4xl opacity-50">👥</div>
-                      <div className="text-[#1E293B]/70 text-sm">Bạn chưa tham gia nhóm nào</div>
-                      <button className="text-[#0694FA] hover:text-[#1E293B] text-sm font-medium underline">
+                    <div className="text-center py-6 space-y-2">
+                      <div className="text-3xl opacity-50">👥</div>
+                      <div className="text-[#1E293B]/70 text-xs">Bạn chưa tham gia nhóm nào</div>
+                      <button className="text-[#0694FA] hover:text-[#1E293B] text-xs font-medium underline">
                         Khám phá nhóm
                       </button>
                     </div>
                   ) : (
-                    <ul className="space-y-3">
+                    <ul className="space-y-2">
                       {userGroups.map((group) => (
                         <li
                           key={group._id}
-                          className="bg-[#F1F1E6] rounded-xl p-4 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
+                          className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-lg group-hover:scale-110 transition-transform duration-200">🗨️</span>
-                              <span className="font-semibold text-[#1E293B] text-sm group-hover:text-[#0694FA]">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm group-hover:scale-110 transition-transform duration-200">🗨️</span>
+                              <span className="font-semibold text-[#1E293B] text-xs group-hover:text-[#0694FA]">
                                 {group.name}
                               </span>
                             </div>
-                            <span className="bg-[#0694FA] text-white px-2 py-1 rounded-full text-xs font-medium">
+                            <span className="bg-[#0694FA] text-white px-1.5 py-0.5 rounded-full text-xs font-medium">
                               {group.members?.length || 0}
                             </span>
                           </div>
@@ -459,29 +476,29 @@ const HomePage = () => {
 
               {/* Enhanced About Website Section */}
               <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="bg-[#1E293B] px-6 py-4">
-                  <h4 className="font-bold text-white flex items-center gap-3">
-                    <span className="text-xl">ℹ️</span>
-                    <span>About Website</span>
+                <div className="bg-[#1E293B] px-4 py-3">
+                  <h4 className="font-bold text-white flex items-center gap-2 text-sm">
+                    <span className="text-base">ℹ️</span>
+                    <span>Về trang web</span>
                   </h4>
                 </div>
-                <ul className="space-y-3 px-6 py-4">
-                  <li className="bg-[#F1F1E6] rounded-xl p-4 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg group-hover:scale-110 transition-transform duration-200">🗨️</span>
-                      <span className="font-semibold text-[#1E293B] text-sm group-hover:text-[#0694FA]">IT Q&A</span>
+                <ul className="space-y-2 px-4 py-3">
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm group-hover:scale-110 transition-transform duration-200">🗨️</span>
+                      <span className="font-semibold text-[#1E293B] text-xs group-hover:text-[#0694FA]">Hỏi đáp CNTT</span>
                     </div>
                   </li>
-                  <li className="bg-[#F1F1E6] rounded-xl p-4 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg group-hover:scale-110 transition-transform duration-200">📚</span>
-                      <span className="font-semibold text-[#1E293B] text-sm group-hover:text-[#0694FA]">Study Groups</span>
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm group-hover:scale-110 transition-transform duration-200">📚</span>
+                      <span className="font-semibold text-[#1E293B] text-xs group-hover:text-[#0694FA]">Nhóm học tập</span>
                     </div>
                   </li>
-                  <li className="bg-[#F1F1E6] rounded-xl p-4 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg group-hover:scale-110 transition-transform duration-200">💼</span>
-                      <span className="font-semibold text-[#1E293B] text-sm group-hover:text-[#0694FA]">Career</span>
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm group-hover:scale-110 transition-transform duration-200">💼</span>
+                      <span className="font-semibold text-[#1E293B] text-xs group-hover:text-[#0694FA]">Nghề nghiệp</span>
                     </div>
                   </li>
                 </ul>
@@ -528,19 +545,28 @@ const HomePage = () => {
                   {/* Enhanced Action Buttons */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]">
+                      <button 
+                        onClick={() => setisAddmodalopen(true)}
+                        className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]"
+                      >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="text-sm font-medium">Ảnh</span>
                       </button>
-                      <button className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]">
+                      <button 
+                        onClick={() => setisAddmodalopen(true)}
+                        className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]"
+                      >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="text-sm font-medium">File</span>
+                        <span className="text-sm font-medium">Tệp</span>
                       </button>
-                      <button className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]">
+                      <button 
+                        onClick={() => setisAddmodalopen(true)}
+                        className="flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]"
+                      >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -631,30 +657,30 @@ const HomePage = () => {
           </div>
 
           {/* Enhanced Right Sidebar - Ads */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="fixed top-24 w-80 right-[calc((100vw-1280px)/2)] space-y-6">
+          <div className="hidden lg:block w-64 flex-shrink-0">
+            <div className="fixed top-24 w-64 right-[calc((100vw-1152px)/2)] space-y-4">
               
               {/* Quick Stats Card */}
-              <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <h4 className="font-bold text-[#1E293B] mb-4 flex items-center gap-2">
-                  <span className="text-xl">📊</span>
+              <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+                <h4 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2 text-sm">
+                  <span className="text-base">📊</span>
                   <span>Hoạt động hôm nay</span>
                 </h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-[#F5F5FF] rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-[#0694FA] rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">{posts.length}</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2 bg-[#F5F5FF] rounded-xl">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-[#0694FA] rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{posts.length}</span>
                       </div>
-                      <span className="text-[#1E293B] font-medium">Bài viết</span>
+                      <span className="text-[#1E293B] font-medium text-xs">Bài viết</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-[#F1F1E6] rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-[#1E293B] rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">{userGroups.length}</span>
+                  <div className="flex items-center justify-between p-2 bg-[#F1F1E6] rounded-xl">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-[#1E293B] rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{userGroups.length}</span>
                       </div>
-                      <span className="text-[#1E293B] font-medium">Nhóm tham gia</span>
+                      <span className="text-[#1E293B] font-medium text-xs">Nhóm tham gia</span>
                     </div>
                   </div>
                 </div>
@@ -673,27 +699,6 @@ const HomePage = () => {
                 alt=""
                 title="Quảng cáo"
               />
-
-              {/* Trending Topics */}
-              <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <h4 className="font-bold text-[#1E293B] mb-4 flex items-center gap-2">
-                  <span className="text-xl">🔥</span>
-                  <span>Trending</span>
-                </h4>
-                <div className="space-y-3">
-                  {['#ReactJS', '#NodeJS', '#TypeScript', '#NextJS', '#TailwindCSS'].map((tag) => (
-                    <div 
-                      key={tag}
-                      className="flex items-center justify-between p-3 bg-[#F1F1E6] rounded-xl hover:bg-[#F5F5FF] cursor-pointer transition-all duration-200 group"
-                    >
-                      <span className="text-[#1E293B] font-medium group-hover:text-[#0694FA]">{tag}</span>
-                      <span className="bg-[#0694FA] text-white px-2 py-1 rounded-full text-xs font-semibold">
-                        {Math.floor(Math.random() * 100) + 1}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>

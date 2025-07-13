@@ -13,7 +13,7 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -24,100 +24,159 @@
 @keyframes pulse-gentle {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
     opacity: 0.8;
+    transform: scale(1.05);
   }
 }
 
 @keyframes zoom-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9) translateY(10px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
   }
 }
 
 .animate-in {
-  animation: slide-in-right 0.3s ease-out;
+  animation: slide-in-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.2s ease-out;
+  animation: fade-in-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .animate-pulse-gentle {
-  animation: pulse-gentle 2s infinite;
+  animation: pulse-gentle 3s infinite;
 }
 
 .animate-zoom-in {
-  animation: zoom-in 0.3s ease-out;
+  animation: zoom-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom scrollbar */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom scrollbar with natural palette colors */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgb(203 213 225);
-  border-radius: 3px;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgb(71 85 105);
+  background: #0694FA;
+  border-radius: 4px;
+  border: 1px solid rgba(6, 148, 250, 0.2);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgb(148 163 184);
+  background: #1E293B;
 }
 
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgb(100 116 139);
-}
-
-/* Backdrop blur effect */
+/* Backdrop blur effect with enhanced styling */
 .backdrop-blur-sm {
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-/* Smooth transitions */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth transitions with natural palette theming */
 .transition-all-smooth {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced hover effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 20px 40px -8px rgba(6, 148, 250, 0.15),
+    0 8px 16px -4px rgba(30, 41, 59, 0.1);
+}
+
+/* Focus states with natural palette */
+.focus-ring:focus {
+  outline: 2px solid #0694FA;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(6, 148, 250, 0.1);
+}
+
+/* Basic backgrounds using natural palette */
+.bg-primary {
+  background-color: #0694FA;
+}
+
+.bg-secondary {
+  background-color: #1E293B;
+}
+
+.bg-light {
+  background-color: #F5F9FF;
+}
+
+.bg-cream {
+  background-color: #F1F1E6;
+}
+
+/* Shadow variations using natural palette */
+.shadow-natural {
+  box-shadow: 
+    0 4px 6px -1px rgba(30, 41, 59, 0.1),
+    0 2px 4px -1px rgba(6, 148, 250, 0.06);
+}
+
+.shadow-natural-lg {
+  box-shadow: 
+    0 10px 15px -3px rgba(30, 41, 59, 0.1),
+    0 4px 6px -2px rgba(6, 148, 250, 0.1);
+}
+
+.shadow-natural-xl {
+  box-shadow: 
+    0 20px 25px -5px rgba(30, 41, 59, 0.1),
+    0 10px 10px -5px rgba(6, 148, 250, 0.04);
+}
+
+/* Button hover states */
+.btn-primary {
+  background-color: #0694FA;
+  color: white;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hover effects */
-.hover-lift:hover {
+.btn-primary:hover {
+  background-color: #1E293B;
   transform: translateY(-1px);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 20px -5px rgba(6, 148, 250, 0.3);
 }
 
-/* Focus states */
-.focus-ring:focus {
-  outline: 2px solid rgb(59 130 246);
-  outline-offset: 2px;
+/* Card hover animations */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom gradient backgrounds */
-.gradient-blue {
-  background: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(37 99 235) 100%);
-}
-
-.gradient-green {
-  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(21 128 61) 100%);
-}
-
-.gradient-red {
-  background: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(185 28 28) 100%);
-}
-
-.gradient-yellow {
-  background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(217 119 6) 100%);
+.card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(6, 148, 250, 0.25);
 }

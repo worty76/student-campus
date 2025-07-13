@@ -166,86 +166,107 @@ const SettingsPage = () => {
     return (
         <div className="min-h-screen bg-[#F1F1E6]">
             <NavigationBar />
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[12vh] pb-8">
-                <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Cài đặt tài khoản
-                    </h1>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                        Quản lý thông tin cá nhân và cài đặt bảo mật của bạn
-                    </p>
-                </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[12vh] pb-8">
+              
                 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10">
                     {/* Sidebar */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-24 hover-lift transition-all-smooth">
+                    <div className="lg:col-span-2">
+                        <div className="bg-white rounded-3xl shadow-xl border border-[#F5F9FF] overflow-hidden sticky top-24 hover-lift transition-all-smooth">
                             {/* Profile Section */}
-                            <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-600">
+                            <div className="p-6 sm:p-8 bg-[#F5F9FF] border-b border-[#0694FA]/10">
                                 <div className="flex flex-col items-center text-center animate-fade-in-up">
-                                    <div className="relative mb-3 sm:mb-4">
+                                    <div className="relative mb-6">
                                         {userData?.avatar_link ? (
-                                            <Image
-                                                width={80}
-                                                height={80}
-                                                src={userData.avatar_link}
-                                                alt="Avatar"
-                                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white dark:border-gray-600 shadow-md transition-all-smooth hover:shadow-lg"
-                                            />
+                                            <div className="relative">
+                                                <Image
+                                                    width={100}
+                                                    height={100}
+                                                    src={userData.avatar_link}
+                                                    alt="Avatar"
+                                                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-2xl transition-all-smooth hover:shadow-3xl hover:scale-105"
+                                                />
+                                            </div>
                                         ) : (
-                                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center border-4 border-white dark:border-gray-600 shadow-md transition-all-smooth hover:shadow-lg">
-                                                <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#0694FA] flex items-center justify-center border-4 border-white shadow-2xl transition-all-smooth hover:shadow-3xl hover:scale-105">
+                                                <User className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                             </div>
                                         )}
-                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-white dark:border-gray-600 animate-pulse-gentle"></div>
+                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-green-500 rounded-full border-3 border-white animate-pulse-gentle shadow-lg"></div>
                                     </div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg mb-1">
+                                    <h3 className="font-bold text-[#1E293B] text-lg sm:text-xl mb-2">
                                         {userData?.username || 'Tên người dùng'}
                                     </h3>
-                                    <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                        <Mail className="w-3 h-3 mr-1" />
+                                    <div className="flex items-center text-sm sm:text-base text-[#1E293B]/60 mb-4">
+                                        <Mail className="w-4 h-4 mr-2" />
                                         <span className="truncate max-w-[200px]">{userData?.email || 'Email'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 w-full mt-4">
+                                        <div className="bg-[#0694FA]/10 rounded-2xl p-3 text-center">
+                                            <div className="text-lg font-bold text-[#1E293B]">{userData?.Year || 'N/A'}</div>
+                                            <div className="text-xs text-[#1E293B]/60">Năm học</div>
+                                        </div>
+                                        <div className="bg-[#1E293B]/10 rounded-2xl p-3 text-center">
+                                            <div className="text-lg font-bold text-[#1E293B]">{userData?.Major?.slice(0, 6) || 'N/A'}</div>
+                                            <div className="text-xs text-[#1E293B]/60">Ngành</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
                             {/* Navigation */}
-                            <nav className="p-2">
+                            <nav className="p-4 sm:p-6 space-y-2">
                                 <Button
                                     onClick={() => setItem('password')}
-                                    className={`w-full justify-start px-3 sm:px-4 py-2 sm:py-3 mb-1 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                                    className={`w-full justify-start px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-semibold transition-all duration-300 text-sm sm:text-base group ${
                                         item === 'password'
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700'
-                                            : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            ? 'bg-[#0694FA] text-white shadow-lg transform scale-[1.02]'
+                                            : 'bg-transparent text-[#1E293B] hover:bg-[#0694FA]/10 hover:scale-[1.01]'
                                     }`}
                                 >
-                                    <Lock className="w-4 h-4 mr-2 sm:mr-3" />
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 transition-all ${
+                                        item === 'password' 
+                                            ? 'bg-white/20' 
+                                            : 'bg-[#0694FA]/10 group-hover:bg-[#0694FA]/20'
+                                    }`}>
+                                        <Lock className="w-4 h-4" />
+                                    </div>
                                     Bảo mật
                                 </Button>
                                 <Button
                                     onClick={() => setItem('privacy')}
-                                    className={`w-full justify-start px-3 sm:px-4 py-2 sm:py-3 mb-1 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                                    className={`w-full justify-start px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-semibold transition-all duration-300 text-sm sm:text-base group ${
                                         item === 'privacy'
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700'
-                                            : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            ? 'bg-[#0694FA] text-white shadow-lg transform scale-[1.02]'
+                                            : 'bg-transparent text-[#1E293B] hover:bg-[#0694FA]/10 hover:scale-[1.01]'
                                     }`}
                                 >
-                                    <Shield className="w-4 h-4 mr-2 sm:mr-3" />
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 transition-all ${
+                                        item === 'privacy' 
+                                            ? 'bg-white/20' 
+                                            : 'bg-[#0694FA]/10 group-hover:bg-[#0694FA]/20'
+                                    }`}>
+                                        <Shield className="w-4 h-4" />
+                                    </div>
                                     Quyền riêng tư
                                 </Button>
                                 
-                                <hr className="my-3 sm:my-4 border-gray-200 dark:border-gray-700" />
+                                <div className="my-6">
+                                    <div className="h-px bg-[#0694FA]/20"></div>
+                                </div>
                                 
                                 <Button
-                                    className="w-full justify-start px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 text-sm sm:text-base"
+                                    className="w-full justify-start px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-semibold text-[#1E293B] bg-white hover:bg-[#F5F9FF] transition-all duration-300 text-sm sm:text-base group hover:scale-[1.01] border border-[#F5F9FF]"
                                     onClick={handleLogout}
                                     disabled={loggingOut}
                                 >
-                                    {loggingOut ? (
-                                        <Loader2 className="w-4 h-4 mr-2 sm:mr-3 animate-spin" />
-                                    ) : (
-                                        <LogOut className="w-4 h-4 mr-2 sm:mr-3" />
-                                    )}
+                                    <div className="w-8 h-8 rounded-xl bg-[#F5F9FF] group-hover:bg-[#E5E7EB] flex items-center justify-center mr-3 transition-all">
+                                        {loggingOut ? (
+                                            <Loader2 className="w-4 h-4 animate-spin text-[#0694FA]" />
+                                        ) : (
+                                            <LogOut className="w-4 h-4 text-[#0694FA]" />
+                                        )}
+                                    </div>
                                     Đăng xuất
                                 </Button>
                             </nav>
@@ -254,55 +275,59 @@ const SettingsPage = () => {
                     
                     {/* Main Content */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover-lift transition-all-smooth">
-                            <div className="p-4 sm:p-6 lg:p-8 custom-scrollbar">
+                        <div className="bg-white rounded-3xl shadow-xl border border-[#F5F9FF] overflow-hidden hover-lift transition-all-smooth">
+                            <div className="p-6 sm:p-8 lg:p-10 custom-scrollbar">
                                 {item === 'password' && (
                                     <div className="animate-in fade-in duration-300">
-                                        <div className="flex flex-col sm:flex-row sm:items-center mb-6 animate-fade-in-up">
-                                            <div className="w-10 h-10 sm:w-12 sm:h-12 gradient-blue rounded-lg flex items-center justify-center mb-3 sm:mb-0 sm:mr-4 shadow-md">
-                                                <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                        <div className="flex flex-col sm:flex-row sm:items-center mb-8 animate-fade-in-up">
+                                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#0694FA] rounded-2xl flex items-center justify-center mb-4 sm:mb-0 sm:mr-6 shadow-lg">
+                                                <Lock className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                                             </div>
                                             <div>
-                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                                                <h2 className="text-2xl sm:text-3xl font-bold text-[#1E293B] mb-2">
                                                     Bảo mật tài khoản
                                                 </h2>
-                                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                                                <p className="text-base sm:text-lg text-[#1E293B]/60 leading-relaxed">
                                                     Thay đổi mật khẩu để bảo vệ tài khoản của bạn khỏi các truy cập trái phép.
                                                 </p>
                                             </div>
                                         </div>
-                                        <PasswordChange
-                                            onSave={({ currentPassword, newPassword, confirmPassword }) =>
-                                                handleSavePassword(newPassword, currentPassword, confirmPassword)
-                                            }
-                                        />
+                                        <div className="bg-[#F5F9FF] rounded-2xl p-6 border border-[#0694FA]/10">
+                                            <PasswordChange
+                                                onSave={({ currentPassword, newPassword, confirmPassword }) =>
+                                                    handleSavePassword(newPassword, currentPassword, confirmPassword)
+                                                }
+                                            />
+                                        </div>
                                     </div>
                                 )}
                 
                                 {item === 'privacy' && (
                                     <div className="animate-in fade-in duration-300">
-                                        <div className="flex flex-col sm:flex-row sm:items-center mb-6 animate-fade-in-up">
-                                            <div className="w-10 h-10 sm:w-12 sm:h-12 gradient-green rounded-lg flex items-center justify-center mb-3 sm:mb-0 sm:mr-4 shadow-md">
-                                                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                        <div className="flex flex-col sm:flex-row sm:items-center mb-8 animate-fade-in-up">
+                                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-500 rounded-2xl flex items-center justify-center mb-4 sm:mb-0 sm:mr-6 shadow-lg">
+                                                <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                                             </div>
                                             <div>
-                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                                                <h2 className="text-2xl sm:text-3xl font-bold text-[#1E293B] mb-2">
                                                     Quyền riêng tư
                                                 </h2>
-                                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                                                <p className="text-base sm:text-lg text-[#1E293B]/60 leading-relaxed">
                                                     Quản lý quyền riêng tư: Ai có thể xem hồ sơ, gửi tin nhắn hoặc tìm thấy bạn trên hệ thống.
                                                 </p>
                                             </div>
                                         </div>
-                                        <Privacy
-                                            onSave={(settings) =>
-                                                handleSavePrivacy({
-                                                    profilePrivacy: settings.profileVisibility,
-                                                    messagePrivacy: settings.messagePermission,
-                                                    notifications: settings.notifications, 
-                                                })
-                                            }
-                                        />
+                                        <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
+                                            <Privacy
+                                                onSave={(settings) =>
+                                                    handleSavePrivacy({
+                                                        profilePrivacy: settings.profileVisibility,
+                                                        messagePrivacy: settings.messagePermission,
+                                                        notifications: settings.notifications, 
+                                                    })
+                                                }
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -313,11 +338,14 @@ const SettingsPage = () => {
             
             {/* Success Notification */}
             {showSuccess && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black bg-opacity-20 p-4">
-                    <div className="bg-white dark:bg-gray-800 px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-2xl border border-green-200 dark:border-green-700 animate-zoom-in max-w-sm w-full">
-                        <div className="flex items-center text-green-700 dark:text-green-300">
-                            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0" />
-                            <span className="font-semibold text-base sm:text-lg">Lưu thành công!</span>
+                <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/20 p-4">
+                    <div className="bg-white px-8 sm:px-10 py-6 sm:py-8 rounded-3xl shadow-2xl border border-green-200 animate-zoom-in max-w-sm w-full">
+                        <div className="flex items-center justify-center flex-col text-center">
+                            <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                                <CheckCircle className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="font-bold text-green-700 text-lg mb-2">Thành công!</h3>
+                            <p className="text-green-600 text-sm">Cài đặt đã được lưu thành công</p>
                         </div>
                     </div>
                 </div>
@@ -325,10 +353,13 @@ const SettingsPage = () => {
             
             {/* Logout Loading */}
             {loggingOut && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black bg-opacity-40 p-4">
-                    <div className="bg-white dark:bg-gray-900 px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-2xl flex flex-col items-center animate-zoom-in max-w-sm w-full">
-                        <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 mb-3 sm:mb-4 animate-spin" />
-                        <span className="font-semibold text-blue-700 dark:text-blue-300 text-base sm:text-lg text-center">Đang đăng xuất...</span>
+                <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/30 p-4">
+                    <div className="bg-white px-8 sm:px-10 py-6 sm:py-8 rounded-3xl shadow-2xl flex flex-col items-center animate-zoom-in max-w-sm w-full">
+                        <div className="w-16 h-16 bg-[#0694FA] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        </div>
+                        <h3 className="font-bold text-[#1E293B] text-lg mb-2">Đang đăng xuất...</h3>
+                        <p className="text-[#1E293B]/60 text-sm text-center">Vui lòng đợi trong giây lát</p>
                     </div>
                 </div>
             )}

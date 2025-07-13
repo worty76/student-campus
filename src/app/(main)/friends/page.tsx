@@ -616,7 +616,7 @@ const FriendsNCommunitys = () => {
           {/* Main Content */}
           <div className="flex-1 flex flex-col gap-4 sm:gap-6 lg:gap-8 h-auto xl:h-[700px]">
             {/* Lời mời kết bạn */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[300px] sm:max-h-[250px] xl:max-h-[220px] overflow-y-auto">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[400px] sm:max-h-[350px] xl:max-h-[340px] overflow-y-auto">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
@@ -710,7 +710,7 @@ const FriendsNCommunitys = () => {
             </div>
 
             {/* Gợi ý kết bạn */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[400px] sm:max-h-[350px] xl:max-h-[440px] overflow-y-auto">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[400px] sm:max-h-[350px] xl:max-h-[340px] overflow-y-auto">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
