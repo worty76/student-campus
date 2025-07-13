@@ -148,12 +148,12 @@ export default function LoginPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#F5F9FF] flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-cyan-200/30 to-blue-200/30 rounded-full animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-indigo-200/30 to-purple-200/30 rounded-full animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-blue-200/20 to-cyan-200/20 rounded-full animate-ping delay-2000" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#0694FE]/20 rounded-full animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#1E293B]/10 rounded-full animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#0694FE]/10 rounded-full animate-ping delay-2000" />
       </div>
 
       {/* School Logo at top left with improved styling */}
@@ -161,11 +161,11 @@ export default function LoginPage() {
         <Image
           src="/schoolimg.jpg"
           alt="School Logo"
-          width={48}
-          height={48}
+          width={80}
+          height={80}
           className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-full mr-3 shadow-sm"
         />
-        <span className="text-lg md:text-xl font-bold text-cyan-700 hidden sm:block">FPT University</span>
+        <span className="text-lg md:text-xl font-bold text-[#0694FE] hidden sm:block">FPT University</span>
       </div>
 
       {/* Main container with improved styling */}
@@ -183,18 +183,18 @@ export default function LoginPage() {
             <div className="transform transition-all duration-700 hover:translate-y-[-4px]">
               <h1 className="text-[2.8vw] min-text-2xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                 Trải nghiệm học tập<br />
-                <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">Tốt nhất</span>
+                <span className="text-[#0694FE]">Tốt nhất</span>
               </h1>
               <p className="text-lg text-white/90 max-w-[85%] mb-6 drop-shadow leading-relaxed">
                 Truy cập hàng ngàn tài nguyên học tập và công cụ hỗ trợ hợp tác giúp nâng cao hành trình học tập của bạn.
               </p>
               <div className="flex items-center space-x-4 text-white/80">
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="w-5 h-5 text-cyan-300" />
+                  <CheckCircleIcon className="w-5 h-5 text-[#0694FE]" />
                   <span className="text-sm">Nền tảng an toàn</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="w-5 h-5 text-cyan-300" />
+                  <CheckCircleIcon className="w-5 h-5 text-[#0694FE]" />
                   <span className="text-sm">Hỗ trợ 24/7</span>
                 </div>
               </div>
@@ -203,21 +203,21 @@ export default function LoginPage() {
         </div>
         
         {/* Right - Login form with enhanced UX */}
-        <div className="w-1/2 flex items-center justify-center bg-gradient-to-br from-white to-gray-50/50 relative">
+        <div className="w-1/2 flex items-center justify-center bg-[#F1F1E6] relative">
           <div className="w-full max-w-[85%] px-8 py-8 flex flex-col items-center">
             {/* Profile image with improved styling */}
             <div className="relative mb-8 group">
               <Image
                 src="/schoolimg.jpg"
-                width={80}
-                height={80}
+                width={120}
+                height={120}
                 alt="School Avatar"
-                className="h-[6vw] w-[6vw] min-h-[64px] min-w-[64px] max-h-[96px] max-w-[96px] object-cover rounded-full shadow-xl ring-4 ring-cyan-100 transition-all duration-300 group-hover:shadow-2xl group-hover:ring-cyan-200"
+                className="h-[6vw] w-[6vw] min-h-[64px] min-w-[64px] max-h-[96px] max-w-[96px] object-cover rounded-full shadow-xl ring-4 ring-[#0694FE]/20 transition-all duration-300 group-hover:shadow-2xl group-hover:ring-[#0694FE]/30"
               />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/10 to-blue-500/10 group-hover:from-cyan-500/20 group-hover:to-blue-500/20 transition-all duration-300" />
+              <div className="absolute inset-0 rounded-full bg-[#0694FE]/10 group-hover:bg-[#0694FE]/20 transition-all duration-300" />
             </div>
             
-            <h2 className="text-[2.2vw] min-text-xl font-bold bg-gradient-to-r from-cyan-700 to-blue-700 bg-clip-text text-transparent mb-8">
+            <h2 className="text-[2.2vw] min-text-xl font-bold text-[#0694FE] mb-8">
               Chào mừng trở lại
             </h2>
             
@@ -225,14 +225,14 @@ export default function LoginPage() {
               {/* Enhanced email input */}
               <div className="space-y-2">
                 <div className="relative group">
-                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-cyan-500 transition-colors duration-200" />
+                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
                   <Input
                     type="email"
                     placeholder="Nhập email của bạn"
                     value={email}
                     onChange={handleEmailChange}
                     required
-                    className={`pl-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 hover:border-gray-300 ${emailError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
+                    className={`pl-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 ${emailError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
                   />
                 </div>
                 {emailError && (
@@ -243,14 +243,14 @@ export default function LoginPage() {
               {/* Enhanced password input */}
               <div className="space-y-2">
                 <div className="relative group">
-                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-cyan-500 transition-colors duration-200" />
+                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={handlePasswordChange}
                     required
-                    className={`pl-11 pr-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 hover:border-gray-300 ${passwordError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
+                    className={`pl-11 pr-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 ${passwordError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
                   />
                   <button
                     type="button"
@@ -273,7 +273,7 @@ export default function LoginPage() {
               <div className="w-full text-right">
                 <button
                   type="button"
-                  className="text-cyan-600 hover:text-cyan-700 text-sm font-medium transition-colors duration-200 hover:underline"
+                  className="text-[#0694FE] hover:text-[#1E293B] text-sm font-medium transition-colors duration-200 hover:underline"
                   onClick={() => setForgotOpen(true)}
                 >
                   Quên mật khẩu?
@@ -283,7 +283,7 @@ export default function LoginPage() {
               {/* Enhanced login button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full h-12 bg-[#0694FE] hover:bg-[#1E293B] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={loadingLogin || !!emailError || !!passwordError}
               >
                 {loadingLogin ? (
@@ -307,7 +307,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-gradient-to-r from-gray-50 to-white text-gray-500 font-medium">
+                  <span className="px-4 bg-[#F1F1E6] text-gray-500 font-medium">
                     Mới sử dụng nền tảng?
                   </span>
                 </div>
@@ -320,7 +320,7 @@ export default function LoginPage() {
                 <button
                 type="button"
                 onClick={() => router.push('/register')}
-                className="text-cyan-600 hover:text-cyan-700 font-semibold transition-colors duration-200 hover:underline"
+                className="text-[#0694FE] hover:text-[#1E293B] font-semibold transition-colors duration-200 hover:underline"
                 >
                 Tạo tài khoản
                 </button>
@@ -344,7 +344,7 @@ export default function LoginPage() {
           </DialogHeader>
           <Button
             onClick={() => setLoginError(false)}
-            className="mt-6 w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl h-11 font-medium transition-all duration-300"
+            className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white rounded-xl h-11 font-medium transition-all duration-300"
           >
             Thử lại
           </Button>
@@ -355,8 +355,8 @@ export default function LoginPage() {
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent className="max-w-md rounded-2xl border-0 shadow-2xl">
           <DialogHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mb-4">
-              <EnvelopeIcon className="w-6 h-6 text-cyan-600" />
+            <div className="mx-auto w-12 h-12 bg-[#0694FE]/10 rounded-full flex items-center justify-center mb-4">
+              <EnvelopeIcon className="w-6 h-6 text-[#0694FE]" />
             </div>
             <DialogTitle className="text-gray-900 text-xl font-semibold">Đặt lại mật khẩu</DialogTitle>
             <DialogDescription className="text-gray-600 mt-2">
@@ -373,12 +373,12 @@ export default function LoginPage() {
                 onChange={e => setForgotEmail(e.target.value)}
                 required
                 disabled={loadingForgot}
-                className="pl-11 h-11 bg-gray-50 border-gray-200 rounded-xl focus:border-cyan-500 focus:ring-cyan-500/20"
+                className="pl-11 h-11 bg-gray-50 border-gray-200 rounded-xl focus:border-[#0694FE] focus:ring-[#0694FE]/20"
               />
             </div>
             <Button 
               type="submit" 
-              className="w-full h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-300" 
+              className="w-full h-11 bg-[#0694FE] hover:bg-[#1E293B] text-white rounded-xl font-medium transition-all duration-300" 
               disabled={loadingForgot}
             >
               {loadingForgot ? (
