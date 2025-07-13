@@ -114,42 +114,57 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`flex items-start gap-3 py-3 px-4 border-b border-blue-100 last:border-b-0 relative group cursor-pointer transition-colors duration-200 ${
-        notification.status === "unread" ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-gray-50"
+      className={`flex items-start gap-4 py-4 px-6 border-b border-gray-100 last:border-b-0 relative group cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
+        notification.status === "unread" 
+          ? "bg-[#F5F9FF] hover:bg-[#F5F9FF]/80 border-l-4 border-l-[#0694FA]" 
+          : "hover:bg-gray-50"
       }`}
       onClick={handleClick}
       title={notification.status === "unread" ? "Đánh dấu đã đọc" : ""}
     >
-      <div className="relative">
-        <Image
-          src={notification.senderId.avatar_link || "/schoolimg.jpg"}
-          alt={notification.senderId.username}
-          width={48}
-          height={48}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1">
-          {getIconByType(notification.type)}
+      <div className="relative group-hover:scale-105 transition-transform duration-300">
+        <div className="relative">
+          <Image
+            src={notification.senderId.avatar_link || "/schoolimg.jpg"}
+            alt={notification.senderId.username}
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-lg"
+          />
+          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 shadow-lg">
+            {getIconByType(notification.type)}
+          </div>
         </div>
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-blue-900 text-sm leading-5">
-              {/* <span className="font-semibold">{notification.senderId.username}</span>
-              {<span className="text-blue-700">{notification.context}</span>} */}
-              <span className="text-blue-700">
-                {notification.context}
+            <div className="mb-2">
+              <span className="font-semibold text-[#1E293B] text-sm">
+                {notification.senderId.username}
               </span>
-            </p>
-            <div className="text-xs text-blue-500 mt-1 flex items-center gap-2">
-              {formatTime(notification.createAt)}
+              <p className="text-[#1E293B] text-sm leading-5 mt-1">
+                {notification.context}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="bg-gray-100 px-2 py-1 rounded-full">
+                {formatTime(notification.createAt)}
+              </span>
+              {notification.post && (
+                <span className="text-[#0694FA] font-medium">• Xem bài viết</span>
+              )}
             </div>
           </div>
           
           {notification.status === "unread" && (
-            <span className="w-3 h-3 bg-blue-600 rounded-full ml-2 mt-1 flex-shrink-0"></span>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-[#0694FA] rounded-full animate-pulse shadow-lg"></span>
+              <span className="text-xs font-semibold text-[#0694FA] bg-[#F5F9FF] px-2 py-1 rounded-full">
+                Mới
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -189,13 +204,16 @@ const NotificationList = ({
   if (loading && notifications.length === 0) {
     return (
       <div className="px-6 py-8">
-        <div className="animate-pulse space-y-4">
+        <div className="animate-pulse space-y-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div key={i} className="flex items-start gap-4">
+              <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-3">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded-lg w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded-lg w-1/2"></div>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-lg w-1/4"></div>
               </div>
             </div>
           ))}
@@ -204,30 +222,54 @@ const NotificationList = ({
     );
   }
 
-  if (filteredNotifications.length === 0) {
+  // Nếu không có thông báo nào (kể cả khi tab là "unread" hay "all"), luôn hiện "Chưa có thông báo nào"
+  if (notifications.length === 0) {
     return (
-      <div className="text-center text-blue-400 py-12">
-        <Bell className="mx-auto mb-4 text-blue-300" size={48} />
-        <p className="text-lg">Không có thông báo</p>
-        <p className="text-sm mt-1">
-          {tab === "unread" ? "Tất cả thông báo đã được đọc" : "Chưa có thông báo nào"}
+      <div className="text-center py-16 px-6">
+        <div className="mb-6">
+          <div className="w-24 h-24 mx-auto bg-[#F5F9FF] rounded-full flex items-center justify-center mb-4">
+            <Bell className="text-[#0694FA]" size={48} />
+          </div>
+        </div>
+        <h3 className="text-xl font-semibold text-[#1E293B] mb-2">
+          Chưa có thông báo nào
+        </h3>
+        <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+          Khi có hoạt động mới, thông báo sẽ xuất hiện ở đây.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="text-blue-900">
-      <div className="text-blue-500 text-sm mb-2 px-4 py-2 bg-blue-25 border-b border-blue-100">
-        {tab === "unread" ? "Chưa đọc" : "Tất cả thông báo"}
+    <div className="text-[#1E293B]">
+      <div className="sticky top-0 bg-[#F5F9FF] text-[#1E293B] text-sm font-medium px-6 py-3 border-b border-gray-100 z-10">
+        <div className="flex items-center justify-between">
+          <span>
+            {tab === "unread" ? "Thông báo chưa đọc" : "Tất cả thông báo"}
+          </span>
+          <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold">
+            {filteredNotifications.length} thông báo
+          </span>
+        </div>
       </div>
-      {paginatedNotifications.map((notification) => (
-        <NotificationItem
-          key={notification._id}
-          notification={notification}
-          markAsRead={markAsRead}
-        />
-      ))}
+      <div className="divide-y divide-gray-100">
+        {paginatedNotifications.map((notification, index) => (
+          <div
+            key={notification._id}
+            className="transform transition-all duration-300"
+            style={{
+              animationDelay: `${index * 100}ms`,
+              animation: 'slideInUp 0.5s ease-out forwards'
+            }}
+          >
+            <NotificationItem
+              notification={notification}
+              markAsRead={markAsRead}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -243,6 +285,8 @@ const Notifications = () => {
   const LIMIT = 10; // Increased limit for better UX
 
   const { addMessageHandler } = useWebSocket();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showResultDialog, setShowResultDialog] = useState<null | "success" | "error">(null);
 
   const getUserNotifications = useCallback(async (reset = false) => {
     if (loading) return; // Prevent multiple simultaneous requests
@@ -266,9 +310,15 @@ const Notifications = () => {
           },
         }
       );
-      
+
       const data = response.data;
-      console.log(data)
+      // Nếu trả về 404 hoặc data không phải là mảng, coi như không có thông báo nào
+      if (!Array.isArray(data)) {
+        setNotifications([]);
+        setSkip(0);
+        setError(null);
+        return;
+      }
       if (reset) {
         setNotifications(data);
         setSkip(LIMIT);
@@ -280,7 +330,7 @@ const Notifications = () => {
 
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      setError("Không thể tải thông báo. Vui lòng thử lại.");
+      
   
     } finally {
       setLoading(false);
@@ -305,6 +355,25 @@ const Notifications = () => {
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
+    }
+  }, []);
+
+  const deleteAllReadNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      if (!token || !userId) return;
+
+      await axios.delete(`${BASEURL}/api/delte-read/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotifications((prev) => prev.filter((n) => n.status !== "read"));
+    } catch (error) {
+      console.error("Error deleting read notifications:", error);
+      setError("Không thể xóa thông báo đã đọc. Vui lòng thử lại.");
     }
   }, []);
 
@@ -381,120 +450,275 @@ const Notifications = () => {
   );
   const totalPages = Math.ceil(filteredNotifications.length / PAGE_SIZE);
 
+  const handleDeleteAllRead = useCallback(() => {
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    setShowConfirmDialog(false);
+    try {
+      await deleteAllReadNotifications();
+      setShowResultDialog("success");
+    } catch (e) {
+      console.error("Error deleting all read notifications:", e);
+      setShowResultDialog("error");
+    }
+  }, [deleteAllReadNotifications]);
+
   return (
-    <div
-      className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
-      style={{
-        width: "60vw",
-        margin: "0 auto",
-        marginTop: "10vh",
-        minHeight: "60vh",
-        maxHeight: "80vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="min-h-screen bg-[#F1F1E6]">
       <NavigationBar />
       
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-blue-100">
-        <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-blue-900">Thông báo</h2>
-          {unreadCount > 0 && (
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-[8vh]">
+        {/* Header Section */}
+       
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-6 h-6 text-[#0694FA]" />
+              </div>
+              <div>
+                <p className="text-sm text-[#1E293B]">Tổng thông báo</p>
+                <p className="text-2xl font-bold text-[#1E293B]">{notifications.length}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-6 h-6 text-[#0694FA]" />
+              </div>
+              <div>
+                <p className="text-sm text-[#1E293B]">Chưa đọc</p>
+                <p className="text-2xl font-bold text-[#1E293B]">{unreadCount}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-6 h-6 text-[#0694FA]" />
+              </div>
+              <div>
+                <p className="text-sm text-[#1E293B]">Đã đọc</p>
+                <p className="text-2xl font-bold text-[#1E293B]">{notifications.length - unreadCount}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <Bell className="text-blue-500" size={28} />
-      </div>
 
-      {/* Tabs and Actions */}
-      <div className="flex gap-2 px-6 py-3 items-center border-b border-blue-100 bg-blue-25">
-        <button
-          className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-            tab === "all"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-transparent text-blue-600 hover:bg-blue-100"
-          }`}
-          onClick={() => handleTabChange("all")}
-        >
-          Tất cả
-        </button>
-        <button
-          className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors relative ${
-            tab === "unread"
-              ? "bg-blue-600 text-white shadow-md"
-              : "bg-transparent text-blue-600 hover:bg-blue-100"
-          }`}
-          onClick={() => handleTabChange("unread")}
-        >
-          Chưa đọc
-          {unreadCount > 0 && tab !== "unread" && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          )}
-        </button>
-        
-        {unreadCount > 0 && (
-          <button
-            className="ml-auto px-4 py-2 rounded-full font-semibold text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-            onClick={markAllAsRead}
-          >
-            Đánh dấu tất cả đã đọc
-          </button>
-        )}
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="px-6 py-3 bg-red-50 border-b border-red-100">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
-
-      {/* Notifications List */}
-      <div className="flex-1 overflow-y-auto">
-        <NotificationList
-          notifications={notifications}
-          tab={tab}
-          markAsRead={markAsRead}
-          loading={loading}
-          page={page}
-          setPage={setPage}
-        />
-      </div>
-
-      {/* Pagination Bar luôn ở đáy */}
-      {totalPages > 1 && (
-        <div className="border-t border-blue-100 py-3 flex justify-center bg-white">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setPage(page > 1 ? page - 1 : 1)}
-                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {[...Array(totalPages)].map((_, idx) => (
-                <PaginationItem key={idx}>
-                  <PaginationLink
-                    isActive={page === idx + 1}
-                    onClick={() => setPage(idx + 1)}
+        {/* Main Notification Panel */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-[#F5F9FF]">
+          {/* Header with Actions */}
+          <div className="bg-[#F5F9FF] px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-2">
+                  <button
+                    className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                      tab === "all"
+                        ? "bg-[#0694FA] text-white shadow transform scale-105"
+                        : "bg-white text-[#1E293B] hover:bg-white/90 border border-gray-200"
+                    }`}
+                    onClick={() => handleTabChange("all")}
                   >
-                    {idx + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
-                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                    <span className="flex items-center gap-2">
+                      Tất cả
+                      <span className="bg-[#F5F9FF] text-[#1E293B] text-xs px-2 py-1 rounded-full">
+                        {notifications.length}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 relative ${
+                      tab === "unread"
+                        ? "bg-[#1E293B] text-white shadow transform scale-105"
+                        : "bg-white text-[#1E293B] hover:bg-white/90 border border-gray-200"
+                    }`}
+                    onClick={() => handleTabChange("unread")}
+                  >
+                    <span className="flex items-center gap-2">
+                      Chưa đọc
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        tab === "unread" ? "bg-[#F5F9FF] text-[#1E293B]" : "bg-[#F5F9FF] text-[#1E293B]"
+                      }`}>
+                        {unreadCount}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                {tab === "all" && (
+                  <button
+                    className="px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#1E293B] text-white hover:bg-[#F5F9FF] hover:text-[#1E293B] border border-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
+                    onClick={handleDeleteAllRead}
+                  >
+                    <span className="flex items-center gap-2">
+                      Xóa các tin đã đọc
+                    </span>
+                  </button>
+                )}
+                {unreadCount > 0 && (
+                  <button
+                    className="px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#0694FA] text-white hover:bg-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
+                    onClick={markAllAsRead}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Bell size={16} />
+                      Đánh dấu tất cả đã đọc
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-[#F5F9FF] border-l-4 border-[#0694FA] px-6 py-4">
+              <div className="flex items-center">
+                <div className="p-1 bg-[#F5F9FF] rounded-full mr-3">
+                  <Bell className="w-4 h-4 text-[#0694FA]" />
+                </div>
+                <p className="text-[#1E293B] font-medium">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Notifications List */}
+          <div className="max-h-[60vh] overflow-y-auto">
+            <NotificationList
+              notifications={notifications}
+              tab={tab}
+              markAsRead={markAsRead}
+              loading={loading}
+              page={page}
+              setPage={setPage}
+            />
+          </div>
+
+          {/* Pagination Bar */}
+          {totalPages > 1 && (
+            <div className="border-t border-gray-100 py-4 flex justify-center bg-[#F5F9FF]">
+              <div className="bg-white rounded-xl shadow p-2 border border-[#F5F9FF]">
+                <Pagination>
+                  <PaginationContent className="gap-1">
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPage(page > 1 ? page - 1 : 1)}
+                        className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                          page === 1 
+                            ? "text-gray-400 cursor-not-allowed" 
+                            : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
+                        }`}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages)].map((_, idx) => (
+                      <PaginationItem key={idx}>
+                        <PaginationLink
+                          isActive={page === idx + 1}
+                          onClick={() => setPage(idx + 1)}
+                          className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                            page === idx + 1
+                              ? "bg-[#0694FA] text-white shadow"
+                              : "text-[#1E293B] hover:bg-[#F5F9FF] hover:text-[#0694FA]"
+                          }`}
+                        >
+                          {idx + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+                        className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                          page === totalPages 
+                            ? "text-gray-400 cursor-not-allowed" 
+                            : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
+                        }`}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Confirm Delete Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-xs w-full border border-[#F5F9FF]">
+            <div className="mb-4 text-center">
+              <div className="flex justify-center mb-2">
+                <Bell className="text-[#0694FA]" size={32} />
+              </div>
+              <h2 className="text-lg font-bold text-[#1E293B] mb-2">Xác nhận xóa</h2>
+              <p className="text-[#1E293B] text-sm">Bạn có chắc chắn muốn xóa tất cả thông báo đã đọc?</p>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button
+                className="flex-1 px-4 py-2 rounded-lg bg-[#F5F9FF] text-[#1E293B] font-semibold hover:bg-[#0694FA] hover:text-white transition"
+                onClick={() => setShowConfirmDialog(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className="flex-1 px-4 py-2 rounded-lg bg-[#1E293B] text-white font-semibold hover:bg-[#0694FA] transition"
+                onClick={handleConfirmDelete}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Result Dialog */}
+      {showResultDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-xs w-full border border-[#F5F9FF] text-center">
+            <div className="flex justify-center mb-2">
+              <Bell className={showResultDialog === "success" ? "text-[#0694FA]" : "text-red-500"} size={32} />
+            </div>
+            <h2 className="text-lg font-bold text-[#1E293B] mb-2">
+              {showResultDialog === "success" ? "Xóa thành công" : "Xóa không thành công"}
+            </h2>
+            <p className="text-[#1E293B] text-sm mb-4">
+              {showResultDialog === "success"
+                ? "Tất cả thông báo đã đọc đã được xóa."
+                : "Đã xảy ra lỗi khi xóa thông báo. Vui lòng thử lại."}
+            </p>
+            <button
+              className="px-4 py-2 rounded-lg bg-[#0694FA] text-white font-semibold hover:bg-[#1E293B] transition"
+              onClick={() => setShowResultDialog(null)}
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

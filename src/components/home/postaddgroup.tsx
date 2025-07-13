@@ -17,6 +17,7 @@ interface PostAddProps {
   name: string;
   avatar?: string;
   onClose: () => void;
+  onPostSuccess?: () => Promise<void>;
 }
 
 const emojiList = [
@@ -48,7 +49,8 @@ const PostAddGroup: React.FC<PostAddProps> = ({
   _id = "user123", 
   name, 
   avatar,
-  onClose 
+  onClose,
+  onPostSuccess
 }) => {
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -136,6 +138,12 @@ const PostAddGroup: React.FC<PostAddProps> = ({
 
       if (res && res.status === 201) {
         setUploadStatus("Đăng bài thành công !");
+        
+        // Gọi callback để refresh data
+        if (onPostSuccess) {
+          await onPostSuccess();
+        }
+        
         setTimeout(() => {
           setContent("");
           setFiles([]);
