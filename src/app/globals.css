@@ -121,6 +121,7 @@
     @apply min-h-screen;
     background: linear-gradient(to bottom, #F9FAFB, #FFFFFF);
     font-family: var(--font-sans);
+    font-weight: bold;
   }
 }
 

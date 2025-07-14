@@ -475,20 +475,9 @@ const renderPostBaseOnUser = async (req, res) => {
             })
         );
 
-        // Lấy post của chính user (nếu profilePrivacy cho phép)
-        let userPosts = [];
-        if (user.profilePrivacy !== 'private') {
-            // Nếu là friends thì chỉ hiện cho bạn bè
-            if (user.profilePrivacy === 'friends') {
-                // Nếu người xem là chính user hoặc là bạn bè thì mới cho xem
-                if (cleanid === req.user?.id || userFriendsPost.map(String).includes(req.user?.id)) {
-                    userPosts = await Post.find({ userId: cleanid, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
-                }
-            } else {
-                // public
-                userPosts = await Post.find({ userId: cleanid, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
-            }
-        }
+        // Luôn hiển thị post của chính user
+        const userPosts = await Post.find({ userId: cleanid, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 });
+        
         const userPostsWithUser = await Promise.all(
             userPosts.map(async (post) => {
                 const user = await User.findById(post.userId).select('_id username avatar_link').lean();
