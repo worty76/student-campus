@@ -267,7 +267,7 @@ const years = useMemo(
                     
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-[#0694FA]">
+                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-slate-300">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-[#F5F9FF] rounded-lg">
                                     <FileText className="w-6 h-6 text-[#0694FA]" />
@@ -278,7 +278,7 @@ const years = useMemo(
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-[#0694FA]">
+                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-slate-300">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-[#F5F9FF] rounded-lg">
                                     <TrendingUp className="w-6 h-6 text-[#1E293B]" />
@@ -289,7 +289,7 @@ const years = useMemo(
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border  border-[#0694FA]">
+                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-slate-300">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-[#F5F9FF] rounded-lg">
                                     <Book className="w-6 h-6 text-[#0694FA]" />
@@ -300,7 +300,7 @@ const years = useMemo(
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border  border-[#0694FA]  ">
+                        <div className="bg-[#F5F9FF] rounded-xl p-4 shadow-lg border border-slate-300">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-[#F5F9FF] rounded-lg">
                                     <Download className="w-6 h-6 text-[#1E293B]" />
@@ -319,7 +319,7 @@ const years = useMemo(
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
                     <div className="lg:col-span-1 order-2 lg:order-1">
-                        <div className="bg-[#F5F9FF] backdrop-blur-lg rounded-2xl shadow-xl p-6 sticky top-8 w-full border border-[#0694FA]">
+                        <div className="bg-[#F5F9FF] backdrop-blur-lg rounded-2xl shadow-xl p-6 sticky top-8 w-full border border-slate-300">
                             {/* Upload Button */}
                             <div className="mb-6">
                                 <Button
@@ -332,7 +332,7 @@ const years = useMemo(
                             </div>
                             
                             {/* Filter Header */}
-                            <div className="flex items-center justify-between mb-6 bg-[#F1F1E6] px-5 py-3 rounded-xl border border-[#0694FA]">
+                            <div className="flex items-center justify-between mb-6 bg-[#F1F1E6] px-5 py-3 rounded-xl border border-slate-300">
                                 <h2 className="text-xl font-bold text-[#1E293B] flex items-center">
                                     <Filter className="mr-2 text-[#0694FA]" size={24} />
                                     Bộ Lọc
@@ -357,7 +357,7 @@ const years = useMemo(
                                             placeholder="Tìm tài liệu theo tên hoặc môn học..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 border-2 border-[#F1F1E6] rounded-xl focus:border-[#0694FA] focus:outline-none transition-all duration-200 bg-[#F1F1E6] focus:bg-white"
+                                            className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-400 focus:outline-none transition-all duration-200 bg-[#F1F1E6] focus:bg-white"
                                         />
                                     </div>
                                 </div>
@@ -368,10 +368,10 @@ const years = useMemo(
                                         Môn học
                                     </label>
                                     <Select value={subject || "all"} onValueChange={val => setSubject(val === "all" ? "" : val)}>
-                                        <SelectTrigger className="w-full border-2 border-[#F1F1E6] bg-[#F1F1E6] hover:bg-white hover:border-[#0694FA] focus:border-[#0694FA] rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
+                                        <SelectTrigger className="w-full border-2 border-slate-200 bg-[#F1F1E6] hover:bg-white hover:border-slate-400 focus:border-slate-400 rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
                                             <SelectValue placeholder="Tất cả môn học" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white py-2 max-h-48 overflow-y-auto">
+                                        <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white py-2 max-h-48 overflow-y-auto">
                                             <SelectItem value="all" className="px-4 py-3 cursor-pointer hover:bg-[#F5F9FF] rounded-lg transition-colors">
                                                 <span className="flex items-center">
                                                     <span className="mr-2">📚</span>
@@ -396,10 +396,10 @@ const years = useMemo(
                                         Giảng viên
                                     </label>
                                     <Select value={lecturer || "all"} onValueChange={val => setLecturer(val === "all" ? "" : val)}>
-                                        <SelectTrigger className="w-full border-2 border-[#F1F1E6] bg-[#F1F1E6] hover:bg-white hover:border-[#0694FA] focus:border-[#0694FA] rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
+                                        <SelectTrigger className="w-full border-2 border-slate-200 bg-[#F1F1E6] hover:bg-white hover:border-slate-400 focus:border-slate-400 rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
                                             <SelectValue placeholder="Tất cả giảng viên" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white py-2 max-h-48 overflow-y-auto">
+                                        <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white py-2 max-h-48 overflow-y-auto">
                                             <SelectItem value="all" className="px-4 py-3 cursor-pointer hover:bg-[#F5F9FF] rounded-lg transition-colors">
                                                 <span className="flex items-center">
                                                     <span className="mr-2">👨‍🏫</span>
@@ -424,10 +424,10 @@ const years = useMemo(
                                         Khoa/Năm học
                                     </label>
                                     <Select value={faculty || "all"} onValueChange={val => setFaculty(val === "all" ? "" : val)}>
-                                        <SelectTrigger className="w-full border-2 border-[#F1F1E6] bg-[#F1F1E6] hover:bg-white hover:border-[#0694FA] focus:border-[#0694FA] rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
+                                        <SelectTrigger className="w-full border-2 border-slate-200 bg-[#F1F1E6] hover:bg-white hover:border-slate-400 focus:border-slate-400 rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
                                             <SelectValue placeholder="Tất cả khoa/năm" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white py-2 max-h-48 overflow-y-auto">
+                                        <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white py-2 max-h-48 overflow-y-auto">
                                             <SelectItem value="all" className="px-4 py-3 cursor-pointer hover:bg-[#F5F9FF] rounded-lg transition-colors">
                                                 <span className="flex items-center">
                                                     <span className="mr-2">🏛️</span>
@@ -452,10 +452,10 @@ const years = useMemo(
                                         Năm học
                                     </label>
                                     <Select value={year || "all"} onValueChange={val => setYear(val === "all" ? "" : val)}>
-                                        <SelectTrigger className="w-full border-2 border-[#F1F1E6] bg-[#F1F1E6] hover:bg-white hover:border-[#0694FA] focus:border-[#0694FA] rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
+                                        <SelectTrigger className="w-full border-2 border-slate-200 bg-[#F1F1E6] hover:bg-white hover:border-slate-400 focus:border-slate-400 rounded-xl px-4 py-3 min-h-[48px] transition-all duration-200">
                                             <SelectValue placeholder="Tất cả năm học" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white py-2 max-h-48 overflow-y-auto">
+                                        <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white py-2 max-h-48 overflow-y-auto">
                                             <SelectItem value="all" className="px-4 py-3 cursor-pointer hover:bg-[#F5F9FF] rounded-lg transition-colors">
                                                 <span className="flex items-center">
                                                     <span className="mr-2">📅</span>
@@ -480,7 +480,7 @@ const years = useMemo(
                     {/* Main Content */}
                     <div className="lg:col-span-3 order-1 lg:order-2">
                         {/* Tabs */}
-                        <div className="flex space-x-2 mb-8 bg-[#F5F9FF] p-2 rounded-2xl shadow-lg border border-[#0694FA]">
+                        <div className="flex space-x-2 mb-8 bg-[#F5F9FF] p-2 rounded-2xl shadow-lg border border-slate-300">
                             <button
                                 onClick={() => setActiveTab("all")}
                                 className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
@@ -533,7 +533,7 @@ const years = useMemo(
                                 )}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {paginatedDocs.map((doc) => (
-                                        <div key={doc._id} className="group bg-[#F5F9FF] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-[#0694FA]">
+                                        <div key={doc._id} className="group bg-[#F5F9FF] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-slate-300">
                                             <div className="p-6">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
@@ -548,7 +548,7 @@ const years = useMemo(
                                                                 {doc.title}
                                                             </h3>
                                                             <div className="flex items-center space-x-3">
-                                                                <span className="bg-[#F1F1E6] text-[#1E293B] text-xs font-semibold px-3 py-1 rounded-full border border-[#0694FA]">
+                                                                <span className="bg-[#F1F1E6] text-[#1E293B] text-xs font-semibold px-3 py-1 rounded-full border border-slate-300">
                                                                     {doc.file.type.split("/").pop()?.toUpperCase()}
                                                                 </span>
                                                                 <span className="text-sm text-[#1E293B]">
@@ -690,7 +690,7 @@ const years = useMemo(
                                     </div>
                                 )}
                                 {hotDocs.map((doc, idx) => (
-                                    <div key={doc._id} className="group bg-[#F5F9FF] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-6 border border-[#0694FA] transform hover:-translate-y-1">
+                                    <div key={doc._id} className="group bg-[#F5F9FF] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-6 border border-slate-300 transform hover:-translate-y-1">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-6">
                                                 <div className="flex items-center justify-center w-16 h-16 bg-[#1E293B] text-white rounded-2xl font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -815,7 +815,7 @@ const years = useMemo(
             
             {/* Modal Upload */}
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="bg-[#F5F9FF] border border-[#0694FA] shadow-2xl rounded-2xl">
+                <DialogContent className="bg-[#F5F9FF] border border-slate-300 shadow-2xl rounded-2xl">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-[#1E293B] flex items-center">
                             <UploadCloud className="mr-3 text-[#0694FA]" size={28} />
@@ -832,17 +832,17 @@ const years = useMemo(
                                 value={form.title}
                                 onChange={handleChange}
                                 required
-                                className="border-2 border-[#F1F1E6] focus:border-[#0694FA] rounded-xl py-3 px-4 transition-all duration-200"
+                                className="border-2 border-slate-200 focus:border-slate-400 rounded-xl py-3 px-4 transition-all duration-200"
                             />
                         </div>
                         
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-[#1E293B]">📚 Môn học</label>
                             <Select value={form.subject} onValueChange={val => setForm({ ...form, subject: val })} required>
-                                <SelectTrigger className="w-full border-2 border-[#F1F1E6] focus:border-[#0694FA] rounded-xl py-3 px-4 transition-all duration-200">
+                                <SelectTrigger className="w-full border-2 border-slate-200 focus:border-slate-400 rounded-xl py-3 px-4 transition-all duration-200">
                                     <SelectValue placeholder="Chọn môn học" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white">
+                                <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white">
                                     <SelectItem value="Advanced Mathematics" className="px-4 py-3 hover:bg-[#F5F9FF] transition-colors">
                                         📐 Advanced Mathematics
                                     </SelectItem>
@@ -873,17 +873,17 @@ const years = useMemo(
                                 value={form.lecturer}
                                 onChange={handleChange}
                                 required
-                                className="border-2 border-[#F1F1E6] focus:border-[#0694FA] rounded-xl py-3 px-4 transition-all duration-200"
+                                className="border-2 border-slate-200 focus:border-slate-400 rounded-xl py-3 px-4 transition-all duration-200"
                             />
                         </div>
                         
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-[#1E293B]">🏛️ Khoa</label>
                             <Select value={form.faculty} onValueChange={val => setForm({ ...form, faculty: val })} required>
-                                <SelectTrigger className="w-full border-2 border-[#F1F1E6] focus:border-[#0694FA] rounded-xl py-3 px-4 transition-all duration-200">
+                                <SelectTrigger className="w-full border-2 border-slate-200 focus:border-slate-400 rounded-xl py-3 px-4 transition-all duration-200">
                                     <SelectValue placeholder="Chọn khoa" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl shadow-lg border border-[#F1F1E6] bg-white">
+                                <SelectContent className="rounded-xl shadow-lg border border-slate-200 bg-white">
                                     <SelectItem value="Software Engineering" className="px-4 py-3 hover:bg-[#F5F9FF] transition-colors">
                                         💻 Software Engineering
                                     </SelectItem>
@@ -911,13 +911,13 @@ const years = useMemo(
                                 type="number"
                                 min="1900"
                                 max={new Date().getFullYear()}
-                                className="border-2 border-[#F1F1E6] focus:border-[#0694FA] rounded-xl py-3 px-4 transition-all duration-200"
+                                className="border-2 border-slate-200 focus:border-slate-400 rounded-xl py-3 px-4 transition-all duration-200"
                             />
                         </div>
                         
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">📎 Chọn file</label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-green-400 transition-colors">
+                            <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 hover:border-slate-400 transition-colors">
                                 <Input
                                     type="file"
                                     accept=".pdf,.docx,.pptx"
@@ -935,7 +935,7 @@ const years = useMemo(
                                     type="button" 
                                     variant="outline"
                                     onClick={() => setOpen(false)}
-                                    className="flex-1 border-2 border-gray-300 hover:bg-gray-50 rounded-xl py-3"
+                                    className="flex-1 border-2 border-slate-300 hover:bg-gray-50 rounded-xl py-3"
                                 >
                                     Hủy
                                 </Button>

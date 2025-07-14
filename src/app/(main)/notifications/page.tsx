@@ -63,19 +63,20 @@ interface Friends {
 
 // Enhanced icon mapping with more notification types
 const getIconByType = (type: string) => {
+
   switch (type) {
     case "likes_post":
-      return <Heart className="text-pink-500" size={20} />;
+      return <Heart className="text-pink-500 w-full h-full" />;
     case "friend_request":
-      return <UserPlus className="text-blue-500" size={20} />;
+      return <UserPlus className="text-blue-500 w-full h-full" />;
     case "accept_request":
-      return <Users className="text-green-500" size={20} />;
+      return <Users className="text-green-500 w-full h-full" />;
     case "Comment":
-      return <MessageCircle className="text-purple-500" size={20} />;
+      return <MessageCircle className="text-purple-500 w-full h-full" />;
     case "mention":
-      return <Bell className="text-orange-500" size={20} />;
+      return <Bell className="text-orange-500 w-full h-full" />;
     default:
-      return <Bell className="text-blue-500" size={20} />;
+      return <Bell className="text-blue-500 w-full h-full" />;
   }
 };
 
@@ -114,7 +115,7 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`flex items-start gap-4 py-4 px-6 border-b border-gray-100 last:border-b-0 relative group cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
+      className={`flex items-start gap-2 sm:gap-4 py-3 sm:py-4 px-3 sm:px-6 border-b border-gray-100 last:border-b-0 relative group cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
         notification.status === "unread" 
           ? "bg-[#F5F9FF] hover:bg-[#F5F9FF]/80 border-l-4 border-l-[#0694FA]" 
           : "hover:bg-gray-50"
@@ -122,46 +123,48 @@ const NotificationItem = React.memo(({
       onClick={handleClick}
       title={notification.status === "unread" ? "Đánh dấu đã đọc" : ""}
     >
-      <div className="relative group-hover:scale-105 transition-transform duration-300">
+      <div className="relative group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
         <div className="relative">
           <Image
             src={notification.senderId.avatar_link || "/schoolimg.jpg"}
             alt={notification.senderId.username}
-            width={56}
-            height={56}
-            className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-lg"
+            width={48}
+            height={48}
+            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-white shadow-lg"
           />
-          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 shadow-lg">
-            {getIconByType(notification.type)}
+          <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-white rounded-full p-1 sm:p-1.5 shadow-lg">
+            <div className="w-3 h-3 sm:w-5 sm:h-5">
+              {getIconByType(notification.type)}
+            </div>
           </div>
         </div>
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="mb-2">
-              <span className="font-semibold text-[#1E293B] text-sm">
+          <div className="flex-1 min-w-0 pr-2">
+            <div className="mb-1 sm:mb-2">
+              <span className="font-semibold text-[#1E293B] text-xs sm:text-sm">
                 {notification.senderId.username}
               </span>
-              <p className="text-[#1E293B] text-sm leading-5 mt-1">
+              <p className="text-[#1E293B] text-xs sm:text-sm leading-4 sm:leading-5 mt-1">
                 {notification.context}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span className="bg-gray-100 px-2 py-1 rounded-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-gray-500">
+              <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
                 {formatTime(notification.createAt)}
               </span>
               {notification.post && (
-                <span className="text-[#0694FA] font-medium">• Xem bài viết</span>
+                <span className="text-[#0694FA] font-medium text-xs">• Xem bài viết</span>
               )}
             </div>
           </div>
           
           {notification.status === "unread" && (
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-[#0694FA] rounded-full animate-pulse shadow-lg"></span>
-              <span className="text-xs font-semibold text-[#0694FA] bg-[#F5F9FF] px-2 py-1 rounded-full">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+              <span className="w-2 h-2 sm:w-3 sm:h-3 bg-[#0694FA] rounded-full animate-pulse shadow-lg"></span>
+              <span className="text-xs font-semibold text-[#0694FA] bg-[#F5F9FF] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                 Mới
               </span>
             </div>
@@ -203,15 +206,15 @@ const NotificationList = ({
 
   if (loading && notifications.length === 0) {
     return (
-      <div className="px-6 py-8">
-        <div className="animate-pulse space-y-6">
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <div className="animate-pulse space-y-4 sm:space-y-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-start gap-4">
-              <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
-              <div className="flex-1 space-y-3">
+            <div key={i} className="flex items-start gap-2 sm:gap-4">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gray-200 rounded-full flex-shrink-0"></div>
+              <div className="flex-1 space-y-2 sm:space-y-3">
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded-lg w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded-lg w-1/2"></div>
+                  <div className="h-3 sm:h-4 bg-gray-200 rounded-lg w-3/4"></div>
+                  <div className="h-2 sm:h-3 bg-gray-200 rounded-lg w-1/2"></div>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-lg w-1/4"></div>
               </div>
@@ -225,16 +228,16 @@ const NotificationList = ({
   // Nếu không có thông báo nào (kể cả khi tab là "unread" hay "all"), luôn hiện "Chưa có thông báo nào"
   if (notifications.length === 0) {
     return (
-      <div className="text-center py-16 px-6">
-        <div className="mb-6">
-          <div className="w-24 h-24 mx-auto bg-[#F5F9FF] rounded-full flex items-center justify-center mb-4">
-            <Bell className="text-[#0694FA]" size={48} />
+      <div className="text-center py-12 sm:py-16 px-4 sm:px-6">
+        <div className="mb-4 sm:mb-6">
+          <div className="w-16 h-16 sm:w-24 sm:h-24 mx-auto bg-[#F5F9FF] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+            <Bell className="text-[#0694FA]" size={32} />
           </div>
         </div>
-        <h3 className="text-xl font-semibold text-[#1E293B] mb-2">
+        <h3 className="text-lg sm:text-xl font-semibold text-[#1E293B] mb-2">
           Chưa có thông báo nào
         </h3>
-        <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+        <p className="text-gray-500 max-w-md mx-auto leading-relaxed text-sm sm:text-base">
           Khi có hoạt động mới, thông báo sẽ xuất hiện ở đây.
         </p>
       </div>
@@ -243,12 +246,12 @@ const NotificationList = ({
 
   return (
     <div className="text-[#1E293B]">
-      <div className="sticky top-0 bg-[#F5F9FF] text-[#1E293B] text-sm font-medium px-6 py-3 border-b border-gray-100 z-10">
+      <div className="sticky top-0 bg-[#F5F9FF] text-[#1E293B] text-xs sm:text-sm font-medium px-3 sm:px-6 py-2 sm:py-3 border-b border-gray-100 z-10">
         <div className="flex items-center justify-between">
           <span>
             {tab === "unread" ? "Thông báo chưa đọc" : "Tất cả thông báo"}
           </span>
-          <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold">
+          <span className="bg-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
             {filteredNotifications.length} thông báo
           </span>
         </div>
@@ -469,82 +472,84 @@ const Notifications = () => {
     <div className="min-h-screen bg-[#F1F1E6]">
       <NavigationBar />
       
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-[8vh]">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pt-[8vh]">
         {/* Header Section */}
        
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[#F5F9FF] rounded-lg">
-                <Bell className="w-6 h-6 text-[#0694FA]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-1.5 sm:p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0694FA]" />
               </div>
               <div>
-                <p className="text-sm text-[#1E293B]">Tổng thông báo</p>
-                <p className="text-2xl font-bold text-[#1E293B]">{notifications.length}</p>
+                <p className="text-xs sm:text-sm text-[#1E293B]">Tổng thông báo</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{notifications.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[#F5F9FF] rounded-lg">
-                <Bell className="w-6 h-6 text-[#0694FA]" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-1.5 sm:p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0694FA]" />
               </div>
               <div>
-                <p className="text-sm text-[#1E293B]">Chưa đọc</p>
-                <p className="text-2xl font-bold text-[#1E293B]">{unreadCount}</p>
+                <p className="text-xs sm:text-sm text-[#1E293B]">Chưa đọc</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{unreadCount}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-4 shadow border border-[#F5F9FF]">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-[#F5F9FF] rounded-lg">
-                <Bell className="w-6 h-6 text-[#0694FA]" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow border border-[#F5F9FF]">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-1.5 sm:p-2 bg-[#F5F9FF] rounded-lg">
+                <Bell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0694FA]" />
               </div>
               <div>
-                <p className="text-sm text-[#1E293B]">Đã đọc</p>
-                <p className="text-2xl font-bold text-[#1E293B]">{notifications.length - unreadCount}</p>
+                <p className="text-xs sm:text-sm text-[#1E293B]">Đã đọc</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{notifications.length - unreadCount}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Notification Panel */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-[#F5F9FF]">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden border border-[#F5F9FF]">
           {/* Header with Actions */}
-          <div className="bg-[#F5F9FF] px-6 py-4 border-b border-gray-100">
-            <div className="flex items-center justify-between">
+          <div className="bg-[#F5F9FF] px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2 w-full sm:w-auto">
                   <button
-                    className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                    className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 ${
                       tab === "all"
                         ? "bg-[#0694FA] text-white shadow transform scale-105"
                         : "bg-white text-[#1E293B] hover:bg-white/90 border border-gray-200"
                     }`}
                     onClick={() => handleTabChange("all")}
                   >
-                    <span className="flex items-center gap-2">
-                      Tất cả
-                      <span className="bg-[#F5F9FF] text-[#1E293B] text-xs px-2 py-1 rounded-full">
+                    <span className="flex items-center gap-1 sm:gap-2 justify-center">
+                      <span className="hidden sm:inline">Tất cả</span>
+                      <span className="sm:hidden">Tất cả</span>
+                      <span className="bg-[#F5F9FF] text-[#1E293B] text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                         {notifications.length}
                       </span>
                     </span>
                   </button>
                   <button
-                    className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 relative ${
+                    className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 relative ${
                       tab === "unread"
                         ? "bg-[#1E293B] text-white shadow transform scale-105"
                         : "bg-white text-[#1E293B] hover:bg-white/90 border border-gray-200"
                     }`}
                     onClick={() => handleTabChange("unread")}
                   >
-                    <span className="flex items-center gap-2">
-                      Chưa đọc
-                      <span className={`text-xs px-2 py-1 rounded-full ${
+                    <span className="flex items-center gap-1 sm:gap-2 justify-center">
+                      <span className="hidden sm:inline">Chưa đọc</span>
+                      <span className="sm:hidden">Chưa đọc</span>
+                      <span className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
                         tab === "unread" ? "bg-[#F5F9FF] text-[#1E293B]" : "bg-[#F5F9FF] text-[#1E293B]"
                       }`}>
                         {unreadCount}
@@ -554,25 +559,27 @@ const Notifications = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {tab === "all" && (
                   <button
-                    className="px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#1E293B] text-white hover:bg-[#F5F9FF] hover:text-[#1E293B] border border-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm bg-[#1E293B] text-white hover:bg-[#F5F9FF] hover:text-[#1E293B] border border-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
                     onClick={handleDeleteAllRead}
                   >
-                    <span className="flex items-center gap-2">
-                      Xóa các tin đã đọc
+                    <span className="flex items-center gap-1 sm:gap-2 justify-center">
+                      <span className="hidden sm:inline">Xóa các tin đã đọc</span>
+                      <span className="sm:hidden">Xóa đã đọc</span>
                     </span>
                   </button>
                 )}
                 {unreadCount > 0 && (
                   <button
-                    className="px-4 py-2.5 rounded-xl font-semibold text-sm bg-[#0694FA] text-white hover:bg-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm bg-[#0694FA] text-white hover:bg-[#1E293B] transition-all duration-300 shadow hover:shadow-lg transform hover:scale-105"
                     onClick={markAllAsRead}
                   >
-                    <span className="flex items-center gap-2">
-                      <Bell size={16} />
-                      Đánh dấu tất cả đã đọc
+                    <span className="flex items-center gap-1 sm:gap-2 justify-center">
+                      <Bell size={14} className="sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Đánh dấu tất cả đã đọc</span>
+                      <span className="sm:hidden">Đánh dấu đã đọc</span>
                     </span>
                   </button>
                 )}
@@ -582,18 +589,18 @@ const Notifications = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-[#F5F9FF] border-l-4 border-[#0694FA] px-6 py-4">
+            <div className="bg-[#F5F9FF] border-l-4 border-[#0694FA] px-3 sm:px-6 py-3 sm:py-4">
               <div className="flex items-center">
-                <div className="p-1 bg-[#F5F9FF] rounded-full mr-3">
-                  <Bell className="w-4 h-4 text-[#0694FA]" />
+                <div className="p-1 bg-[#F5F9FF] rounded-full mr-2 sm:mr-3">
+                  <Bell className="w-3 h-3 sm:w-4 sm:h-4 text-[#0694FA]" />
                 </div>
-                <p className="text-[#1E293B] font-medium">{error}</p>
+                <p className="text-[#1E293B] font-medium text-sm sm:text-base">{error}</p>
               </div>
             </div>
           )}
 
           {/* Notifications List */}
-          <div className="max-h-[60vh] ofverflow-hidden">
+          <div className="max-h-[50vh] sm:max-h-[60vh] overflow-hidden">
             <NotificationList
               notifications={notifications}
               tab={tab}
@@ -606,14 +613,14 @@ const Notifications = () => {
 
           {/* Pagination Bar */}
           {totalPages > 1 && (
-            <div className="border-t border-gray-100 py-4 flex justify-center bg-[#F5F9FF]">
-              <div className="bg-white rounded-xl shadow p-2 border border-[#F5F9FF]">
+            <div className="border-t border-gray-100 py-3 sm:py-4 flex justify-center bg-[#F5F9FF]">
+              <div className="bg-white rounded-xl shadow p-1 sm:p-2 border border-[#F5F9FF]">
                 <Pagination>
-                  <PaginationContent className="gap-1">
+                  <PaginationContent className="gap-0.5 sm:gap-1">
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={() => setPage(page > 1 ? page - 1 : 1)}
-                        className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                        className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
                           page === 1 
                             ? "text-gray-400 cursor-not-allowed" 
                             : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
@@ -625,7 +632,7 @@ const Notifications = () => {
                         <PaginationLink
                           isActive={page === idx + 1}
                           onClick={() => setPage(idx + 1)}
-                          className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                          className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
                             page === idx + 1
                               ? "bg-[#0694FA] text-white shadow"
                               : "text-[#1E293B] hover:bg-[#F5F9FF] hover:text-[#0694FA]"
@@ -638,7 +645,7 @@ const Notifications = () => {
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
-                        className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                        className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
                           page === totalPages 
                             ? "text-gray-400 cursor-not-allowed" 
                             : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
@@ -655,24 +662,24 @@ const Notifications = () => {
       
       {/* Confirm Delete Dialog */}
       {showConfirmDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-xs w-full border border-[#F5F9FF]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 max-w-xs sm:max-w-sm w-full border border-[#F5F9FF]">
             <div className="mb-4 text-center">
               <div className="flex justify-center mb-2">
-                <Bell className="text-[#0694FA]" size={32} />
+                <Bell className="text-[#0694FA]" size={28} />
               </div>
-              <h2 className="text-lg font-bold text-[#1E293B] mb-2">Xác nhận xóa</h2>
-              <p className="text-[#1E293B] text-sm">Bạn có chắc chắn muốn xóa tất cả thông báo đã đọc?</p>
+              <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mb-2">Xác nhận xóa</h2>
+              <p className="text-[#1E293B] text-xs sm:text-sm">Bạn có chắc chắn muốn xóa tất cả thông báo đã đọc?</p>
             </div>
-            <div className="flex gap-2 mt-6">
+            <div className="flex gap-2 mt-4 sm:mt-6">
               <button
-                className="flex-1 px-4 py-2 rounded-lg bg-[#F5F9FF] text-[#1E293B] font-semibold hover:bg-[#0694FA] hover:text-white transition"
+                className="flex-1 px-3 sm:px-4 py-2 rounded-lg bg-[#F5F9FF] text-[#1E293B] font-semibold hover:bg-[#0694FA] hover:text-white transition text-sm"
                 onClick={() => setShowConfirmDialog(false)}
               >
                 Hủy
               </button>
               <button
-                className="flex-1 px-4 py-2 rounded-lg bg-[#1E293B] text-white font-semibold hover:bg-[#0694FA] transition"
+                className="flex-1 px-3 sm:px-4 py-2 rounded-lg bg-[#1E293B] text-white font-semibold hover:bg-[#0694FA] transition text-sm"
                 onClick={handleConfirmDelete}
               >
                 Xóa
@@ -684,21 +691,21 @@ const Notifications = () => {
 
       {/* Result Dialog */}
       {showResultDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-xs w-full border border-[#F5F9FF] text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 max-w-xs sm:max-w-sm w-full border border-[#F5F9FF] text-center">
             <div className="flex justify-center mb-2">
-              <Bell className={showResultDialog === "success" ? "text-[#0694FA]" : "text-red-500"} size={32} />
+              <Bell className={showResultDialog === "success" ? "text-[#0694FA]" : "text-red-500"} size={28} />
             </div>
-            <h2 className="text-lg font-bold text-[#1E293B] mb-2">
+            <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mb-2">
               {showResultDialog === "success" ? "Xóa thành công" : "Xóa không thành công"}
             </h2>
-            <p className="text-[#1E293B] text-sm mb-4">
+            <p className="text-[#1E293B] text-xs sm:text-sm mb-4">
               {showResultDialog === "success"
                 ? "Tất cả thông báo đã đọc đã được xóa."
                 : "Đã xảy ra lỗi khi xóa thông báo. Vui lòng thử lại."}
             </p>
             <button
-              className="px-4 py-2 rounded-lg bg-[#0694FA] text-white font-semibold hover:bg-[#1E293B] transition"
+              className="px-4 py-2 rounded-lg bg-[#0694FA] text-white font-semibold hover:bg-[#1E293B] transition text-sm"
               onClick={() => setShowResultDialog(null)}
             >
               Đóng

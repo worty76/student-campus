@@ -103,11 +103,23 @@ const FriendsNCommunitys = () => {
   const { sendMessage, addMessageHandler } = useWebSocket();
   const [queryerror, setQueryerror] = useState(false);
   const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
   
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [friends, setFriends] = useState<string[]>([]);
   const [handledRequests, setHandledRequests] = useState<Record<string, 'accepted' | 'rejected'>>({});
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const storedFriends = localStorage.getItem('friends');
@@ -313,14 +325,14 @@ const FriendsNCommunitys = () => {
       return (
         <Button
           disabled
-          className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-2 sm:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
+          className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-1 sm:px-2 md:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
           size="sm"
         >
           <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="hidden sm:inline">Bạn Bè</span>
-          <span className="sm:hidden">Bạn bè</span>
+          <span className="hidden md:inline">Bạn Bè</span>
+          <span className="md:hidden">Bạn bè</span>
         </Button>
       );
     } 
@@ -329,14 +341,14 @@ const FriendsNCommunitys = () => {
         return (
           <Button
             disabled
-            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-2 sm:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
+            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-1 sm:px-2 md:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
             size="sm"
           >
             <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="hidden sm:inline">Đã chấp nhận</span>
-            <span className="sm:hidden">Đã OK</span>
+            <span className="hidden md:inline">Đã chấp nhận</span>
+            <span className="md:hidden">Đã OK</span>
           </Button>
         );
       }
@@ -345,14 +357,14 @@ const FriendsNCommunitys = () => {
         return (
           <Button
             disabled
-            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-2 sm:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
+            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-1 sm:px-2 md:px-3 lg:px-5 py-1 sm:py-2 rounded-xl cursor-not-allowed text-xs sm:text-sm font-semibold shadow-lg"
             size="sm"
           >
             <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="hidden sm:inline">Đã gửi lời mời</span>
-            <span className="sm:hidden">Đã gửi</span>
+            <span className="hidden md:inline">Đã gửi lời mời</span>
+            <span className="md:hidden">Đã gửi</span>
           </Button>
         );
       } else if (friend.type === 'receiver') {
@@ -473,21 +485,21 @@ const FriendsNCommunitys = () => {
   return (
     <div className="min-h-screen bg-[#F1F1E6]">
       <NavigationBar />
-      <div className="container mx-auto relative top-[3vh] sm:top-[5vh] max-w-7xl py-4 sm:py-8 px-2 sm:px-4 lg:px-6">
-        <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 lg:gap-8 items-start">
+      <div className="container mx-auto relative top-[2vh] sm:top-[3vh] md:top-[4vh] lg:top-[5vh] max-w-7xl py-2 sm:py-4 md:py-6 lg:py-8 px-2 sm:px-4 md:px-5 lg:px-6 min-h-[calc(100vh-80px)] sm:min-h-[calc(100vh-100px)]">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 items-start h-full lg:h-auto">
           {/* Sidebar - Bộ lọc */}
-          <div className="w-full xl:w-80 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-0 h-auto xl:h-[700px] xl:sticky xl:top-24 flex flex-col mb-4 xl:mb-0 overflow-hidden">
+          <div className="w-full lg:w-72 xl:w-80 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-0 h-auto lg:h-[600px] xl:h-[700px] lg:sticky lg:top-20 xl:top-24 flex flex-col mb-3 sm:mb-4 lg:mb-0 overflow-hidden max-h-[60vh] lg:max-h-none">
             {/* Header Search */}
-            <div className="rounded-t-2xl px-3 sm:px-6 py-3 sm:py-5 bg-[#0694FA] text-white">
-              <h3 className="text-lg sm:text-xl font-bold mb-0 flex items-center">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="rounded-t-2xl px-3 sm:px-4 md:px-5 lg:px-6 py-3 sm:py-4 md:py-5 bg-[#0694FA] text-white">
+              <h3 className="text-base sm:text-lg md:text-xl font-bold mb-0 flex items-center">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-2 sm:mr-3 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span className="hidden sm:inline">Tìm kiếm bạn bè</span>
                 <span className="sm:hidden">Tìm kiếm</span>
               </h3>
             </div>
-            <div className="px-3 sm:px-6 py-4 sm:py-6">
+            <div className="px-3 sm:px-4 md:px-5 lg:px-6 py-3 sm:py-4 md:py-5 lg:py-6">
               <Input
                 type="text"
                 value={query}
@@ -532,23 +544,23 @@ const FriendsNCommunitys = () => {
             </div>
 
             {/* Header Bộ lọc */}
-            <div className="px-3 sm:px-6 py-3 sm:py-5 bg-[#1E293B] text-white border-t border-white/20">
-              <h3 className="text-lg sm:text-xl font-bold mb-0 flex items-center">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="px-3 sm:px-4 md:px-5 lg:px-6 py-3 sm:py-4 md:py-5 bg-[#1E293B] text-white border-t border-white/20">
+              <h3 className="text-base sm:text-lg md:text-xl font-bold mb-0 flex items-center">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-2 sm:mr-3 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
                 Bộ lọc
               </h3>
             </div>
-            <div className="px-3 sm:px-6 py-4 sm:py-6 flex-1 overflow-y-auto xl:max-h-[400px]">
-              <div className="space-y-4 sm:space-y-6">
+            <div className="px-3 sm:px-4 md:px-5 lg:px-6 py-3 sm:py-4 md:py-5 lg:py-6 flex-1 overflow-y-auto lg:max-h-[300px] xl:max-h-[400px]">
+              <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
                 <div className="group">
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3  transition-colors">Khoa</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 transition-colors">Khoa</label>
                   <Select
                     value={filters.faculty || 'all'}
                     onValueChange={value => handleFilterChange('faculty', value === 'all' ? '' : value)}
                   >
-                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg">
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg h-9 sm:h-10 md:h-11">
                       <SelectValue placeholder="Chọn khoa" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 rounded-xl shadow-xl">
@@ -562,12 +574,12 @@ const FriendsNCommunitys = () => {
                 </div>
 
                 <div className="group">
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3  transition-colors">Chuyên ngành</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 transition-colors">Chuyên ngành</label>
                   <Select
                     value={filters.class || 'all'}
                     onValueChange={value => handleFilterChange('class', value === 'all' ? '' : value)}
                   >
-                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg">
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg h-9 sm:h-10 md:h-11">
                       <SelectValue placeholder="Chọn chuyên ngành" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 rounded-xl shadow-xl">
@@ -581,12 +593,12 @@ const FriendsNCommunitys = () => {
                 </div>
 
                 <div className="group">
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3  transition-colors">Năm học</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 transition-colors">Năm học</label>
                   <Select
                     value={filters.year || 'all'}
                     onValueChange={value => handleFilterChange('year', value === 'all' ? '' : value)}
                   >
-                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg">
+                    <SelectTrigger className="w-full border-gray-200 bg-gray-50/80 hover:bg-white transition-all duration-300 rounded-xl border-2 hover:border-purple-300 focus:border-purple-500 focus:shadow-lg h-9 sm:h-10 md:h-11">
                       <SelectValue placeholder="Chọn năm học" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 rounded-xl shadow-xl">
@@ -602,7 +614,7 @@ const FriendsNCommunitys = () => {
               <Button
                 onClick={resetFilters}
                 variant="outline"
-                className="w-full border-2 border-gray-300 text-gray-700 hover:bg-[#F1F1E6] hover:border-[#1E293B] py-2 sm:py-3 rounded-xl transition-all duration-300 mt-4 sm:mt-6 font-semibold transform hover:scale-[1.02] text-sm sm:text-base"
+                className="w-full border-2 border-gray-300 text-gray-700 hover:bg-[#F1F1E6] hover:border-[#1E293B] py-2 sm:py-3 rounded-xl transition-all duration-300 mt-3 sm:mt-4 md:mt-5 lg:mt-6 font-semibold transform hover:scale-[1.02] text-sm sm:text-base"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -614,13 +626,19 @@ const FriendsNCommunitys = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col gap-4 sm:gap-6 lg:gap-8 h-auto xl:h-[700px]">
+          <div className={`flex-1 flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 h-full lg:h-[600px] xl:h-[700px] min-h-0 ${isMobile ? 'min-h-[calc(100vh-280px)]' : ''}`}>
             {/* Lời mời kết bạn */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[400px] sm:max-h-[350px] xl:max-h-[340px] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 flex-1 overflow-y-auto ${
+              isMobile 
+                ? friend_request.length > 0 
+                  ? 'min-h-[180px] max-h-[calc(45vh-80px)]' 
+                  : 'min-h-[120px] max-h-[180px]'
+                : 'min-h-[200px] sm:min-h-[220px] md:min-h-[240px] lg:min-h-[280px] max-h-[calc(50vh-60px)] sm:max-h-[calc(45vh-40px)] md:max-h-[calc(40vh-30px)] lg:max-h-[320px] xl:max-h-[340px]'
+            }`}>
+              <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
@@ -634,71 +652,71 @@ const FriendsNCommunitys = () => {
                 </h2>
               </div>
               
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3 md:space-y-4">
                 {friend_request.length === 0 ? (
-                  <div className="text-center py-8 sm:py-12 text-gray-500">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="text-center py-6 sm:py-8 md:py-10 lg:py-12 text-gray-500">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
-                    <p className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">Không có lời mời kết bạn nào</p>
+                    <p className="text-base sm:text-lg md:text-xl font-semibold text-gray-600 mb-2">Không có lời mời kết bạn nào</p>
                     <p className="text-xs sm:text-sm text-gray-500">Các lời mời kết bạn sẽ xuất hiện ở đây</p>
                   </div>
                 ) : (
                   friend_request.map((req) => (
                     <div
                       key={req._id}
-                      className="group flex items-center bg-[#F1F1E6] backdrop-blur-sm rounded-2xl p-3 sm:p-4 lg:p-5 hover:bg-[#F5F9FF] transition-all duration-300 cursor-pointer border border-gray-200 hover:border-[#0694FA] transform hover:scale-[1.02] hover:shadow-lg"
+                      className="group flex items-center bg-[#F1F1E6] backdrop-blur-sm rounded-2xl p-2 sm:p-3 md:p-4 lg:p-5 hover:bg-[#F5F9FF] transition-all duration-300 cursor-pointer border border-gray-200 hover:border-[#0694FA] transform hover:scale-[1.02] hover:shadow-lg"
                       onClick={() => router.push(`/user/profile/${req._id}`)}
                     >
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#0694FA] flex items-center justify-center text-white font-bold text-sm sm:text-lg lg:text-xl mr-3 sm:mr-4 lg:mr-5 shadow-lg group-hover:shadow-xl transform group-hover:scale-110 transition-all duration-300">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-[#0694FA] flex items-center justify-center text-white font-bold text-xs sm:text-sm md:text-lg lg:text-xl mr-2 sm:mr-3 md:mr-4 lg:mr-5 shadow-lg group-hover:shadow-xl transform group-hover:scale-110 transition-all duration-300">
                         {req.username?.charAt(0).toUpperCase() || "U"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="font-bold text-gray-800 text-sm sm:text-base lg:text-lg block mb-1 truncate">{req.username}</span>
+                        <span className="font-bold text-gray-800 text-xs sm:text-sm md:text-base lg:text-lg block mb-1 truncate">{req.username}</span>
                         <p className="text-xs sm:text-sm text-gray-600 flex items-center">
                           <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-pink-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
-                          <span className="hidden sm:inline">Muốn kết bạn với bạn</span>
-                          <span className="sm:hidden">Muốn kết bạn</span>
+                          <span className="hidden md:inline">Muốn kết bạn với bạn</span>
+                          <span className="md:hidden">Muốn kết bạn</span>
                         </p>
                       </div>
-                      <div className="flex gap-2 sm:gap-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                      <div className="flex gap-1 sm:gap-2 md:gap-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
                         {handledRequests[req._id] === 'accepted' ? (
-                          <Button disabled className="bg-gray-400 text-white px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold" size="sm">
-                            <span className="hidden sm:inline">Đã chấp nhận</span>
-                            <span className="sm:hidden">Đã OK</span>
+                          <Button disabled className="bg-gray-400 text-white px-2 sm:px-3 md:px-4 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold" size="sm">
+                            <span className="hidden md:inline">Đã chấp nhận</span>
+                            <span className="md:hidden">Đã OK</span>
                           </Button>
                         ) : handledRequests[req._id] === 'rejected' ? (
-                          <Button disabled className="bg-gray-400 text-white px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold" size="sm">
-                            <span className="hidden sm:inline">Đã từ chối</span>
-                            <span className="sm:hidden">Đã từ chối</span>
+                          <Button disabled className="bg-gray-400 text-white px-2 sm:px-3 md:px-4 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold" size="sm">
+                            <span className="hidden md:inline">Đã từ chối</span>
+                            <span className="md:hidden">Đã từ chối</span>
                           </Button>
                         ) : (
                           <>
                             <Button
                               onClick={() => handleAcceptFriendRequest(req.senderId, req._id)}
-                              className="bg-[#0694FA] text-white hover:bg-[#1E293B] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
+                              className="bg-[#0694FA] text-white hover:bg-[#1E293B] px-1 sm:px-2 md:px-3 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
                               size="sm"
                             >
                               <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
-                              <span className="hidden sm:inline">Chấp nhận</span>
-                              <span className="sm:hidden">OK</span>
+                              <span className="hidden md:inline">Chấp nhận</span>
+                              <span className="md:hidden">OK</span>
                             </Button>
                             <Button
                               onClick={() => handleRejectFriendRequest(req.senderId, req._id)}
-                              className="bg-gray-500 text-white hover:bg-[#1E293B] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
+                              className="bg-gray-500 text-white hover:bg-[#1E293B] px-1 sm:px-2 md:px-3 lg:px-5 py-1 sm:py-2 rounded-xl text-xs sm:text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
                               size="sm"
                             >
                               <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
-                              <span className="hidden sm:inline">Từ chối</span>
-                              <span className="sm:hidden">Từ chối</span>
+                              <span className="hidden md:inline">Từ chối</span>
+                              <span className="md:hidden">Từ chối</span>
                             </Button>
                           </>
                         )}
@@ -710,11 +728,15 @@ const FriendsNCommunitys = () => {
             </div>
 
             {/* Gợi ý kết bạn */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 lg:p-6 flex-1 max-h-[400px] sm:max-h-[350px] xl:max-h-[340px] overflow-y-auto">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 flex-1 overflow-y-auto ${
+              isMobile 
+                ? 'min-h-[200px] max-h-[calc(55vh-80px)]'
+                : 'min-h-[200px] sm:min-h-[220px] md:min-h-[240px] lg:min-h-[280px] max-h-[calc(50vh-60px)] sm:max-h-[calc(45vh-40px)] md:max-h-[calc(40vh-30px)] lg:max-h-[320px] xl:max-h-[340px]'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6 gap-2 sm:gap-3 md:gap-0">
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-[#1E293B] flex items-center">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 mr-2 sm:mr-3 bg-[#0694FA] rounded-lg flex items-center justify-center">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                     </svg>
                   </div>
@@ -727,34 +749,34 @@ const FriendsNCommunitys = () => {
                   )}
                 </h2>
                 {searchrs && (
-                  <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 sm:gap-2 md:gap-3 flex-wrap">
                     {filters.faculty && (
                       <span className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-2 sm:px-3 py-1 rounded-full font-medium border border-blue-200 text-xs sm:text-sm">
-                        <span className="hidden sm:inline">Khoa: </span>{filters.faculty}
+                        <span className="hidden md:inline">Khoa: </span>{filters.faculty}
                       </span>
                     )}
                     {filters.year && (
                       <span className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-2 sm:px-3 py-1 rounded-full font-medium border border-blue-200 text-xs sm:text-sm">
-                        <span className="hidden sm:inline">Năm: </span>{filters.year}
+                        <span className="hidden md:inline">Năm: </span>{filters.year}
                       </span>
                     )}
                     {filters.class && (
                       <span className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-2 sm:px-3 py-1 rounded-full font-medium border border-blue-200 text-xs sm:text-sm">
-                        <span className="hidden sm:inline">Lớp: </span>{filters.class}
+                        <span className="hidden md:inline">Lớp: </span>{filters.class}
                       </span>
                     )}
                   </div>
                 )}
               </div>
               
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3 md:space-y-4">
                 {loading ? (
-                  <div className="text-center py-8 sm:py-12">
-                    <div className="relative w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-6">
+                  <div className="text-center py-6 sm:py-8 md:py-10 lg:py-12">
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6">
                       <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
                       <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
                     </div>
-                    <p className="text-gray-600 text-base sm:text-lg font-semibold">Đang tải...</p>
+                    <p className="text-gray-600 text-sm sm:text-base md:text-lg font-semibold">Đang tải...</p>
                     <p className="text-gray-500 text-xs sm:text-sm mt-2">Vui lòng chờ trong giây lát</p>
                   </div>
                 ) : (
@@ -772,26 +794,26 @@ const FriendsNCommunitys = () => {
                     ).map((friend) => (
                       <div
                         key={friend._id}
-                        className="group flex items-center bg-[#F1F1E6] backdrop-blur-sm rounded-2xl p-3 sm:p-4 lg:p-5 hover:bg-[#F5F9FF] transition-all duration-300 cursor-pointer border border-gray-200 hover:border-[#0694FA] transform hover:scale-[1.02] hover:shadow-lg"
+                        className="group flex items-center bg-[#F1F1E6] backdrop-blur-sm rounded-2xl p-2 sm:p-3 md:p-4 lg:p-5 hover:bg-[#F5F9FF] transition-all duration-300 cursor-pointer border border-gray-200 hover:border-[#0694FA] transform hover:scale-[1.02] hover:shadow-lg"
                         onClick={() => {
                           localStorage.setItem('profileData', JSON.stringify(friend));
                           router.push(`/user/profile/${friend._id}`);
                         }}
                       >
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-[#0694FA] flex items-center justify-center text-white font-bold text-sm sm:text-lg lg:text-xl mr-3 sm:mr-4 lg:mr-5 shadow-lg group-hover:shadow-xl transform group-hover:scale-110 transition-all duration-300">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-[#0694FA] flex items-center justify-center text-white font-bold text-xs sm:text-sm md:text-lg lg:text-xl mr-2 sm:mr-3 md:mr-4 lg:mr-5 shadow-lg group-hover:shadow-xl transform group-hover:scale-110 transition-all duration-300">
                           {friend.username?.charAt(0).toUpperCase() || "U"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="font-bold text-gray-800 text-sm sm:text-base lg:text-lg block mb-2 truncate">{friend.username}</span>
+                          <span className="font-bold text-gray-800 text-xs sm:text-sm md:text-base lg:text-lg block mb-1 sm:mb-2 truncate">{friend.username}</span>
                           <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 sm:gap-2 flex-wrap">
-                            <span className="bg-gray-200 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border border-gray-200 truncate max-w-[80px] sm:max-w-none">
+                            <span className="bg-gray-200 px-1 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium border border-gray-200 truncate max-w-[60px] sm:max-w-[80px] md:max-w-none">
                               {friend.Faculty}
                             </span>
-                            <span className="bg-gray-200 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border border-gray-200 truncate max-w-[80px] sm:max-w-none">
+                            <span className="bg-gray-200 px-1 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium border border-gray-200 truncate max-w-[60px] sm:max-w-[80px] md:max-w-none">
                               {friend.Major}
                             </span>
-                            <span className="bg-gradient-to-r from-gray-100 to-gray-200 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border border-gray-200">
-                              <span className="hidden sm:inline">Năm </span>{friend.Year}
+                            <span className="bg-gradient-to-r from-gray-100 to-gray-200 px-1 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium border border-gray-200">
+                              <span className="hidden md:inline">Năm </span>{friend.Year}
                             </span>
                           </div>
                         </div>
@@ -801,13 +823,13 @@ const FriendsNCommunitys = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 sm:py-12 text-gray-500">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                        <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center py-6 sm:py-8 md:py-10 lg:py-12 text-gray-500">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
-                      <p className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
+                      <p className="text-base sm:text-lg md:text-xl font-semibold text-gray-600 mb-2">
                         {searchrs ? 'Không tìm thấy kết quả phù hợp' : 'Không có gợi ý nào'}
                       </p>
                       <p className="text-xs sm:text-sm text-gray-500">
