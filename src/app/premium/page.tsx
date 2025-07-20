@@ -1,18 +1,18 @@
-'use client';
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Crown, 
-  Shield, 
-  Eye, 
-  EyeOff, 
+import {
+  Crown,
+  Shield,
+  Eye,
+  EyeOff,
   CheckCircle,
   CreditCard,
   Zap,
-  Star
-} from 'lucide-react';
+  Star,
+} from "lucide-react";
 
 interface PremiumStatus {
   isPremium: boolean;
@@ -24,37 +24,44 @@ export default function PremiumPage() {
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({
     isPremium: false,
     premiumExpiry: null,
-    premiumPurchaseDate: null
+    premiumPurchaseDate: null,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState('monthly');
+  const [selectedPlan, setSelectedPlan] = useState("monthly");
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    checkPremiumStatus();
+    // Check if user is logged in and get userId from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const storedId = localStorage.getItem("userId");
+    if (storedId) {
+      setUserId(storedId);
+      checkPremiumStatus(storedId);
+    }
   }, []);
 
-  const checkPremiumStatus = async () => {
+  const checkPremiumStatus = async (userIdParam: string) => {
     try {
-      // Get user ID from token or context
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-      if (!token) return;
-
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userId = payload.userId;
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/premium/status/${userId}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/premium/status/${userIdParam}`
+      );
       const data = await response.json();
-      
+
       if (data.success) {
         setPremiumStatus({
           isPremium: data.isPremium,
           premiumExpiry: data.premiumExpiry,
-          premiumPurchaseDate: data.premiumPurchaseDate
+          premiumPurchaseDate: data.premiumPurchaseDate,
         });
       }
     } catch (error) {
-      console.error('Error checking premium status:', error);
+      console.error("Error checking premium status:", error);
     } finally {
       setIsLoading(false);
     }
@@ -63,38 +70,37 @@ export default function PremiumPage() {
   const handlePurchase = async (amount: number, paymentMethod: string) => {
     setIsPurchasing(true);
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-      if (!token) {
-        alert('Please login to purchase premium');
+      if (!userId) {
+        alert("Please login to purchase premium");
         return;
       }
 
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userId = payload.userId;
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/premium/purchase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          amount,
-          paymentMethod
-        })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/premium/purchase`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            amount,
+            paymentMethod,
+          }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (data.success) {
-        alert('Premium subscription purchased successfully!');
-        checkPremiumStatus(); // Refresh status
+        alert("Premium subscription purchased successfully!");
+        checkPremiumStatus(userId); // Refresh status
       } else {
-        alert('Failed to purchase premium: ' + data.message);
+        alert("Failed to purchase premium: " + data.message);
       }
     } catch (error) {
-      console.error('Error purchasing premium:', error);
-      alert('Failed to purchase premium. Please try again.');
+      console.error("Error purchasing premium:", error);
+      alert("Failed to purchase premium. Please try again.");
     } finally {
       setIsPurchasing(false);
     }
@@ -122,7 +128,9 @@ export default function PremiumPage() {
                 <Crown className="w-8 h-8 mr-3 text-yellow-500" />
                 Premium Features
               </h1>
-              <p className="text-gray-600">Unlock the full potential of Student Campus</p>
+              <p className="text-gray-600">
+                Unlock the full potential of Student Campus
+              </p>
             </div>
             {premiumStatus.isPremium && (
               <Badge className="bg-green-100 text-green-800">
@@ -147,10 +155,18 @@ export default function PremiumPage() {
             <CardContent>
               <div className="space-y-2">
                 <p className="text-gray-600">
-                  <strong>Purchase Date:</strong> {premiumStatus.premiumPurchaseDate ? new Date(premiumStatus.premiumPurchaseDate).toLocaleDateString() : 'N/A'}
+                  <strong>Purchase Date:</strong>{" "}
+                  {premiumStatus.premiumPurchaseDate
+                    ? new Date(
+                        premiumStatus.premiumPurchaseDate
+                      ).toLocaleDateString()
+                    : "N/A"}
                 </p>
                 <p className="text-gray-600">
-                  <strong>Expires:</strong> {premiumStatus.premiumExpiry ? new Date(premiumStatus.premiumExpiry).toLocaleDateString() : 'N/A'}
+                  <strong>Expires:</strong>{" "}
+                  {premiumStatus.premiumExpiry
+                    ? new Date(premiumStatus.premiumExpiry).toLocaleDateString()
+                    : "N/A"}
                 </p>
               </div>
             </CardContent>
@@ -161,7 +177,8 @@ export default function PremiumPage() {
               Upgrade to Premium
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Enjoy an ad-free experience and unlock exclusive features to enhance your learning journey.
+              Enjoy an ad-free experience and unlock exclusive features to
+              enhance your learning journey.
             </p>
           </div>
         )}
@@ -208,7 +225,9 @@ export default function PremiumPage() {
               </Badge>
             </div>
             <CardHeader>
-              <CardTitle className="text-center text-blue-600">Premium Plan</CardTitle>
+              <CardTitle className="text-center text-blue-600">
+                Premium Plan
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center">
@@ -239,9 +258,9 @@ export default function PremiumPage() {
               </ul>
               {!premiumStatus.isPremium && (
                 <div className="space-y-3 pt-4">
-                  <Button 
+                  <Button
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={() => handlePurchase(99000, 'momo')}
+                    onClick={() => handlePurchase(99000, "momo")}
                     disabled={isPurchasing}
                   >
                     {isPurchasing ? (
@@ -278,24 +297,28 @@ export default function PremiumPage() {
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Ad-Free Experience</h3>
                 <p className="text-gray-600">
-                  Enjoy a clean, distraction-free learning environment without any advertisements.
+                  Enjoy a clean, distraction-free learning environment without
+                  any advertisements.
                 </p>
-                
+
                 <h3 className="font-semibold text-lg">Priority Support</h3>
                 <p className="text-gray-600">
-                  Get faster response times and dedicated support for any issues you encounter.
+                  Get faster response times and dedicated support for any issues
+                  you encounter.
                 </p>
               </div>
-              
+
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Advanced Features</h3>
                 <p className="text-gray-600">
-                  Access to premium tools and features that enhance your learning experience.
+                  Access to premium tools and features that enhance your
+                  learning experience.
                 </p>
-                
+
                 <h3 className="font-semibold text-lg">Exclusive Content</h3>
                 <p className="text-gray-600">
-                  Get early access to new features and exclusive educational content.
+                  Get early access to new features and exclusive educational
+                  content.
                 </p>
               </div>
             </div>
@@ -304,4 +327,4 @@ export default function PremiumPage() {
       </div>
     </div>
   );
-} 
+}
