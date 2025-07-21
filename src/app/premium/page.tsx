@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import NavigationBar from "@/app/(main)/layouts/navbar";
+import PremiumPaymentService from "@/services/premiumPayment.service";
+import { PremiumStatus, PremiumPaymentError } from "@/types/premium.types";
 import {
   Crown,
   Shield,
@@ -13,12 +15,6 @@ import {
   Zap,
   Star,
 } from "lucide-react";
-import { BASEURL } from "../constants/url";
-interface PremiumStatus {
-  isPremium: boolean;
-  premiumExpiry: string | null;
-  premiumPurchaseDate: string | null;
-}
 
 export default function PremiumPage() {
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({
@@ -29,81 +25,107 @@ export default function PremiumPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    const checkPremiumStatus = async (
+      authToken: string,
+      userIdParam: string
+    ) => {
+      try {
+        const status = await PremiumPaymentService.checkPremiumStatus(
+          authToken,
+          userIdParam
+        );
+        setPremiumStatus(status);
+      } catch (error) {
+        console.error("Error checking premium status:", error);
+
+        if (error instanceof PremiumPaymentError && error.statusCode === 401) {
+          alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }
+
+        console.error("Error checking premium status:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     // Check if user is logged in and get userId from localStorage
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const storedToken = localStorage.getItem("token");
+    if (!storedToken) {
       window.location.href = "/login";
       return;
     }
 
     const storedId = localStorage.getItem("userId");
     if (storedId) {
+      setToken(storedToken);
       setUserId(storedId);
-      checkPremiumStatus(storedId);
+      checkPremiumStatus(storedToken, storedId);
+
+      // Check for pending payments using the service
+      const pendingPayment = PremiumPaymentService.getPendingPayment();
+      if (pendingPayment) {
+        // Check payment status after 3 seconds and clear pending payment
+        setTimeout(() => {
+          checkPremiumStatus(storedToken, storedId);
+          PremiumPaymentService.clearPendingPayment();
+        }, 3000);
+      }
     }
   }, []);
 
-  const checkPremiumStatus = async (userIdParam: string) => {
-    try {
-      const response = await fetch(
-        `${BASEURL}/api/premium/status/${userIdParam}`
-      );
-      const data = await response.json();
-
-      if (data.success) {
-        setPremiumStatus({
-          isPremium: data.isPremium,
-          premiumExpiry: data.premiumExpiry,
-          premiumPurchaseDate: data.premiumPurchaseDate,
-        });
-      }
-    } catch (error) {
-      console.error("Error checking premium status:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handlePurchase = async (amount: number) => {
     setIsPurchasing(true);
+
     try {
-      if (!userId) {
+      if (!userId || !token) {
         alert("Vui lòng đăng nhập để mua gói Premium");
         return;
       }
 
-      // Use VNPay payment only
-      const response = await fetch(`${BASEURL}/api/premium/vnpay/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          amount,
-          language: "vn",
-        }),
+      // Using the new purchase service with better error handling
+      const response = await PremiumPaymentService.purchaseWithVNPay(token, {
+        userId,
+        amount,
+        bankCode: "NCB",
+        locale: "vn",
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Add error handling for potential VNPay page issues
-        try {
-          // Redirect to VNPay payment page
-          window.location.href = data.paymentUrl;
-        } catch (redirectError) {
-          console.error("Error redirecting to VNPay:", redirectError);
-          alert("Có lỗi khi chuyển đến trang thanh toán. Vui lòng thử lại.");
+      if (response.success && response.paymentUrl) {
+        // Store pending payment info
+        if (response.orderId) {
+          PremiumPaymentService.storePendingPayment(response.orderId, amount);
         }
+
+        // Inform user about redirection
+        alert("Chuyển hướng đến trang thanh toán VNPay...");
+
+        // Redirect to VNPay payment page
+        setTimeout(() => {
+          window.location.href = response.paymentUrl!;
+        }, 1000);
       } else {
-        alert("Không thể tạo thanh toán: " + data.message);
+        alert(response.message || "Không thể khởi tạo thanh toán VNPay");
       }
     } catch (error) {
-      console.error("Error purchasing premium:", error);
-      alert("Không thể thực hiện thanh toán. Vui lòng thử lại.");
+      let errorMessage = "Có lỗi xảy ra khi xử lý thanh toán";
+
+      if (error instanceof PremiumPaymentError) {
+        errorMessage = error.message;
+
+        if (error.statusCode === 401) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }
+      }
+
+      alert("Lỗi thanh toán: " + errorMessage);
     } finally {
       setIsPurchasing(false);
     }
