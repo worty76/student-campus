@@ -295,7 +295,7 @@ const HomePage = () => {
     ...newPost,
     _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
     userId: userId || "",
- 
+    userInfo: userInfoObj,
     createdAt: newPost.createdAt || now,
     likes: newPost.likes || [],
     comments: newPost.comments || [],

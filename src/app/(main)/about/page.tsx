@@ -2,7 +2,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import NavigationBar from "@/app/(main)/layouts/navbar";
-import Image from "next/image";
+
 
 const AboutPage = () => {
   const router = useRouter();

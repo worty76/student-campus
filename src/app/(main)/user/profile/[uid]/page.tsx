@@ -419,7 +419,7 @@ const UserProfilePage = () => {
                       <RenderPost
                         key={post._id}
                         post={post}
-                        userData={post.userInfo}
+                       
                         onDelete={() => getUserPost()}
                       />
                     ))

@@ -764,7 +764,7 @@ const RenderPost: React.FC<RenderPostProps> = ({
                     try {
                       const parsed = JSON.parse(currentUserData);
                       return parsed.avatar_link || "/schoolimg.jpg";
-                    } catch (e) {
+                    } catch {
                       return "/schoolimg.jpg";
                     }
                   }

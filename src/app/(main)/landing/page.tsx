@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AdBanner from "@/components/AdBanner";
+
 
 export default function Home() {
   return (
@@ -59,11 +59,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Ad Banner */}
-      <div className="relative z-10 px-12 py-4">
-        <AdBanner />
-      </div>
-
+     
       {/* StudentShare Features Section */}
       <div className="relative z-10 px-12 pb-16 bg-blue-50 bg-opacity-95 shadow-lg">
         {/* Section Header */}

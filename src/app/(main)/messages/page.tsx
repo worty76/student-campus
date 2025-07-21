@@ -1296,7 +1296,7 @@ export default function MessagesPage() {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedChat?._id]); // Chỉ trigger khi chọn chat khác
+  }, [selectedChat]); // Include selectedChat in dependencies
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-[#F1F1E6]">

@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BASEURL } from "@/app/constants/url";
@@ -35,8 +35,8 @@ interface Post {
     };
   }>;
   createdAt: string;
-  likes: any[];
-  comments: any[];
+  likes: string[];
+  comments: string[];
 }
 
 export default function PostManagement() {
@@ -49,10 +49,6 @@ export default function PostManagement() {
   useEffect(() => {
     fetchPosts();
   }, []);
-
-  useEffect(() => {
-    filterPosts();
-  }, [posts, searchTerm, filterType]);
 
   const fetchPosts = async () => {
     try {
@@ -69,7 +65,7 @@ export default function PostManagement() {
     }
   };
 
-  const filterPosts = () => {
+  const filterPosts = useCallback(() => {
     let filtered = posts;
 
     // Search filter
@@ -94,7 +90,11 @@ export default function PostManagement() {
     }
 
     setFilteredPosts(filtered);
-  };
+  }, [posts, searchTerm, filterType]);
+
+  useEffect(() => {
+    filterPosts();
+  }, [filterPosts]);
 
   const deletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {

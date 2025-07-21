@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,6 @@ import {
   TrendingUp, 
   Users, 
   CreditCard,
-  Calendar,
   Download,
   BarChart3,
   PieChart
@@ -55,12 +54,7 @@ export default function RevenueManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  useEffect(() => {
-    fetchRevenueData();
-    fetchTransactions();
-  }, [selectedPeriod]);
-
-  const fetchRevenueData = async () => {
+  const fetchRevenueData = useCallback(async () => {
     try {
       const response = await fetch(`${BASEURL}/api/premium/admin/revenue?period=${selectedPeriod}`);
       const data = await response.json();
@@ -73,9 +67,9 @@ export default function RevenueManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedPeriod]);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       const response = await fetch(`${BASEURL}/api/premium/admin/transactions`);
       const data = await response.json();
@@ -86,7 +80,12 @@ export default function RevenueManagement() {
     } catch (error) {
       console.error('Error fetching transactions:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchRevenueData();
+    fetchTransactions();
+  }, [fetchRevenueData, fetchTransactions]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {

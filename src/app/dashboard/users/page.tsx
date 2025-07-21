@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,10 +10,7 @@ import {
   Shield, 
   Crown, 
   Search,
-  Filter,
-  MoreVertical,
   Edit,
-  Trash2,
   Eye
 } from 'lucide-react';
 
@@ -42,10 +40,6 @@ export default function UserManagement() {
     fetchUsers();
   }, []);
 
-  useEffect(() => {
-    filterUsers();
-  }, [users, searchTerm, filterRole, filterPremium]);
-
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${BASEURL}/api/premium/admin/users`);
@@ -61,7 +55,7 @@ export default function UserManagement() {
     }
   };
 
-  const filterUsers = () => {
+  const filterUsers = useCallback(() => {
     let filtered = users;
 
     // Search filter
@@ -87,7 +81,11 @@ export default function UserManagement() {
     }
 
     setFilteredUsers(filtered);
-  };
+  }, [users, searchTerm, filterRole, filterPremium]);
+
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
@@ -233,7 +231,13 @@ export default function UserManagement() {
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                               {user.avatar_link ? (
-                                <img src={user.avatar_link} alt={user.username} className="w-10 h-10 rounded-full" />
+                                <Image 
+                                  src={user.avatar_link} 
+                                  alt={user.username} 
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 rounded-full object-cover" 
+                                />
                               ) : (
                                 <span className="text-gray-600 font-semibold">
                                   {user.username.charAt(0).toUpperCase()}

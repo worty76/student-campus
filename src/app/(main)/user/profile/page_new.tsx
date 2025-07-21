@@ -8,7 +8,6 @@ import Image from 'next/image';
 import axios from 'axios';
 import { BASEURL } from "@/app/constants/url";
 import { useRouter } from 'next/navigation';
-import RenderPost from '@/components/home/post';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import './profile.css';
 
