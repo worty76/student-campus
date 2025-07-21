@@ -212,9 +212,10 @@ const handleVNPayReturn = async (req, res) => {
 
       // Redirect to frontend success page instead of JSON response
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(
-        `${frontendUrl}/premium/payment-result?success=true&orderId=${orderId}&responseCode=${responseCode}`
-      );
+      const successUrl = `${frontendUrl}/premium/payment-result?success=true&orderId=${orderId}&responseCode=${responseCode}&amount=${amount}`;
+
+      console.log("Redirecting to success URL:", successUrl);
+      res.redirect(successUrl);
     } else {
       // Payment failed
       console.log("Payment failed with code:", responseCode);
@@ -230,11 +231,13 @@ const handleVNPayReturn = async (req, res) => {
 
       // Redirect to frontend failure page
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(
-        `${frontendUrl}/premium/payment-result?success=false&orderId=${orderId}&responseCode=${responseCode}&message=${encodeURIComponent(
-          vnpayService.getResponseMessage(responseCode)
-        )}`
-      );
+      const errorMessage = vnpayService.getResponseMessage(responseCode);
+      const failureUrl = `${frontendUrl}/premium/payment-result?success=false&orderId=${orderId}&responseCode=${responseCode}&message=${encodeURIComponent(
+        errorMessage
+      )}&amount=${amount}`;
+
+      console.log("Redirecting to failure URL:", failureUrl);
+      res.redirect(failureUrl);
     }
   } catch (error) {
     console.error("Error handling VNPay return:", error);
