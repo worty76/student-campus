@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
 
-export default function PaymentResultPage() {
+function PaymentResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [paymentStatus, setPaymentStatus] = useState("loading");
@@ -21,7 +21,7 @@ export default function PaymentResultPage() {
       try {
         // Get URL parameters directly
         const success = searchParams.get("success");
-        const orderId = searchParams.get("orderId");
+        // const orderId = searchParams.get("orderId");
         const responseCode = searchParams.get("responseCode");
         const message = searchParams.get("message");
 
@@ -154,5 +154,26 @@ export default function PaymentResultPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-blue-500 bg-blue-50 border-2">
+            <CardHeader className="text-center">
+              <Clock className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-spin" />
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                Đang tải...
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <PaymentResultContent />
+    </Suspense>
   );
 }

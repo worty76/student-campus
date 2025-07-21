@@ -666,7 +666,7 @@ const HomePage = () => {
                       animation: "fadeInUp 0.6s ease-out forwards",
                     }}
                   >
-                    <RenderPost post={post} userData={post.userInfo || ""} />
+                    <RenderPost post={post} />
                   </div>
                 ))
               )}
@@ -718,7 +718,6 @@ const HomePage = () => {
           </div>
 
           {/* Enhanced Right Sidebar - Ads (only for non-premium users) */}
-          {console.log("User Data:", userData)}
           {!userData?.isPremium && (
             <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
               <div className="fixed top-24 w-64 xl:w-72 right-[calc((100vw-1280px)/2)] xl:right-[calc((100vw-1408px)/2)] space-y-4">
