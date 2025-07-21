@@ -84,12 +84,10 @@ const sendVerification = async (req, res) => {
     return res.json({ message: "Verification code sent successfully", code });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        error: "Failed to send verification code",
-        details: error.message,
-      });
+    return res.status(500).json({
+      error: "Failed to send verification code",
+      details: error.message,
+    });
   }
 };
 const createAccount = async (req, res) => {
@@ -126,12 +124,10 @@ const createAccount = async (req, res) => {
     await result.save();
 
     if (result) {
-      return res
-        .status(201)
-        .json({
-          message: "Account created successfully",
-          userId: result.insertedId,
-        });
+      return res.status(201).json({
+        message: "Account created successfully",
+        userId: result.insertedId,
+      });
     } else {
       return res.status(500).json({ message: "Failed to create account" });
     }
@@ -618,13 +614,11 @@ const updatePrivacySettings = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Privacy settings updated",
-        settings: updatedUser,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Privacy settings updated",
+      settings: updatedUser,
+    });
   } catch (error) {
     res
       .status(500)

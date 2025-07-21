@@ -66,16 +66,17 @@ export default function PremiumPage() {
     }
   };
 
-  const handlePurchase = async (amount: number, paymentMethod: string) => {
+  const handlePurchase = async (amount: number) => {
     setIsPurchasing(true);
     try {
       if (!userId) {
-        alert("Please login to purchase premium");
+        alert("Vui lòng đăng nhập để mua gói Premium");
         return;
       }
 
+      // Use VNPay payment only
       const response = await fetch(
-        `${BASEURL}/api/premium/purchase`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/premium/vnpay/create`,
         {
           method: "POST",
           headers: {
@@ -84,7 +85,7 @@ export default function PremiumPage() {
           body: JSON.stringify({
             userId,
             amount,
-            paymentMethod,
+            language: "vn",
           }),
         }
       );
@@ -92,14 +93,14 @@ export default function PremiumPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert("Premium subscription purchased successfully!");
-        checkPremiumStatus(userId); // Refresh status
+        // Redirect to VNPay payment page
+        window.location.href = data.paymentUrl;
       } else {
-        alert("Failed to purchase premium: " + data.message);
+        alert("Không thể tạo thanh toán: " + data.message);
       }
     } catch (error) {
       console.error("Error purchasing premium:", error);
-      alert("Failed to purchase premium. Please try again.");
+      alert("Không thể thực hiện thanh toán. Vui lòng thử lại.");
     } finally {
       setIsPurchasing(false);
     }
@@ -213,8 +214,8 @@ export default function PremiumPage() {
                 Nâng cấp lên Premium
               </h2>
               <p className="text-[#1E293B]/70 max-w-2xl mx-auto">
-                Tận hưởng trải nghiệm không quảng cáo và mở khóa các tính năng độc quyền để
-                nâng cao hành trình học tập của bạn.
+                Tận hưởng trải nghiệm không quảng cáo và mở khóa các tính năng
+                độc quyền để nâng cao hành trình học tập của bạn.
               </p>
             </div>
           </div>
@@ -225,7 +226,9 @@ export default function PremiumPage() {
           {/* Free Plan */}
           <Card className="border-2 border-[#1E293B]/20 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <CardTitle className="text-center text-[#1E293B]">Gói Miễn phí</CardTitle>
+              <CardTitle className="text-center text-[#1E293B]">
+                Gói Miễn phí
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 bg-white">
               <div className="text-center pt-4">
@@ -235,7 +238,9 @@ export default function PremiumPage() {
               <ul className="space-y-3">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-[#1E293B]">Truy cập các tính năng cơ bản</span>
+                  <span className="text-[#1E293B]">
+                    Truy cập các tính năng cơ bản
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -268,17 +273,23 @@ export default function PremiumPage() {
             </CardHeader>
             <CardContent className="space-y-4 bg-white">
               <div className="text-center pt-4">
-                <span className="text-3xl font-bold text-[#1E293B]">₫99,000</span>
+                <span className="text-3xl font-bold text-[#1E293B]">
+                  ₫99,000
+                </span>
                 <span className="text-[#1E293B]/70">/tháng</span>
               </div>
               <ul className="space-y-3">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-[#1E293B]">Mọi thứ trong gói Miễn phí</span>
+                  <span className="text-[#1E293B]">
+                    Mọi thứ trong gói Miễn phí
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-[#1E293B]">Trải nghiệm không quảng cáo</span>
+                  <span className="text-[#1E293B]">
+                    Trải nghiệm không quảng cáo
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -296,8 +307,8 @@ export default function PremiumPage() {
               {!premiumStatus.isPremium && (
                 <div className="space-y-3 pt-4">
                   <Button
-                    className="w-full bg-[#0694FA] hover:bg-[#1E293B] text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => handlePurchase(99000, "momo")}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handlePurchase(99000)}
                     disabled={isPurchasing}
                   >
                     {isPurchasing ? (
@@ -308,12 +319,13 @@ export default function PremiumPage() {
                     ) : (
                       <div className="flex items-center">
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Mua Premium
+                        Thanh toán qua VNPay
                       </div>
                     )}
                   </Button>
-                  <p className="text-xs text-[#1E293B]/50 text-center">
-                    Thanh toán bảo mật qua MoMo, ZaloPay, hoặc Chuyển khoản ngân hàng
+                  <p className="text-xs text-gray-500 text-center">
+                    Thanh toán an toàn qua VNPay với thẻ ngân hàng, ATM hoặc QR
+                    Code
                   </p>
                 </div>
               )}
@@ -332,30 +344,37 @@ export default function PremiumPage() {
           <CardContent className="bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg text-[#1E293B]">Trải nghiệm không quảng cáo</h3>
+                <h3 className="font-semibold text-lg text-[#1E293B]">
+                  Trải nghiệm không quảng cáo
+                </h3>
                 <p className="text-[#1E293B]/70">
                   Tận hưởng môi trường học tập sạch sẽ, không bị phân tâm bởi
                   bất kỳ quảng cáo nào.
                 </p>
 
-                <h3 className="font-semibold text-lg text-[#1E293B]">Hỗ trợ ưu tiên</h3>
+                <h3 className="font-semibold text-lg text-[#1E293B]">
+                  Hỗ trợ ưu tiên
+                </h3>
                 <p className="text-[#1E293B]/70">
-                  Nhận được thời gian phản hồi nhanh hơn và hỗ trợ chuyên biệt cho bất kỳ
-                  vấn đề nào bạn gặp phải.
+                  Nhận được thời gian phản hồi nhanh hơn và hỗ trợ chuyên biệt
+                  cho bất kỳ vấn đề nào bạn gặp phải.
                 </p>
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg text-[#1E293B]">Tính năng nâng cao</h3>
+                <h3 className="font-semibold text-lg text-[#1E293B]">
+                  Tính năng nâng cao
+                </h3>
                 <p className="text-[#1E293B]/70">
-                  Truy cập các công cụ và tính năng premium giúp nâng cao
-                  trải nghiệm học tập của bạn.
+                  Truy cập các công cụ và tính năng premium giúp nâng cao trải
+                  nghiệm học tập của bạn.
                 </p>
 
-                <h3 className="font-semibold text-lg text-[#1E293B]">Nội dung độc quyền</h3>
+                <h3 className="font-semibold text-lg text-[#1E293B]">
+                  Nội dung độc quyền
+                </h3>
                 <p className="text-[#1E293B]/70">
-                  Truy cập sớm các tính năng mới và nội dung giáo dục
-                  độc quyền.
+                  Truy cập sớm các tính năng mới và nội dung giáo dục độc quyền.
                 </p>
               </div>
             </div>

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import NavigationBar from "@/app/(main)/layouts/navbar";
@@ -10,7 +9,6 @@ import Image from "next/image";
 import { BASEURL } from "@/app/constants/url";
 import axios from "axios";
 import RenderPost from "@/components/home/post";
-import PostUpdate from "@/components/home/postupdate";
 
 // TypeScript interfaces for the post data
 interface FileAttachment {
@@ -33,23 +31,21 @@ interface Post {
   userId: string;
   text: string;
   attachments: Attachment[];
-  userInfo: {
-    _id: string;
-    username: string;
-    avatar_link: string;
-  };
   createdAt: string;
   likes: string[];
+  userInfo: userInfo;
   comments: Comments[];
 }
 
 interface Comments {
-  userinfo: {
-    _id: string;
-    username: string;
-    avatar_link: string;
-  };
+  userinfo: userInfo;
   context: string;
+}
+
+interface userInfo {
+  _id: string;
+  username: string;
+  avatar_link: string;
 }
 
 interface friends {
@@ -82,9 +78,15 @@ interface UserGroup {
   tags: string[];
 }
 
+const userInfo = {
+  name: "Nguyễn Văn A",
+  avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+  email: "vana@student.edu.vn",
+  major: "Công nghệ thông tin",
+  year: "Năm 3",
+};
 
 const HomePage = () => {
-  const router = useRouter();
   const [postContent, setPostContent] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [userData, setUserData] = useState<UserdataProps | null>(null);
@@ -98,20 +100,6 @@ const HomePage = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
-
-  // State cho modal cập nhật bài viết
-  const [isEditPostModal, setIsEditPostModal] = useState(false);
-  const [editingPost, setEditingPost] = useState<{
-    _id: string;
-    userId: string;
-    content: string;
-    files: Attachment[];
-    userInfo: {
-      _id: string;
-      username: string;
-      avatar_link: string;
-    };
-  } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -272,65 +260,37 @@ const HomePage = () => {
   );
 
   // Hàm thêm post mới vào đầu danh sách
- const handleAddPost = (newPost: Post) => {
-  const now = new Date().toISOString();
-  const userDataLocal = localStorage.getItem("userdata");
-  let userInfoObj = {
-    _id: userId || "",
-    username: userData?.username || "User",
-    avatar_link: userData?.avatar_link || "/schoolimg.jpg",
-  };
-  if (userDataLocal) {
-    try {
-      const parsed = JSON.parse(userDataLocal);
-      userInfoObj = {
-        _id: parsed.id || userId || "",
-        username: parsed.username || userData?.username || "User",
-        avatar_link: parsed.avatar_link || userData?.avatar_link || "/schoolimg.jpg",
-      };
-    } catch {}
-  }
-
-  const postWithFullData: Post = {
-    ...newPost,
-    _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
-    userId: userId || "",
-    userInfo: userInfoObj,
-    createdAt: newPost.createdAt || now,
-    likes: newPost.likes || [],
-    comments: newPost.comments || [],
-    attachments: newPost.attachments || [],
-  };
-  setPosts((prev) => [postWithFullData, ...prev]);
-};
-
-  // Hàm xử lý mở modal edit post
-  const handleEditPost = (postData: {
-    _id: string;
-    userId: string;
-    content: string;
-    files: Attachment[];
-    userInfo: {
-      _id: string;
-      username: string;
-      avatar_link: string;
+  const handleAddPost = (newPost: Post) => {
+    const now = new Date().toISOString();
+    const userDataLocal = localStorage.getItem("userdata");
+    let userInfoObj = {
+      _id: userId || "",
+      username: userData?.username || "User",
+      avatar_link: userData?.avatar_link || "/schoolimg.jpg",
     };
-  }) => {
-    setEditingPost(postData);
-    setIsEditPostModal(true);
-  };
+    if (userDataLocal) {
+      try {
+        const parsed = JSON.parse(userDataLocal);
+        userInfoObj = {
+          _id: parsed.id || userId || "",
+          username: parsed.username || userData?.username || "User",
+          avatar_link:
+            parsed.avatar_link || userData?.avatar_link || "/schoolimg.jpg",
+        };
+      } catch {}
+    }
 
-  // Hàm xử lý đóng modal edit post
-  const handleCloseEditPost = () => {
-    setIsEditPostModal(false);
-    setEditingPost(null);
-    // Refresh lại danh sách posts sau khi edit
-    getpost(1, false);
-  };
-
-  // Hàm navigate đến trang community với group ID
-  const handleNavigateToGroup = (groupId: string) => {
-    router.push(`/community?groupId=${groupId}`);
+    const postWithFullData: Post = {
+      ...newPost,
+      _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
+      userId: userId || "",
+      userInfo: userInfoObj,
+      createdAt: newPost.createdAt || now,
+      likes: newPost.likes || [],
+      comments: newPost.comments || [],
+      attachments: newPost.attachments || [],
+    };
+    setPosts((prev) => [postWithFullData, ...prev]);
   };
 
   if (isInitialLoading) {
@@ -384,18 +344,19 @@ const HomePage = () => {
       <div className="flex justify-center w-full pt-20 px-2 sm:px-4">
         <div className="flex justify-center items-start gap-2 sm:gap-4 w-full max-w-7xl">
           {/* Left Sidebar - Enhanced User Info */}
-          <div className="hidden xl:block w-64 2xl:w-72 flex-shrink-0">
-            <div className="fixed top-24 w-64 2xl:w-72 left-2 xl:left-4 2xl:left-[calc((100vw-1280px)/2)] max-h-[calc(100vh-6rem)]">
+          <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
+            <div className="fixed top-24 w-64 xl:w-72 left-[calc((100vw-1280px)/2)] max-h-[calc(100vh-6rem)] xl:left-[calc((100vw-1408px)/2)]">
               {/* Enhanced User Profile Card */}
               <div className="bg-white rounded-2xl shadow-lg p-4 border border-[#1E293B]/10 w-full flex flex-col items-center mb-4 hover:shadow-xl transition-all duration-300">
                 <div className="relative group">
                   <div className="w-20 h-20 rounded-full bg-[#F1F1E6] mb-3 overflow-hidden flex items-center justify-center ring-4 ring-[#0694FA]/20 ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
                     <Image
                       src={userData?.avatar_link || "/schoolimg.jpg"}
-                      alt={userData?.username || "User Avatar"}
-                      width={80}
-                      height={80}
-                      quality={100}
+                      alt={userInfo.name}
+                      width={160}
+                      height={160}
+                      quality={95}
+                      priority
                       className="w-20 h-20 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
                       style={{ objectFit: "cover" }}
                       placeholder="blur"
@@ -408,10 +369,10 @@ const HomePage = () => {
 
                 <div className="text-center space-y-2">
                   <div className="font-bold text-lg text-[#1E293B]">
-                    {userData?.username}
+                    {userData?.username || userInfo.name}
                   </div>
                   <div className="text-xs text-[#0694FA] font-medium">
-                    {userData?.email }
+                    {userData?.email || userInfo.email}
                   </div>
                   <div className="flex items-center justify-center space-x-3 mt-3 text-xs text-[#1E293B]/70">
                     <div className="flex items-center space-x-1">
@@ -454,7 +415,6 @@ const HomePage = () => {
                         <li
                           key={group._id}
                           className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
-                          onClick={() => handleNavigateToGroup(group._id)}
                         >
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center space-x-2">
@@ -488,10 +448,7 @@ const HomePage = () => {
                   </h4>
                 </div>
                 <ul className="space-y-2 px-4 py-3">
-                  <li 
-                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
-                    onClick={() => router.push("/about/qa")}
-                  >
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         🗨️
@@ -501,23 +458,17 @@ const HomePage = () => {
                       </span>
                     </div>
                   </li>
-                  <li 
-                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
-                    onClick={() => router.push("/about/info")}
-                  >
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         📚
                       </span>
                       <span className="font-semibold text-[#1E293B] text-xs group-hover:text-[#0694FA]">
-                        Thông tin trang web
+                        Nhóm học tập
                       </span>
                     </div>
                   </li>
-                  <li 
-                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
-                    onClick={() => router.push("/about/career")}
-                  >
+                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         💼
@@ -540,10 +491,10 @@ const HomePage = () => {
                 <div className="relative flex-shrink-0">
                   <Image
                     src={userData?.avatar_link || "/schoolimg.jpg"}
-                    alt={userData?.username || "User Avatar"}
-                    width={48}
-                    height={48}
-                    quality={100}
+                    alt={userInfo.name}
+                    width={96}
+                    height={96}
+                    quality={95}
                     className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 sm:border-3 border-[#0694FA]/30 group-hover:border-[#0694FA] transition-colors duration-300 shadow-md"
                     style={{ objectFit: "cover" }}
                   />
@@ -715,10 +666,7 @@ const HomePage = () => {
                       animation: "fadeInUp 0.6s ease-out forwards",
                     }}
                   >
-                    <RenderPost 
-                      post={post} 
-                      onEdit={handleEditPost}
-                    />
+                    <RenderPost post={post} userData={post.userInfo || ""} />
                   </div>
                 ))
               )}
@@ -770,9 +718,10 @@ const HomePage = () => {
           </div>
 
           {/* Enhanced Right Sidebar - Ads (only for non-premium users) */}
+          {console.log("User Data:", userData)}
           {!userData?.isPremium && (
-            <div className="hidden xl:block w-64 2xl:w-72 flex-shrink-0">
-              <div className="fixed top-24 w-64 2xl:w-72 right-2 xl:right-4 2xl:right-[calc((100vw-1280px)/2)] space-y-4">
+            <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
+              <div className="fixed top-24 w-64 xl:w-72 right-[calc((100vw-1280px)/2)] xl:right-[calc((100vw-1408px)/2)] space-y-4">
                 {/* Quick Stats Card */}
                 <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300">
                   <h4 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2 text-sm">
@@ -824,8 +773,8 @@ const HomePage = () => {
 
           {/* Premium User - No Ads Message */}
           {userData?.isPremium && (
-            <div className="hidden xl:block w-64 2xl:w-72 flex-shrink-0">
-              <div className="fixed top-24 w-64 2xl:w-72 right-2 xl:right-4 2xl:right-[calc((100vw-1280px)/2)] space-y-4">
+            <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
+              <div className="fixed top-24 w-64 xl:w-72 right-[calc((100vw-1280px)/2)] xl:right-[calc((100vw-1408px)/2)] space-y-4">
                 {/* Quick Stats Card */}
                 <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300">
                   <h4 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2 text-sm">
@@ -901,29 +850,13 @@ const HomePage = () => {
       {/* Enhanced Post Add Modal */}
       {isAddmodalopen && userId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-2 sm:p-4">
-         
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <PostAdd
               _id={userId}
-              name={userData?.username || "User"}
-              avatar={userData?.avatar_link || "/schoolimg.jpg"}
+              name={userData?.username || userInfo.name}
+              avatar={userData?.avatar_link || userInfo.avatar}
               onClose={() => setisAddmodalopen(false)}
               onPostAdded={handleAddPost}
-            />
-     
-        </div>
-      )}
-
-      {/* Modal cập nhật bài viết */}
-      {isEditPostModal && editingPost && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-2 sm:p-4">
-          <div className="relative w-full max-w-4xl mx-auto my-4">
-            <PostUpdate
-              _id={editingPost._id}
-              userid={editingPost.userId}
-              content={editingPost.content}
-              files={editingPost.files}
-              userData={editingPost.userInfo}
-              onClose={handleCloseEditPost}
             />
           </div>
         </div>
@@ -933,7 +866,7 @@ const HomePage = () => {
       <div className="fixed left-0 bottom-0 w-full bg-[#0694FA] h-1 z-40 shadow-lg" />
 
       {/* Floating Action Button for Mobile */}
-      <div className="xl:hidden fixed bottom-6 right-4 z-50">
+      <div className="lg:hidden fixed bottom-6 right-4 z-50">
         <button
           onClick={() => setisAddmodalopen(true)}
           className="w-12 h-12 sm:w-14 sm:h-14 bg-[#0694FA] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center hover:scale-110 focus:ring-4 focus:ring-[#0694FA]/30 focus:outline-none hover:bg-[#1E293B]"

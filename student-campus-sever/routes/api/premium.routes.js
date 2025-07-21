@@ -3,7 +3,10 @@ const router = express.Router();
 const premiumController = require("../../controllers/premium.controller");
 
 // User premium routes
-router.post("/premium/purchase", premiumController.purchasePremium);
+router.post("/premium/purchase", premiumController.purchasePremium); // Legacy support
+router.post("/premium/vnpay/create", premiumController.createVNPayPayment);
+router.get("/premium/vnpay/return", premiumController.handleVNPayReturn);
+router.post("/premium/vnpay/ipn", premiumController.handleVNPayIPN);
 router.get("/premium/status/:userId", premiumController.checkPremiumStatus);
 
 // Admin routes
