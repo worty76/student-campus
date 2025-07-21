@@ -20,7 +20,7 @@ class VNPayService {
     const forwarded = req.headers["forwarded"];
 
     // Debug logging for production troubleshooting
-    console.log("IP Headers Debug:", {
+    console.log("VNPay IP Headers Debug:", {
       "x-forwarded-for": forwardedFor,
       "x-real-ip": realIp,
       "cf-connecting-ip": cfConnectingIp,
@@ -87,13 +87,13 @@ class VNPayService {
       const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
 
       if (ipv4Regex.test(clientIp) || ipv6Regex.test(clientIp)) {
-        console.log("Final selected IP address:", clientIp);
+        console.log("VNPay - Final selected IP address:", clientIp);
         return clientIp;
       }
     }
 
     // Default fallback for localhost/development
-    console.log("Final selected IP address: 127.0.0.1 (fallback)");
+    console.log("VNPay - Using fallback IP address: 127.0.0.1");
     return "127.0.0.1";
   }
 
@@ -125,13 +125,14 @@ class VNPayService {
       vnp_IpAddr: ipAddr || "127.0.0.1",
       vnp_CreateDate: createDate,
       vnp_ExpireDate: expireDate,
-      // Add custom parameter to help with JavaScript fixes
-      vnp_OrderInfo: `${orderDescription} - UserID: ${userId} - FixJS: enabled`,
     };
 
     if (bankCode) {
       vnp_Params["vnp_BankCode"] = bankCode;
     }
+
+    // Add custom field for userId
+    vnp_Params["vnp_OrderInfo"] = `${orderDescription} - UserID: ${userId}`;
 
     // Sort parameters
     vnp_Params = this.sortObject(vnp_Params);
@@ -143,14 +144,9 @@ class VNPayService {
     vnp_Params["vnp_SecureHash"] = signed;
 
     // Create payment URL
-    const baseUrl =
-      this.vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
-
-    // Add additional parameters that might help with VNPay's JavaScript issues
-    // These don't affect the payment but might help with their frontend
-    const enhancedUrl = baseUrl + "&timer_fix=1&js_enhanced=true";
-
-    return enhancedUrl;
+    return (
+      this.vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false })
+    );
   }
 
   // Verify return data
