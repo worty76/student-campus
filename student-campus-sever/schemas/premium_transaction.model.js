@@ -21,14 +21,7 @@ const premiumTransactionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: [
-      "pending",
-      "completed",
-      "failed",
-      "refunded",
-      "cancelled",
-      "expired",
-    ],
+    enum: ["pending", "completed", "failed", "refunded"],
     default: "pending",
   },
   paymentMethod: {
