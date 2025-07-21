@@ -75,20 +75,17 @@ export default function PremiumPage() {
       }
 
       // Use VNPay payment only
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/premium/vnpay/create`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            amount,
-            language: "vn",
-          }),
-        }
-      );
+      const response = await fetch(`${BASEURL}/api/premium/vnpay/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          amount,
+          language: "vn",
+        }),
+      });
 
       const data = await response.json();
 
