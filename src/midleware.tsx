@@ -14,6 +14,11 @@ const protectedPaths = [
   "/notifications",
   "/post",
   "/user",
+  "/premium",
+];
+const adminPaths = [
+  "/dashboard",
+  "/admin",
 ];
 
 function isJWTExpired(token: string) {
@@ -39,6 +44,17 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Check for admin routes
+  if (adminPaths.some(path => pathname.startsWith(path))) {
+    const token = request.cookies.get("token")?.value;
+    if (!token || isJWTExpired(token)) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    
+    // Additional admin role check would be done on the server side
+    // This is just a basic protection for the route
+  }
+
   return NextResponse.next();
 }
 
@@ -55,5 +71,8 @@ export const config = {
     "/notifications/:path*",
     "/post/:path*",
     "/user/:path*",
+    "/premium/:path*",
+    "/dashboard/:path*",
+    "/admin/:path*",
   ],
 };

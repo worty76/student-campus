@@ -8,7 +8,6 @@ import Image from 'next/image';
 import axios from 'axios';
 import { BASEURL } from "@/app/constants/url";
 import { useRouter } from 'next/navigation';
-import RenderPost from '@/components/home/post';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import './profile.css';
 
@@ -594,11 +593,7 @@ const UserProfilePage = () => {
                           animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
                         }}
                       >
-                        <RenderPost
-                          post={post}
-                          userData={post.userInfo || ' '}
-                          onDelete={getUserPost}
-                        />
+                        
                       </div>
                     ))}
                   </>

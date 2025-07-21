@@ -1,8 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
+
+
 export default function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden ">
@@ -58,6 +59,7 @@ export default function Home() {
         </div>
       </div>
 
+     
       {/* StudentShare Features Section */}
       <div className="relative z-10 px-12 pb-16 bg-blue-50 bg-opacity-95 shadow-lg">
         {/* Section Header */}

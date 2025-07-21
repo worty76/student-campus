@@ -201,12 +201,10 @@ const PostAdd: React.FC<PostAddProps> = ({
   const isPostEnabled = (content.trim() || files.length > 0) && !isLoading;
 
   return (
-    <div className="bg-white top-[5vh] rounded-2xl w-full max-w-xl mx-auto p-0 relative shadow-2xl">
+    <div className="bg-white rounded-2xl w-full max-w-xl mx-auto p-0 relative shadow-2xl">
       {/* Header */}
       <div className="flex items-center justify-between px-8 pt-7 pb-3 border-b border-blue-100">
-        <span className="text-xl font-bold text-blue-900">
-          Tạo bài viết
-        </span>
+        <span className="text-xl font-bold text-blue-900">Tạo bài viết</span>
         <button
           onClick={onClose}
           className="text-blue-400 hover:text-blue-600 p-2 rounded-full hover:bg-blue-50"
@@ -219,7 +217,7 @@ const PostAdd: React.FC<PostAddProps> = ({
       {/* User info */}
       <div className="flex items-center gap-4 px-8 pt-6">
         <Image
-          src={avatar || "/api/placeholder/40/40"}
+          src={avatar || "public/schoolimg.jpg"}
           alt="avatar"
           className="w-12 h-12 rounded-full object-cover bg-blue-100"
           width={96}

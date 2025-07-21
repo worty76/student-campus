@@ -198,9 +198,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Main container */}
-      <div className="flex w-[95vw] md:w-[90vw] max-w-[1200px] h-[85vh] md:h-[80vh] max-h-[800px] bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden z-10 border border-white/20">
-        {/* Left - Image and text */}
-        <div className="hidden md:flex w-1/2 h-full relative flex-col justify-end">
+      <div className="flex flex-col lg:flex-row w-[95vw] md:w-[90vw] max-w-[1200px] h-[95vh] md:h-[85vh] lg:h-[80vh] max-h-[900px] lg:max-h-[800px] bg-white/95 backdrop-blur-sm rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden z-10 border border-white/20">
+        {/* Left - Image and text - Hidden on mobile */}
+        <div className="hidden lg:flex w-1/2 h-full relative flex-col justify-end">
           <Image
             src="/authbgimg.avif"
             alt="Beach"
@@ -241,12 +241,20 @@ export default function RegisterPage() {
           </div>
         </div>
         
+        {/* Mobile Header - Only shown on mobile */}
+        <div className="lg:hidden w-full bg-gradient-to-r from-cyan-400 to-cyan-600 p-4 pt-12">
+          <div className="text-center text-white">
+            <h1 className="text-xl font-bold mb-1">Tham gia cộng đồng học tập</h1>
+            <p className="text-white/90 text-sm">Tạo tài khoản để bắt đầu sử dụng</p>
+          </div>
+        </div>
+        
         {/* Right - Register form */}
-        <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-[#F1F1E6] relative">
-          <div className="flex flex-col items-center justify-center w-full h-full px-6 md:px-8 py-6 overflow-y-auto">
-            <div className="w-full max-w-sm mx-auto">
-              {/* Header */}
-              <div className="text-center mb-6">
+        <div className="w-full lg:w-1/2 h-full flex items-center justify-center bg-[#F1F1E6] relative flex-1 min-h-0 mobile-form-container safe-area-padding hide-scrollbar">
+          <div className="flex flex-col items-center justify-center w-full h-full px-4 lg:px-6 xl:px-8 py-4 lg:py-6 overflow-y-auto hide-scrollbar">
+            <div className="w-full max-w-xs lg:max-w-sm mx-auto">
+              {/* Header - Hidden on mobile (shown in mobile header above) */}
+              <div className="text-center mb-4 lg:mb-6 hidden lg:block">
                 <div className="relative inline-block mb-4">
                   <Image
                     src="/schoolimg.jpg"
@@ -261,7 +269,20 @@ export default function RegisterPage() {
                 </h2>
                 <p className="text-gray-600 text-sm">Tạo tài khoản để bắt đầu sử dụng</p>
               </div>
-            <form onSubmit={handleSendVerification} className="space-y-4 w-full max-w-sm mx-auto">
+              
+              {/* Mobile avatar - Only shown on mobile */}
+              <div className="text-center mb-4 lg:hidden">
+                <div className="relative inline-block">
+                  <Image
+                    src="/schoolimg.jpg"
+                    alt="School Avatar"
+                    width={80}
+                    height={80}
+                    className="h-12 w-12 object-cover rounded-full shadow-lg border-2 border-white"
+                  />
+                </div>
+              </div>
+            <form onSubmit={handleSendVerification} className="space-y-3 lg:space-y-4 w-full max-w-xs lg:max-w-sm mx-auto">
               <div className="w-full">
                 <Input
                   type="text"
@@ -274,7 +295,7 @@ export default function RegisterPage() {
                     setNameError(error);
                   }}
                   required
-                  className={`w-full ${nameError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
+                  className={`w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl mobile-input mobile-text ${nameError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
                 />
                 {nameError && (
                   <p className="text-red-500 text-xs mt-1 ml-1">{nameError}</p>
@@ -293,7 +314,7 @@ export default function RegisterPage() {
                     setEmailError(error);
                   }}
                   required
-                  className={`w-full ${emailError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
+                  className={`w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl mobile-input mobile-text ${emailError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
                 />
                 {emailError && (
                   <p className="text-red-500 text-xs mt-1 ml-1">{emailError}</p>
@@ -318,7 +339,7 @@ export default function RegisterPage() {
                     }
                   }}
                   required
-                  className={`pr-10 w-full ${passwordError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
+                  className={`pr-10 w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl mobile-input mobile-text ${passwordError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
                 />
                 <button
                   type="button"
@@ -326,11 +347,11 @@ export default function RegisterPage() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m-2.122-2.122l4.242 4.242M12 12l2.878 2.878-2.878-2.878zm0 0L9.122 9.122 12 12z" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -356,7 +377,7 @@ export default function RegisterPage() {
                     }
                   }}
                   required
-                  className={`pr-10 w-full ${confirmPasswordError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
+                  className={`pr-10 w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl ${confirmPasswordError ? 'border-red-500 focus:border-red-500' : 'focus:border-cyan-500'}`}
                 />
                 <button
                   type="button"
@@ -364,11 +385,11 @@ export default function RegisterPage() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showConfirmPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m-2.122-2.122l4.242 4.242M12 12l2.878 2.878-2.878-2.878zm0 0L9.122 9.122 12 12z" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -381,7 +402,7 @@ export default function RegisterPage() {
               {/* Faculty select */}
               <div className="w-full">
                 <Select value={faculty} onValueChange={setFaculty} required>
-                  <SelectTrigger className={`w-full ${!faculty ? 'text-gray-500' : ''} focus:border-cyan-500`}>
+                  <SelectTrigger className={`w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl ${!faculty ? 'text-gray-500' : ''} focus:border-cyan-500`}>
                     <SelectValue placeholder="Chọn Khoa" />
                   </SelectTrigger>
                   <SelectContent>
@@ -416,7 +437,7 @@ export default function RegisterPage() {
               {/* Major select */}
               <div className="w-full">
                 <Select value={major} onValueChange={setMajor} required>
-                  <SelectTrigger className={`w-full ${!major ? 'text-gray-500' : ''} focus:border-cyan-500`}>
+                  <SelectTrigger className={`w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl ${!major ? 'text-gray-500' : ''} focus:border-cyan-500`}>
                     <SelectValue placeholder="Chọn Chuyên ngành" />
                   </SelectTrigger>
                   <SelectContent>
@@ -451,33 +472,21 @@ export default function RegisterPage() {
               {/* Year select */}
               <div className="w-full">
                 <Select value={year} onValueChange={setYear} required>
-                  <SelectTrigger className={`w-full ${!year ? 'text-gray-500' : ''} focus:border-cyan-500`}>
+                  <SelectTrigger className={`w-full h-10 lg:h-11 text-sm lg:text-base rounded-lg lg:rounded-xl ${!year ? 'text-gray-500' : ''} focus:border-cyan-500`}>
                     <SelectValue placeholder="Chọn Năm học" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="First Year">
-                      <div className="flex items-center justify-between w-full">
-                        <span>Năm thứ nhất</span>
-                        <span className="text-xs text-gray-500">K18</span>
-                      </div>
+                      <span>First Year</span>
                     </SelectItem>
                     <SelectItem value="Second Year">
-                      <div className="flex items-center justify-between w-full">
-                        <span>Năm thứ hai</span>
-                        <span className="text-xs text-gray-500">K17</span>
-                      </div>
+                      <span>Second Year</span>
                     </SelectItem>
                     <SelectItem value="Third Year">
-                      <div className="flex items-center justify-between w-full">
-                        <span>Năm thứ ba</span>
-                        <span className="text-xs text-gray-500">K16</span>
-                      </div>
+                      <span>Third Year</span>
                     </SelectItem>
                     <SelectItem value="Fourth Year">
-                      <div className="flex items-center justify-between w-full">
-                        <span>Năm thứ tư</span>
-                        <span className="text-xs text-gray-500">K15</span>
-                      </div>
+                      <span>Fourth Year</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -486,7 +495,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={!isFormValid() || isRegistering}
-                className={`w-full py-3 rounded-full font-medium shadow-lg transition-all duration-300 transform ${
+                className={`w-full py-2.5 lg:py-3 rounded-lg lg:rounded-full font-medium shadow-lg transition-all duration-300 transform text-sm lg:text-base ${
                   isFormValid() && !isRegistering
                     ? 'bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-500 hover:to-cyan-700 hover:scale-105 text-white'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -494,7 +503,7 @@ export default function RegisterPage() {
               >
                 {isRegistering ? (
                   <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 lg:h-5 lg:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -507,13 +516,13 @@ export default function RegisterPage() {
             </form>
             
             {/* Footer */}
-            <div className="mt-6 text-center w-full">
-              <div className="flex items-center justify-center mb-4">
+            <div className="mt-4 lg:mt-6 text-center w-full">
+              <div className="flex items-center justify-center mb-3 lg:mb-4">
                 <div className="flex-1 border-t border-gray-300"></div>
-                <span className="px-4 text-sm text-gray-500">hoặc</span>
+                <span className="px-4 text-xs lg:text-sm text-gray-500">hoặc</span>
                 <div className="flex-1 border-t border-gray-300"></div>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs lg:text-sm">
                 Đã có tài khoản?{" "}
                 <button
                   type="button"

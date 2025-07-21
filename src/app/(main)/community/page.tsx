@@ -569,7 +569,9 @@ const getUsersGroupData = async () => {
                                                     className="animate-in slide-in-from-bottom duration-300"
                                                     style={{ animationDelay: `${index * 100}ms` }}
                                                 >
-                                                    <RenderPost post={post} userData={post.userInfo || null} />
+                                                    {post.userInfo && (
+                                                        <RenderPost post={{...post, userInfo: post.userInfo}} />
+                                                    )}
                                                 </div>
                                             ))
                                         )}

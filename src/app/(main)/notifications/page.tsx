@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { Bell, Users, Heart, MessageCircle, UserPlus } from "lucide-react";
 import NavigationBar from "@/app/(main)/layouts/navbar";
@@ -6,7 +6,14 @@ import Image from "next/image";
 import axios from "axios";
 import { BASEURL } from "@/app/constants/url";
 import { useWebSocket } from "@/app/context/websocket.contex";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
 
 interface NotificationAPI {
@@ -25,7 +32,21 @@ interface NotificationAPI {
 }
 
 interface WebSocketMessage {
-  type: 'init' |'file_to' |'friend_request' | 'message' | 'accept_request' |'deny_request'| 'likes_post'| 'unlike_post' | 'Comment'|'online_friend' | 'text_to'| 'create_group' | 'leave_group'| 'add_to_group';
+  type:
+    | "init"
+    | "file_to"
+    | "friend_request"
+    | "message"
+    | "accept_request"
+    | "deny_request"
+    | "likes_post"
+    | "unlike_post"
+    | "Comment"
+    | "online_friend"
+    | "text_to"
+    | "create_group"
+    | "leave_group"
+    | "add_to_group";
   from?: string;
   to?: string;
   message?: string;
@@ -63,7 +84,6 @@ interface Friends {
 
 // Enhanced icon mapping with more notification types
 const getIconByType = (type: string) => {
-
   switch (type) {
     case "likes_post":
       return <Heart className="text-pink-500 w-full h-full" />;
@@ -85,7 +105,7 @@ function formatTime(isoString: string) {
   const date = new Date(isoString);
   const now = new Date();
   const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diff < 60) return `${diff} giây trước`;
   if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
@@ -94,88 +114,97 @@ function formatTime(isoString: string) {
   return `${Math.floor(diff / 2592000)} tháng trước`;
 }
 
+const NotificationItem = React.memo(
+  ({
+    notification,
+    markAsRead,
+  }: {
+    notification: NotificationAPI;
+    markAsRead: (id: string) => void;
+  }) => {
+    const router = useRouter();
 
-const NotificationItem = React.memo(({ 
-  notification, 
-  markAsRead 
-}: { 
-  notification: NotificationAPI; 
-  markAsRead: (id: string) => void;
-}) => {
-  const router = useRouter();
+    const handleClick = useCallback(() => {
+      if (notification.status === "unread") {
+        markAsRead(notification._id);
+      }
+      if (notification.post) {
+        router.push(`/post/${notification.post}`);
+      }
+    }, [
+      notification._id,
+      notification.status,
+      notification.post,
+      markAsRead,
+      router,
+    ]);
 
-  const handleClick = useCallback(() => {
-    if (notification.status === "unread") {
-      markAsRead(notification._id);
-    }
-    if (notification.post) {
-      router.push(`/post/${notification.post}`);
-    }
-  }, [notification._id, notification.status, notification.post, markAsRead, router]);
-
-  return (
-    <div
-      className={`flex items-start gap-2 sm:gap-4 py-3 sm:py-4 px-3 sm:px-6 border-b border-gray-100 last:border-b-0 relative group cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
-        notification.status === "unread" 
-          ? "bg-[#F5F9FF] hover:bg-[#F5F9FF]/80 border-l-4 border-l-[#0694FA]" 
-          : "hover:bg-gray-50"
-      }`}
-      onClick={handleClick}
-      title={notification.status === "unread" ? "Đánh dấu đã đọc" : ""}
-    >
-      <div className="relative group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
-        <div className="relative">
-          <Image
-            src={notification.senderId.avatar_link || "/schoolimg.jpg"}
-            alt={notification.senderId.username}
-            width={48}
-            height={48}
-            className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-white shadow-lg"
-          />
-          <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-white rounded-full p-1 sm:p-1.5 shadow-lg">
-            <div className="w-3 h-3 sm:w-5 sm:h-5">
-              {getIconByType(notification.type)}
+    return (
+      <div
+        className={`flex items-start gap-2 sm:gap-4 py-3 sm:py-4 px-3 sm:px-6 border-b border-gray-100 last:border-b-0 relative group cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
+          notification.status === "unread"
+            ? "bg-[#F5F9FF] hover:bg-[#F5F9FF]/80 border-l-4 border-l-[#0694FA]"
+            : "hover:bg-gray-50"
+        }`}
+        onClick={handleClick}
+        title={notification.status === "unread" ? "Đánh dấu đã đọc" : ""}
+      >
+        <div className="relative group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
+          <div className="relative">
+            <Image
+              src={notification.senderId.avatar_link || "/schoolimg.jpg"}
+              alt={notification.senderId.username}
+              width={48}
+              height={48}
+              className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-white shadow-lg"
+            />
+            <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-white rounded-full p-1 sm:p-1.5 shadow-lg">
+              <div className="w-3 h-3 sm:w-5 sm:h-5">
+                {getIconByType(notification.type)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0 pr-2">
-            <div className="mb-1 sm:mb-2">
-              <span className="font-semibold text-[#1E293B] text-xs sm:text-sm">
-                {notification.senderId.username}
-              </span>
-              <p className="text-[#1E293B] text-xs sm:text-sm leading-4 sm:leading-5 mt-1">
-                {notification.context}
-              </p>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="mb-1 sm:mb-2">
+                <span className="font-semibold text-[#1E293B] text-xs sm:text-sm">
+                  {notification.senderId.username}
+                </span>
+                <p className="text-[#1E293B] text-xs sm:text-sm leading-4 sm:leading-5 mt-1">
+                  {notification.context}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-gray-500">
+                <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
+                  {formatTime(notification.createAt)}
+                </span>
+                {notification.post && (
+                  <span className="text-[#0694FA] font-medium text-xs">
+                    • Xem bài viết
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-gray-500">
-              <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
-                {formatTime(notification.createAt)}
-              </span>
-              {notification.post && (
-                <span className="text-[#0694FA] font-medium text-xs">• Xem bài viết</span>
-              )}
-            </div>
+
+            {notification.status === "unread" && (
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+                <span className="w-2 h-2 sm:w-3 sm:h-3 bg-[#0694FA] rounded-full animate-pulse shadow-lg"></span>
+                <span className="text-xs font-semibold text-[#0694FA] bg-[#F5F9FF] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                  Mới
+                </span>
+              </div>
+            )}
           </div>
-          
-          {notification.status === "unread" && (
-            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
-              <span className="w-2 h-2 sm:w-3 sm:h-3 bg-[#0694FA] rounded-full animate-pulse shadow-lg"></span>
-              <span className="text-xs font-semibold text-[#0694FA] bg-[#F5F9FF] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                Mới
-              </span>
-            </div>
-          )}
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
-NotificationItem.displayName = 'NotificationItem';
+NotificationItem.displayName = "NotificationItem";
 
 const PAGE_SIZE = 5;
 
@@ -185,7 +214,6 @@ const NotificationList = ({
   markAsRead,
   loading,
   page,
-  
 }: {
   notifications: NotificationAPI[];
   tab: "all" | "unread";
@@ -194,11 +222,10 @@ const NotificationList = ({
   page: number;
   setPage: (page: number) => void;
 }) => {
-  const filteredNotifications = notifications.filter((n) =>
-    tab === "all" || n.status === "unread"
+  const filteredNotifications = notifications.filter(
+    (n) => tab === "all" || n.status === "unread"
   );
 
- 
   const paginatedNotifications = filteredNotifications.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
@@ -263,7 +290,7 @@ const NotificationList = ({
             className="transform transition-all duration-300"
             style={{
               animationDelay: `${index * 100}ms`,
-              animation: 'slideInUp 0.5s ease-out forwards'
+              animation: "slideInUp 0.5s ease-out forwards",
             }}
           >
             <NotificationItem
@@ -289,67 +316,74 @@ const Notifications = () => {
 
   const { addMessageHandler } = useWebSocket();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [showResultDialog, setShowResultDialog] = useState<null | "success" | "error">(null);
+  const [showResultDialog, setShowResultDialog] = useState<
+    null | "success" | "error"
+  >(null);
 
-  const getUserNotifications = useCallback(async (reset = false) => {
-    if (loading) return; // Prevent multiple simultaneous requests
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const id = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-      
-      if (!id || !token) {
-        throw new Error("Authentication required");
-      }
+  const getUserNotifications = useCallback(
+    async (reset = false) => {
+      if (loading) return; // Prevent multiple simultaneous requests
 
-      const response = await axios.get(
-        `${BASEURL}/api/get/noti/${id}?skip=${reset ? 0 : skip}&limit=${LIMIT}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      setLoading(true);
+      setError(null);
+
+      try {
+        const id = localStorage.getItem("userId");
+        const token = localStorage.getItem("token");
+
+        if (!id || !token) {
+          throw new Error("Authentication required");
         }
-      );
 
-      const data = response.data;
-      // Nếu trả về 404 hoặc data không phải là mảng, coi như không có thông báo nào
-      if (!Array.isArray(data)) {
-        setNotifications([]);
-        setSkip(0);
-        setError(null);
-        return;
-      }
-      if (reset) {
-        setNotifications(data);
-        setSkip(LIMIT);
-      } else {
-        setNotifications((prev) => [...prev, ...data]);
-        setSkip((prev) => prev + LIMIT);
-      }
-      
+        const response = await axios.get(
+          `${BASEURL}/api/get/noti/${id}?skip=${
+            reset ? 0 : skip
+          }&limit=${LIMIT}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      
-  
-    } finally {
-      setLoading(false);
-    }
-  }, [skip, loading, LIMIT]);
+        const data = response.data;
+        // Nếu trả về 404 hoặc data không phải là mảng, coi như không có thông báo nào
+        if (!Array.isArray(data)) {
+          setNotifications([]);
+          setSkip(0);
+          setError(null);
+          return;
+        }
+        if (reset) {
+          setNotifications(data);
+          setSkip(LIMIT);
+        } else {
+          setNotifications((prev) => [...prev, ...data]);
+          setSkip((prev) => prev + LIMIT);
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [skip, loading, LIMIT]
+  );
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      await axios.put(`${BASEURL}/api/mark-as-read/${notificationId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.put(
+        `${BASEURL}/api/mark-as-read/${notificationId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setNotifications((prev) =>
         prev.map((n) =>
@@ -385,14 +419,20 @@ const Notifications = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const unreadNotifications = notifications.filter(n => n.status === "unread");
+      const unreadNotifications = notifications.filter(
+        (n) => n.status === "unread"
+      );
       if (unreadNotifications.length === 0) return;
 
       await Promise.all(
-        unreadNotifications.map(notification =>
-          axios.put(`${BASEURL}/api/mark-as-read/${notification._id}`, {}, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
+        unreadNotifications.map((notification) =>
+          axios.put(
+            `${BASEURL}/api/mark-as-read/${notification._id}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
         )
       );
 
@@ -404,20 +444,19 @@ const Notifications = () => {
     }
   }, [notifications]);
 
-    useEffect(() => {
-     const token = localStorage.getItem("token");
-     if (!token) {
-       window.location.href = "/login";
-     }
-    }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
 
-    const handleTabChange = useCallback((newTab: "all" | "unread") => {
-        setTab(newTab);
-        setSkip(0);
+  const handleTabChange = useCallback((newTab: "all" | "unread") => {
+    setTab(newTab);
+    setSkip(0);
 
-        setNotifications([]);
-    }, []);
-
+    setNotifications([]);
+  }, []);
 
   useEffect(() => {
     const handler = (message: WebSocketMessage) => {
@@ -440,7 +479,7 @@ const Notifications = () => {
     getUserNotifications(true);
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const unreadCount = notifications.filter(n => n.status === "unread").length;
+  const unreadCount = notifications.filter((n) => n.status === "unread").length;
 
   // Reset page when tab changes or notifications change
   useEffect(() => {
@@ -448,8 +487,8 @@ const Notifications = () => {
   }, [tab, notifications.length]);
 
   // Tính toán totalPages ở đây để truyền cho paginate bar
-  const filteredNotifications = notifications.filter((n) =>
-    tab === "all" || n.status === "unread"
+  const filteredNotifications = notifications.filter(
+    (n) => tab === "all" || n.status === "unread"
   );
   const totalPages = Math.ceil(filteredNotifications.length / PAGE_SIZE);
 
@@ -471,10 +510,9 @@ const Notifications = () => {
   return (
     <div className="min-h-screen bg-[#F1F1E6]">
       <NavigationBar />
-      
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8 pt-[8vh]">
+
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-[6vh]">
         {/* Header Section */}
-       
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -484,12 +522,16 @@ const Notifications = () => {
                 <Bell className="w-4 h-4 sm:w-6 sm:h-6 text-[#0694FA]" />
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-[#1E293B]">Tổng thông báo</p>
-                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{notifications.length}</p>
+                <p className="text-xs sm:text-sm text-[#1E293B]">
+                  Tổng thông báo
+                </p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">
+                  {notifications.length}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow border border-[#F5F9FF]">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-1.5 sm:p-2 bg-[#F5F9FF] rounded-lg">
@@ -497,11 +539,13 @@ const Notifications = () => {
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-[#1E293B]">Chưa đọc</p>
-                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{unreadCount}</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">
+                  {unreadCount}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow border border-[#F5F9FF]">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-1.5 sm:p-2 bg-[#F5F9FF] rounded-lg">
@@ -509,7 +553,9 @@ const Notifications = () => {
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-[#1E293B]">Đã đọc</p>
-                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">{notifications.length - unreadCount}</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#1E293B]">
+                  {notifications.length - unreadCount}
+                </p>
               </div>
             </div>
           </div>
@@ -549,16 +595,20 @@ const Notifications = () => {
                     <span className="flex items-center gap-1 sm:gap-2 justify-center">
                       <span className="hidden sm:inline">Chưa đọc</span>
                       <span className="sm:hidden">Chưa đọc</span>
-                      <span className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
-                        tab === "unread" ? "bg-[#F5F9FF] text-[#1E293B]" : "bg-[#F5F9FF] text-[#1E293B]"
-                      }`}>
+                      <span
+                        className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
+                          tab === "unread"
+                            ? "bg-[#F5F9FF] text-[#1E293B]"
+                            : "bg-[#F5F9FF] text-[#1E293B]"
+                        }`}
+                      >
                         {unreadCount}
                       </span>
                     </span>
                   </button>
                 </div>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-2">
                 {tab === "all" && (
                   <button
@@ -566,7 +616,9 @@ const Notifications = () => {
                     onClick={handleDeleteAllRead}
                   >
                     <span className="flex items-center gap-1 sm:gap-2 justify-center">
-                      <span className="hidden sm:inline">Xóa các tin đã đọc</span>
+                      <span className="hidden sm:inline">
+                        Xóa các tin đã đọc
+                      </span>
                       <span className="sm:hidden">Xóa đã đọc</span>
                     </span>
                   </button>
@@ -578,7 +630,9 @@ const Notifications = () => {
                   >
                     <span className="flex items-center gap-1 sm:gap-2 justify-center">
                       <Bell size={14} className="sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">Đánh dấu tất cả đã đọc</span>
+                      <span className="hidden sm:inline">
+                        Đánh dấu tất cả đã đọc
+                      </span>
                       <span className="sm:hidden">Đánh dấu đã đọc</span>
                     </span>
                   </button>
@@ -594,7 +648,9 @@ const Notifications = () => {
                 <div className="p-1 bg-[#F5F9FF] rounded-full mr-2 sm:mr-3">
                   <Bell className="w-3 h-3 sm:w-4 sm:h-4 text-[#0694FA]" />
                 </div>
-                <p className="text-[#1E293B] font-medium text-sm sm:text-base">{error}</p>
+                <p className="text-[#1E293B] font-medium text-sm sm:text-base">
+                  {error}
+                </p>
               </div>
             </div>
           )}
@@ -621,8 +677,8 @@ const Notifications = () => {
                       <PaginationPrevious
                         onClick={() => setPage(page > 1 ? page - 1 : 1)}
                         className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
-                          page === 1 
-                            ? "text-gray-400 cursor-not-allowed" 
+                          page === 1
+                            ? "text-gray-400 cursor-not-allowed"
                             : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
                         }`}
                       />
@@ -644,10 +700,12 @@ const Notifications = () => {
                     ))}
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+                        onClick={() =>
+                          setPage(page < totalPages ? page + 1 : totalPages)
+                        }
                         className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
-                          page === totalPages 
-                            ? "text-gray-400 cursor-not-allowed" 
+                          page === totalPages
+                            ? "text-gray-400 cursor-not-allowed"
                             : "text-[#0694FA] hover:bg-[#F5F9FF] hover:text-[#1E293B]"
                         }`}
                       />
@@ -659,7 +717,7 @@ const Notifications = () => {
           )}
         </div>
       </div>
-      
+
       {/* Confirm Delete Dialog */}
       {showConfirmDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
@@ -668,8 +726,12 @@ const Notifications = () => {
               <div className="flex justify-center mb-2">
                 <Bell className="text-[#0694FA]" size={28} />
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mb-2">Xác nhận xóa</h2>
-              <p className="text-[#1E293B] text-xs sm:text-sm">Bạn có chắc chắn muốn xóa tất cả thông báo đã đọc?</p>
+              <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mb-2">
+                Xác nhận xóa
+              </h2>
+              <p className="text-[#1E293B] text-xs sm:text-sm">
+                Bạn có chắc chắn muốn xóa tất cả thông báo đã đọc?
+              </p>
             </div>
             <div className="flex gap-2 mt-4 sm:mt-6">
               <button
@@ -694,10 +756,19 @@ const Notifications = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
           <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 max-w-xs sm:max-w-sm w-full border border-[#F5F9FF] text-center">
             <div className="flex justify-center mb-2">
-              <Bell className={showResultDialog === "success" ? "text-[#0694FA]" : "text-red-500"} size={28} />
+              <Bell
+                className={
+                  showResultDialog === "success"
+                    ? "text-[#0694FA]"
+                    : "text-red-500"
+                }
+                size={28}
+              />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mb-2">
-              {showResultDialog === "success" ? "Xóa thành công" : "Xóa không thành công"}
+              {showResultDialog === "success"
+                ? "Xóa thành công"
+                : "Xóa không thành công"}
             </h2>
             <p className="text-[#1E293B] text-xs sm:text-sm mb-4">
               {showResultDialog === "success"

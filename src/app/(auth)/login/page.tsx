@@ -168,10 +168,10 @@ export default function LoginPage() {
         <span className="text-lg md:text-xl font-bold text-[#0694FE] hidden sm:block">FPT University</span>
       </div>
 
-      {/* Main container with improved styling */}
-      <div className={`flex w-[92vw] max-w-[1200px] h-[75vh] max-h-[850px] bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden z-10 transition-all duration-700 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-        {/* Left - Image and text with enhanced design */}
-        <div className="w-1/2 h-full relative flex flex-col justify-end">
+      {/* Main container with improved styling and mobile responsiveness */}
+      <div className={`flex flex-col lg:flex-row w-[95vw] lg:w-[92vw] max-w-[1200px] h-[90vh] lg:h-[75vh] max-h-[900px] lg:max-h-[850px] bg-white/95 backdrop-blur-sm rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden z-10 transition-all duration-700 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        {/* Left - Image and text with enhanced design - Hidden on mobile, shown on desktop */}
+        <div className="hidden lg:flex w-1/2 h-full relative flex-col justify-end">
           <Image
             src="/authbgimg.avif"
             alt="Môi trường học thuật"
@@ -202,37 +202,45 @@ export default function LoginPage() {
           </div>
         </div>
         
+        {/* Mobile Header - Only shown on mobile */}
+        <div className="lg:hidden w-full bg-gradient-to-r from-[#0694FE] to-[#1E293B] p-6 pt-16">
+          <div className="text-center text-white">
+            <h1 className="text-2xl font-bold mb-2">Chào mừng trở lại</h1>
+            <p className="text-white/90 text-sm">Đăng nhập để tiếp tục học tập</p>
+          </div>
+        </div>
+        
         {/* Right - Login form with enhanced UX */}
-        <div className="w-1/2 flex items-center justify-center bg-[#F1F1E6] relative">
-          <div className="w-full max-w-[85%] px-8 py-8 flex flex-col items-center">
-            {/* Profile image with improved styling */}
-            <div className="relative mb-8 group">
+        <div className="w-full lg:w-1/2 flex items-center justify-center bg-[#F1F1E6] relative min-h-0 flex-1 mobile-form-container safe-area-padding hide-scrollbar">
+          <div className="w-full max-w-[90%] lg:max-w-[85%] px-4 lg:px-8 py-6 lg:py-8 flex flex-col items-center hide-scrollbar">
+            {/* Profile image with improved styling - Smaller on mobile */}
+            <div className="relative mb-6 lg:mb-8 group">
               <Image
                 src="/schoolimg.jpg"
                 width={120}
                 height={120}
                 alt="School Avatar"
-                className="h-[6vw] w-[6vw] min-h-[64px] min-w-[64px] max-h-[96px] max-w-[96px] object-cover rounded-full shadow-xl ring-4 ring-[#0694FE]/20 transition-all duration-300 group-hover:shadow-2xl group-hover:ring-[#0694FE]/30"
+                className="h-16 w-16 lg:h-[6vw] lg:w-[6vw] lg:min-h-[64px] lg:min-w-[64px] lg:max-h-[96px] lg:max-w-[96px] object-cover rounded-full shadow-xl ring-4 ring-[#0694FE]/20 transition-all duration-300 group-hover:shadow-2xl group-hover:ring-[#0694FE]/30"
               />
               <div className="absolute inset-0 rounded-full bg-[#0694FE]/10 group-hover:bg-[#0694FE]/20 transition-all duration-300" />
             </div>
             
-            <h2 className="text-[2.2vw] min-text-xl font-bold text-[#0694FE] mb-8">
+            <h2 className="text-xl lg:text-[2.2vw] lg:min-text-xl font-bold text-[#0694FE] mb-6 lg:mb-8 hidden lg:block">
               Chào mừng trở lại
             </h2>
             
-            <form onSubmit={handleLogin} className="space-y-6 w-full">
+            <form onSubmit={handleLogin} className="space-y-4 lg:space-y-6 w-full max-w-sm lg:max-w-none">
               {/* Enhanced email input */}
               <div className="space-y-2">
                 <div className="relative group">
-                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
+                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
                   <Input
                     type="email"
                     placeholder="Nhập email của bạn"
                     value={email}
                     onChange={handleEmailChange}
                     required
-                    className={`pl-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 ${emailError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
+                    className={`pl-10 lg:pl-11 h-11 lg:h-12 bg-white/80 border-2 rounded-lg lg:rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 mobile-input mobile-text ${emailError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
                   />
                 </div>
                 {emailError && (
@@ -243,14 +251,14 @@ export default function LoginPage() {
               {/* Enhanced password input */}
               <div className="space-y-2">
                 <div className="relative group">
-                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
+                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400 group-focus-within:text-[#0694FE] transition-colors duration-200" />
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={handlePasswordChange}
                     required
-                    className={`pl-11 pr-11 h-12 bg-white/80 border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 ${passwordError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
+                    className={`pl-10 lg:pl-11 pr-10 lg:pr-11 h-11 lg:h-12 bg-white/80 border-2 rounded-lg lg:rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[#0694FE]/20 focus:border-[#0694FE] hover:border-gray-300 mobile-input mobile-text ${passwordError ? 'border-red-400 focus:border-red-500' : 'border-gray-200'}`}
                   />
                   <button
                     type="button"
@@ -258,9 +266,9 @@ export default function LoginPage() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="w-5 h-5" />
+                      <EyeSlashIcon className="w-4 h-4 lg:w-5 lg:h-5" />
                     ) : (
-                      <EyeIcon className="w-5 h-5" />
+                      <EyeIcon className="w-4 h-4 lg:w-5 lg:h-5" />
                     )}
                   </button>
                 </div>
@@ -283,16 +291,16 @@ export default function LoginPage() {
               {/* Enhanced login button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-[#0694FE] hover:bg-[#1E293B] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full h-11 lg:h-12 bg-[#0694FE] hover:bg-[#1E293B] text-white font-semibold rounded-lg lg:rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={loadingLogin || !!emailError || !!passwordError}
               >
                 {loadingLogin ? (
                   <div className="flex items-center space-x-2">
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 lg:h-5 lg:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
-                    <span>Đang đăng nhập...</span>
+                    <span className="text-sm lg:text-base">Đang đăng nhập...</span>
                   </div>
                 ) : (
                   "Đăng nhập"
@@ -301,7 +309,7 @@ export default function LoginPage() {
             </form>
             
             {/* Divider with improved styling */}
-            <div className="my-8 text-center w-full">
+            <div className="my-6 lg:my-8 text-center w-full">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200"></div>
@@ -316,11 +324,11 @@ export default function LoginPage() {
             
             {/* Enhanced register link */}
             <div className="text-center w-full">
-              <span className="text-gray-600">Chưa có tài khoản? </span>
+              <span className="text-gray-600 text-sm lg:text-base">Chưa có tài khoản? </span>
                 <button
                 type="button"
                 onClick={() => router.push('/register')}
-                className="text-[#0694FE] hover:text-[#1E293B] font-semibold transition-colors duration-200 hover:underline"
+                className="text-[#0694FE] hover:text-[#1E293B] font-semibold transition-colors duration-200 hover:underline text-sm lg:text-base"
                 >
                 Tạo tài khoản
                 </button>
