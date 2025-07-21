@@ -90,8 +90,14 @@ export default function PremiumPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Redirect to VNPay payment page
-        window.location.href = data.paymentUrl;
+        // Add error handling for potential VNPay page issues
+        try {
+          // Redirect to VNPay payment page
+          window.location.href = data.paymentUrl;
+        } catch (redirectError) {
+          console.error("Error redirecting to VNPay:", redirectError);
+          alert("Có lỗi khi chuyển đến trang thanh toán. Vui lòng thử lại.");
+        }
       } else {
         alert("Không thể tạo thanh toán: " + data.message);
       }

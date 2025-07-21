@@ -21,10 +21,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Global error handler for uncaught JavaScript errors
+              window.addEventListener('error', function(e) {
+                if (e.message && e.message.includes('timer is not defined')) {
+                  console.warn('VNPay timer error caught and ignored:', e.message);
+                  e.preventDefault();
+                  return false;
+                }
+              });
+            `,
+          }}
+        />
+      </head>
       <body className={`${roboto.variable} font-sans antialiased`}>
-        <WebSocketProvider>
-          {children}
-        </WebSocketProvider>
+        <WebSocketProvider>{children}</WebSocketProvider>
       </body>
     </html>
   );
