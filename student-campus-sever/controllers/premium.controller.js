@@ -48,13 +48,9 @@ const createVNPayPayment = async (req, res) => {
 
     await transaction.save();
 
-    // Get client IP address
-    const ipAddr =
-      req.headers["x-forwarded-for"] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
-      "127.0.0.1";
+    // Extract real client IP address for production environments
+    const clientIpAddress = vnpayService.getClientIpAddress(req);
+    console.log("Client IP Address extracted:", clientIpAddress);
 
     // Create VNPay payment URL
     const paymentUrl = vnpayService.createPaymentUrl(
@@ -63,7 +59,8 @@ const createVNPayPayment = async (req, res) => {
       orderDescription,
       bankCode,
       language || "vn",
-      userId
+      userId,
+      clientIpAddress
     );
 
     console.log("Generated payment URL:", paymentUrl);
