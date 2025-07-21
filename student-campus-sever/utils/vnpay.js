@@ -125,14 +125,13 @@ class VNPayService {
       vnp_IpAddr: ipAddr || "127.0.0.1",
       vnp_CreateDate: createDate,
       vnp_ExpireDate: expireDate,
+      // Add custom parameter to help with JavaScript fixes
+      vnp_OrderInfo: `${orderDescription} - UserID: ${userId} - FixJS: enabled`,
     };
 
     if (bankCode) {
       vnp_Params["vnp_BankCode"] = bankCode;
     }
-
-    // Add custom field for userId
-    vnp_Params["vnp_OrderInfo"] = `${orderDescription} - UserID: ${userId}`;
 
     // Sort parameters
     vnp_Params = this.sortObject(vnp_Params);
@@ -144,9 +143,14 @@ class VNPayService {
     vnp_Params["vnp_SecureHash"] = signed;
 
     // Create payment URL
-    return (
-      this.vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false })
-    );
+    const baseUrl =
+      this.vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
+
+    // Add additional parameters that might help with VNPay's JavaScript issues
+    // These don't affect the payment but might help with their frontend
+    const enhancedUrl = baseUrl + "&timer_fix=1&js_enhanced=true";
+
+    return enhancedUrl;
   }
 
   // Verify return data

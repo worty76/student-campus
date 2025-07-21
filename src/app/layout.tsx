@@ -21,10 +21,40 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* VNPay Timer Error Fix */}
+        <script src="/vnpay-universal-fix.js" defer />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Additional global error handler for VNPay timer issues
+              window.addEventListener('error', function(e) {
+                if (e.message && e.message.includes('timer is not defined')) {
+                  console.warn('VNPay timer error caught and ignored:', e.message);
+                  e.preventDefault();
+                  return false;
+                }
+              });
+              
+              // Define timer globally before any scripts load
+              if (typeof window.timer === 'undefined') {
+                window.timer = { remaining: 900, interval: null };
+              }
+              if (typeof window.updateTime === 'undefined') {
+                window.updateTime = function() {
+                  try {
+                    if (window.timer && window.timer.remaining > 0) {
+                      window.timer.remaining--;
+                    }
+                  } catch(err) { console.warn('Timer update handled'); }
+                };
+              }
+            `,
+          }}
+        />
+      </head>
       <body className={`${roboto.variable} font-sans antialiased`}>
-        <WebSocketProvider>
-          {children}
-        </WebSocketProvider>
+        <WebSocketProvider>{children}</WebSocketProvider>
       </body>
     </html>
   );

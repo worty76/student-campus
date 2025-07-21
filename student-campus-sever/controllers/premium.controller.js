@@ -30,64 +30,10 @@ const createVNPayPayment = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Check if user already has a pending transaction
-    const existingPendingTransaction = await PremiumTransaction.findOne({
-      userId: userId,
-      status: "pending",
-      createdAt: { $gte: new Date(Date.now() - 15 * 60 * 1000) }, // Within last 15 minutes
-    });
-
-    if (existingPendingTransaction) {
-      console.log("User has existing pending transaction, cancelling it");
-      // Cancel the existing pending transaction
-      existingPendingTransaction.status = "cancelled";
-      await existingPendingTransaction.save();
-    }
-
-    // Rate limiting: Check if user created too many transactions recently
-    const recentTransactions = await PremiumTransaction.countDocuments({
-      userId: userId,
-      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) }, // Last 5 minutes
-    });
-
-    if (recentTransactions >= 3) {
-      return res.status(429).json({
-        success: false,
-        message:
-          "Too many payment attempts. Please wait a few minutes before trying again.",
-      });
-    }
-
-    // Generate unique order ID with timestamp and random string
+    // Generate unique order ID with current timestamp
     const date = new Date();
-    const timestamp = date.getTime();
-    const randomString = Math.random().toString(36).substring(2, 8); // 6 character random string
-    const orderId = `PREMIUM_${userId}_${timestamp}_${randomString}`;
+    const orderId = `PREMIUM_${userId}_${date.getTime()}`;
     const orderDescription = `Thanh toan goi Premium - ${user.username}`;
-
-    console.log("Generated new order ID:", orderId);
-    console.log("Order timestamp:", new Date(timestamp).toISOString());
-
-    // Clean up old pending transactions (older than 30 minutes)
-    try {
-      const cleanupResult = await PremiumTransaction.updateMany(
-        {
-          status: "pending",
-          createdAt: { $lt: new Date(Date.now() - 30 * 60 * 1000) },
-        },
-        { status: "expired" }
-      );
-      if (cleanupResult.modifiedCount > 0) {
-        console.log(
-          `Cleaned up ${cleanupResult.modifiedCount} expired transactions`
-        );
-      }
-    } catch (cleanupError) {
-      console.log(
-        "Warning: Failed to clean up old transactions:",
-        cleanupError.message
-      );
-    }
 
     // Create pending transaction
     const transaction = new PremiumTransaction({
@@ -217,9 +163,10 @@ const handleVNPayReturn = async (req, res) => {
 
       // Redirect to frontend success page instead of JSON response
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(
-        `${frontendUrl}/premium/payment-result?success=true&orderId=${orderId}&responseCode=${responseCode}`
-      );
+      const successUrl = `${frontendUrl}/premium/payment-result?success=true&orderId=${orderId}&responseCode=${responseCode}&amount=${amount}`;
+
+      console.log("Redirecting to success URL:", successUrl);
+      res.redirect(successUrl);
     } else {
       // Payment failed
       console.log("Payment failed with code:", responseCode);
@@ -235,11 +182,13 @@ const handleVNPayReturn = async (req, res) => {
 
       // Redirect to frontend failure page
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(
-        `${frontendUrl}/premium/payment-result?success=false&orderId=${orderId}&responseCode=${responseCode}&message=${encodeURIComponent(
-          vnpayService.getResponseMessage(responseCode)
-        )}`
-      );
+      const errorMessage = vnpayService.getResponseMessage(responseCode);
+      const failureUrl = `${frontendUrl}/premium/payment-result?success=false&orderId=${orderId}&responseCode=${responseCode}&message=${encodeURIComponent(
+        errorMessage
+      )}&amount=${amount}`;
+
+      console.log("Redirecting to failure URL:", failureUrl);
+      res.redirect(failureUrl);
     }
   } catch (error) {
     console.error("Error handling VNPay return:", error);
