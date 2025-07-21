@@ -102,6 +102,10 @@ const createVNPayPayment = async (req, res) => {
 
     await transaction.save();
 
+    // Extract real client IP address for production environments
+    const clientIpAddress = vnpayService.getClientIpAddress(req);
+    console.log("Client IP Address extracted:", clientIpAddress);
+
     // Create VNPay payment URL
     const paymentUrl = vnpayService.createPaymentUrl(
       orderId,
@@ -109,7 +113,8 @@ const createVNPayPayment = async (req, res) => {
       orderDescription,
       bankCode,
       language || "vn",
-      userId
+      userId,
+      clientIpAddress
     );
 
     console.log("Generated payment URL:", paymentUrl);

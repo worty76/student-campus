@@ -9,6 +9,94 @@ class VNPayService {
     this.vnp_ReturnUrl = process.env.VNP_RETURN_URL;
   }
 
+  // Extract real client IP address for production environments
+  getClientIpAddress(req) {
+    // Handle various proxy headers in order of priority
+    const forwardedFor = req.headers["x-forwarded-for"];
+    const realIp = req.headers["x-real-ip"];
+    const cfConnectingIp = req.headers["cf-connecting-ip"]; // Cloudflare
+    const xClientIp = req.headers["x-client-ip"];
+    const xClusterClientIp = req.headers["x-cluster-client-ip"];
+    const forwarded = req.headers["forwarded"];
+
+    // Debug logging for production troubleshooting
+    console.log("IP Headers Debug:", {
+      "x-forwarded-for": forwardedFor,
+      "x-real-ip": realIp,
+      "cf-connecting-ip": cfConnectingIp,
+      "x-client-ip": xClientIp,
+      "x-cluster-client-ip": xClusterClientIp,
+      forwarded: forwarded,
+      "connection.remoteAddress": req.connection?.remoteAddress,
+      "socket.remoteAddress": req.socket?.remoteAddress,
+    });
+
+    let clientIp = null;
+
+    // 1. Check X-Forwarded-For header (most common behind proxies/load balancers)
+    if (forwardedFor) {
+      // X-Forwarded-For can contain multiple IPs, take the first one (original client)
+      const ips = forwardedFor.split(",").map((ip) => ip.trim());
+      clientIp = ips[0];
+    }
+    // 2. Check Cloudflare's header
+    else if (cfConnectingIp) {
+      clientIp = cfConnectingIp;
+    }
+    // 3. Check X-Real-IP (nginx proxy)
+    else if (realIp) {
+      clientIp = realIp;
+    }
+    // 4. Check other proxy headers
+    else if (xClientIp) {
+      clientIp = xClientIp;
+    } else if (xClusterClientIp) {
+      clientIp = xClusterClientIp;
+    }
+    // 5. Parse Forwarded header (RFC 7239)
+    else if (forwarded) {
+      const match = forwarded.match(/for=([^;,\s]+)/);
+      if (match) {
+        clientIp = match[1].replace(/"/g, "");
+        // Remove port if present
+        if (clientIp.startsWith("[")) {
+          // IPv6 format
+          clientIp = clientIp.replace(/^\[(.+)\]:\d+$/, "$1");
+        } else {
+          // IPv4 format
+          clientIp = clientIp.replace(/:.*$/, "");
+        }
+      }
+    }
+    // 6. Fallback to connection remote address
+    else if (req.connection && req.connection.remoteAddress) {
+      clientIp = req.connection.remoteAddress;
+    }
+    // 7. Final fallback to socket remote address
+    else if (req.socket && req.socket.remoteAddress) {
+      clientIp = req.socket.remoteAddress;
+    }
+
+    // Validate and clean the IP address
+    if (clientIp) {
+      // Remove IPv6 prefix if present
+      clientIp = clientIp.replace(/^::ffff:/, "");
+
+      // Validate IP format (basic validation)
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+
+      if (ipv4Regex.test(clientIp) || ipv6Regex.test(clientIp)) {
+        console.log("Final selected IP address:", clientIp);
+        return clientIp;
+      }
+    }
+
+    // Default fallback for localhost/development
+    console.log("Final selected IP address: 127.0.0.1 (fallback)");
+    return "127.0.0.1";
+  }
+
   // Create payment URL
   createPaymentUrl(
     orderId,
@@ -16,7 +104,8 @@ class VNPayService {
     orderDescription,
     bankCode,
     language,
-    userId
+    userId,
+    ipAddr
   ) {
     const date = new Date();
     const createDate = this.formatDate(date);
@@ -33,7 +122,7 @@ class VNPayService {
       vnp_OrderType: "premium_subscription",
       vnp_Amount: amount * 100, // VNPay expects amount in VND cents
       vnp_ReturnUrl: this.vnp_ReturnUrl,
-      vnp_IpAddr: "127.0.0.1",
+      vnp_IpAddr: ipAddr || "127.0.0.1",
       vnp_CreateDate: createDate,
       vnp_ExpireDate: expireDate,
     };
