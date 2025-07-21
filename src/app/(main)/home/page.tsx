@@ -33,19 +33,16 @@ interface Post {
   attachments: Attachment[];
   createdAt: string;
   likes: string[];
-  userInfo: userInfo;
   comments: Comments[];
 }
 
 interface Comments {
-  userinfo: userInfo;
+  userinfo: {
+    _id: string;
+    username: string;
+    avatar_link: string;
+  };
   context: string;
-}
-
-interface userInfo {
-  _id: string;
-  username: string;
-  avatar_link: string;
 }
 
 interface friends {
@@ -77,13 +74,6 @@ interface UserGroup {
   tags: string[];
 }
 
-const userInfo = {
-  name: "Nguyễn Văn A",
-  avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-  email: "vana@student.edu.vn",
-  major: "Công nghệ thông tin",
-  year: "Năm 3",
-};
 
 const HomePage = () => {
   const [postContent, setPostContent] = useState("");
@@ -267,28 +257,11 @@ const HomePage = () => {
   // Hàm thêm post mới vào đầu danh sách
  const handleAddPost = (newPost: Post) => {
   const now = new Date().toISOString();
-  const userDataLocal = localStorage.getItem("userdata");
-  let userInfoObj = {
-    _id: userId || "",
-    username: userData?.username || "User",
-    avatar_link: userData?.avatar_link || "/schoolimg.jpg",
-  };
-  if (userDataLocal) {
-    try {
-      const parsed = JSON.parse(userDataLocal);
-      userInfoObj = {
-        _id: parsed.id || userId || "",
-        username: parsed.username || userData?.username || "User",
-        avatar_link: parsed.avatar_link || userData?.avatar_link || "/schoolimg.jpg",
-      };
-    } catch {}
-  }
 
   const postWithFullData: Post = {
     ...newPost,
     _id: newPost._id || `temp_${Date.now()}_${Math.random()}`,
     userId: userId || "",
-    userInfo: userInfoObj,
     createdAt: newPost.createdAt || now,
     likes: newPost.likes || [],
     comments: newPost.comments || [],
@@ -356,7 +329,7 @@ const HomePage = () => {
                   <div className="w-20 h-20 rounded-full bg-[#F1F1E6] mb-3 overflow-hidden flex items-center justify-center ring-4 ring-[#0694FA]/20 ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
                     <Image
                       src={userData?.avatar_link || "/schoolimg.jpg"}
-                      alt={userInfo.name}
+                      alt={userData?.username || "User Avatar"}
                       width={80}
                       height={80}
                       quality={100}
@@ -369,10 +342,10 @@ const HomePage = () => {
                 
                 <div className="text-center space-y-2">
                   <div className="font-bold text-lg text-[#1E293B]">
-                    {userData?.username || userInfo.name}
+                    {userData?.username}
                   </div>
                   <div className="text-xs text-[#0694FA] font-medium">
-                    {userData?.email || userInfo.email}
+                    {userData?.email }
                   </div>
                   <div className="flex items-center justify-center space-x-3 mt-3 text-xs text-[#1E293B]/70">
                     <div className="flex items-center space-x-1">
@@ -476,7 +449,7 @@ const HomePage = () => {
                 <div className="relative flex-shrink-0">
                   <Image
                     src={userData?.avatar_link || "/schoolimg.jpg"}
-                    alt={userInfo.name}
+                    alt={userData?.username || "User Avatar"}
                     width={48}
                     height={48}
                     quality={100}
@@ -583,7 +556,7 @@ const HomePage = () => {
                       animation: 'fadeInUp 0.6s ease-out forwards'
                     }}
                   >
-                    <RenderPost post={post} userData={post.userInfo || ""} />
+                    <RenderPost post={post} userData={userData} />
                   </div>
                 ))
               )}
@@ -676,15 +649,15 @@ const HomePage = () => {
       {/* Enhanced Post Add Modal */}
       {isAddmodalopen && userId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-2 sm:p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+         
             <PostAdd
               _id={userId}
-              name={userData?.username || userInfo.name}
-              avatar={userData?.avatar_link || userInfo.avatar}
+              name={userData?.username || "User"}
+              avatar={userData?.avatar_link || "/schoolimg.jpg"}
               onClose={() => setisAddmodalopen(false)}
               onPostAdded={handleAddPost}
             />
-          </div>
+     
         </div>
       )}
 

@@ -242,8 +242,8 @@ const RenderPost: React.FC<RenderPostProps> = ({ post, userData, onDelete }) => 
     >
       {/* Enhanced Post Edit Modal */}
       {isEditModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
-          <div className="relative max-w-2xl w-full max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="relative max-w-2xl w-full min-h-[80vh] max-h-[95vh] overflow-y-auto rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-300 my-4">
             <PostUpdate
               _id={post._id}
               userid={post.userId}

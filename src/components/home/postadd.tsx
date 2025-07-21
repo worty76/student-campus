@@ -219,7 +219,7 @@ const PostAdd: React.FC<PostAddProps> = ({
       {/* User info */}
       <div className="flex items-center gap-4 px-8 pt-6">
         <Image
-          src={avatar || "/api/placeholder/40/40"}
+          src={avatar || "public/schoolimg.jpg"}
           alt="avatar"
           className="w-12 h-12 rounded-full object-cover bg-blue-100"
           width={96}

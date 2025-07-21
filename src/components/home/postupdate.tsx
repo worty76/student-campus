@@ -186,7 +186,7 @@ const PostUpdate: React.FC<PostUpdateProps> = ({ _id, userid, content, files, on
   const isPostEnabled = (postContent.trim() || postFiles.length > 0) && !isLoading;
 
   return (
-    <div className="bg-white top-[10vh] rounded-xl w-full max-w-md mx-auto p-0 relative shadow-lg">
+    <div className="bg-white rounded-xl w-full max-w-md mx-auto p-0 relative shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2 border-b border-blue-100">
         <span className="text-lg font-semibold text-blue-900">Chỉnh sửa bài viết</span>
