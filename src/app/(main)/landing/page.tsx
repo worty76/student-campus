@@ -1,8 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
+import AdBanner from "@/components/AdBanner";
+
 export default function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden ">
@@ -56,6 +57,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Ad Banner */}
+      <div className="relative z-10 px-12 py-4">
+        <AdBanner />
       </div>
 
       {/* StudentShare Features Section */}

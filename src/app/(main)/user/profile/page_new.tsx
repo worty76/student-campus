@@ -594,11 +594,7 @@ const UserProfilePage = () => {
                           animation: `fadeInUp 0.6s ease-out ${index * 100}ms both`
                         }}
                       >
-                        <RenderPost
-                          post={post}
-                          userData={post.userInfo || ' '}
-                          onDelete={getUserPost}
-                        />
+                        
                       </div>
                     ))}
                   </>

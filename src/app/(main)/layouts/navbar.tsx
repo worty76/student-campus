@@ -287,6 +287,22 @@ export default function NavigationBar() {
                             <span className={`hidden sm:block ${isActive("/settings") ? "text-[#0694FA]" : "text-white"}`}>Cài đặt</span>
                         </button>
                     </NavigationMenuItem>
+                    {/* Premium */}
+                    <NavigationMenuItem>
+                        <button
+                            onClick={() => handleNav("/premium")}
+                            className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-2 font-medium transition-colors hover:opacity-80 text-xs sm:text-sm md:text-base bg-transparent focus:bg-transparent active:bg-transparent"
+                        >
+                            <div className="sm:hidden">
+                                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                                    <path d="M12 2L15.09 8.26L22 9L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9L8.91 8.26L12 2Z"
+                                        stroke={isActive("/premium") ? "#FFD700" : "#fff"}
+                                        strokeWidth="2" fill="none" />
+                                </svg>
+                            </div>
+                            <span className={`hidden sm:block ${isActive("/premium") ? "text-[#FFD700]" : "text-white"}`}>Premium</span>
+                        </button>
+                    </NavigationMenuItem>
                 </NavigationMenuList>
             </NavigationMenu>
         </div>

@@ -17,7 +17,9 @@ const friend_rqrouter = require('./routes/api/friendrq.routes')
 const grouprouter = require('./routes/api/group.routes')
 const chatrouter = require('./routes/api/chat.routes')
 const notificationrouter = require('./routes/api/notifications.routes') 
-const documentrouter = require('./routes/api/document.routes')  
+const documentrouter = require('./routes/api/document.routes')
+const premiumrouter = require('./routes/api/premium.routes')
+
 
 app.use(cors({
     origin: ['https://student-campus.vercel.app', 'http://localhost:3000'],
@@ -29,7 +31,16 @@ app.use(cors({
 // Middleware
 app.use(bodyParser.json());
 
-app.use('/api/', authrouter,postrouter,userrouter,friend_rqrouter,grouprouter,chatrouter,notificationrouter,documentrouter);
+app.use('/api/', authrouter,
+    postrouter,
+    userrouter,
+    friend_rqrouter,
+    grouprouter,
+    chatrouter,
+    notificationrouter,
+    documentrouter,
+    premiumrouter,
+    );
 
 
 // WebSocket connection
