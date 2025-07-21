@@ -102,13 +102,8 @@ export default function PremiumPage() {
           PremiumPaymentService.storePendingPayment(response.orderId, amount);
         }
 
-        // Inform user about redirection
-        alert("Chuyển hướng đến trang thanh toán VNPay...");
-
-        // Redirect to VNPay payment page
-        setTimeout(() => {
-          window.location.href = response.paymentUrl!;
-        }, 1000);
+        // Direct redirect to VNPay with timer fix applied
+        window.location.href = response.paymentUrl;
       } else {
         alert(response.message || "Không thể khởi tạo thanh toán VNPay");
       }
