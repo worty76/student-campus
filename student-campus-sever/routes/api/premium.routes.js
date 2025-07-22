@@ -12,6 +12,10 @@ router.get("/premium/status/:userId", premiumController.checkPremiumStatus);
 // Admin routes
 router.get("/premium/admin/users", premiumController.getAllUsers);
 router.get("/premium/admin/revenue", premiumController.getRevenueStats);
+router.get(
+  "/premium/admin/export-revenue",
+  premiumController.exportRevenueData
+);
 router.get("/premium/admin/posts", premiumController.getAllPosts);
 router.delete("/premium/admin/posts/:postId", premiumController.deletePost);
 router.put(

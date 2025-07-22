@@ -1,19 +1,22 @@
-'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { usePagination } from "@/hooks/usePagination";
 import { BASEURL } from "@/app/constants/url";
-import { 
-  FileText, 
+import {
+  FileText,
   Search,
-  
   Trash2,
   Eye,
   AlertTriangle,
   Calendar,
-  User
-} from 'lucide-react';
+  User,
+  ArrowLeft,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Post {
   _id: string;
@@ -40,11 +43,25 @@ interface Post {
 }
 
 export default function PostManagement() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+
+  // Pagination for filtered posts
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedPosts,
+    totalItems,
+    itemsPerPage,
+    setCurrentPage,
+  } = usePagination({
+    data: filteredPosts,
+    itemsPerPage: 8, // Show 8 posts per page (4 rows of 2 columns)
+  });
 
   useEffect(() => {
     fetchPosts();
@@ -54,12 +71,12 @@ export default function PostManagement() {
     try {
       const response = await fetch(`${BASEURL}/api/premium/admin/posts`);
       const data = await response.json();
-      
+
       if (data.success) {
         setPosts(data.posts);
       }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
     } finally {
       setIsLoading(false);
     }
@@ -70,20 +87,32 @@ export default function PostManagement() {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(post => 
-        post.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (post.userId && post.userId.username && post.userId.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (post.userId && post.userId.Faculty && post.userId.Faculty.toLowerCase().includes(searchTerm.toLowerCase()))
+      filtered = filtered.filter(
+        (post) =>
+          post.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (post.userId &&
+            post.userId.username &&
+            post.userId.username
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (post.userId &&
+            post.userId.Faculty &&
+            post.userId.Faculty.toLowerCase().includes(
+              searchTerm.toLowerCase()
+            ))
       );
     }
 
     // Type filter
-    if (filterType !== 'all') {
-      filtered = filtered.filter(post => {
-        if (filterType === 'with_attachments') {
+    if (filterType !== "all") {
+      filtered = filtered.filter((post) => {
+        if (filterType === "with_attachments") {
           return post.attachments && post.attachments.length > 0;
-        } else if (filterType === 'text_only') {
-          return (!post.attachments || post.attachments.length === 0) && post.text.trim() !== '';
+        } else if (filterType === "text_only") {
+          return (
+            (!post.attachments || post.attachments.length === 0) &&
+            post.text.trim() !== ""
+          );
         }
         return true;
       });
@@ -97,59 +126,66 @@ export default function PostManagement() {
   }, [filterPosts]);
 
   const deletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    if (
+      !confirm(
+        "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác."
+      )
+    ) {
       return;
     }
 
     try {
-      const response = await fetch(`${BASEURL}/api/premium/admin/posts/${postId}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `${BASEURL}/api/premium/admin/posts/${postId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const data = await response.json();
-      
+
       if (data.success) {
         fetchPosts(); // Refresh the list
-        alert('Post deleted successfully');
+        alert("Xóa bài viết thành công");
       } else {
-        alert('Failed to delete post: ' + data.message);
+        alert("Không thể xóa bài viết: " + data.message);
       }
     } catch (error) {
-      console.error('Error deleting post:', error);
-      alert('Failed to delete post');
+      console.error("Error deleting post:", error);
+      alert("Không thể xóa bài viết");
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
   const getFileTypeIcon = (filetype: string) => {
     switch (filetype) {
-      case 'image':
-        return '🖼️';
-      case 'video':
-        return '🎥';
-      case 'pdf':
-        return '📄';
-      case 'pptx':
-        return '📊';
-      case 'txt':
-        return '📝';
-      case 'document':
-        return '📋';
-      case 'unknown':
+      case "image":
+        return "🖼️";
+      case "video":
+        return "🎥";
+      case "pdf":
+        return "📄";
+      case "pptx":
+        return "📊";
+      case "txt":
+        return "📝";
+      case "document":
+        return "📋";
+      case "unknown":
       case undefined:
       case null:
-        return '📎';
+        return "📎";
       default:
-        return '📎';
+        return "📎";
     }
   };
 
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return text.substring(0, maxLength) + "...";
   };
 
   if (isLoading) {
@@ -157,7 +193,7 @@ export default function PostManagement() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading posts...</p>
+          <p className="mt-4 text-gray-600">Đang tải bài viết...</p>
         </div>
       </div>
     );
@@ -169,14 +205,29 @@ export default function PostManagement() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Post Management</h1>
-              <p className="text-gray-600">Moderate and manage user-generated content</p>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.back()}
+                className="flex items-center space-x-2 text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Quay Lại</span>
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Quản Lý Bài Viết
+                </h1>
+                <p className="text-gray-600">
+                  Kiểm duyệt và quản lý nội dung người dùng tạo
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                 <FileText className="w-4 h-4 mr-2" />
-                {filteredPosts.length} Posts
+                {totalItems} Bài Viết
               </Badge>
             </div>
           </div>
@@ -188,13 +239,13 @@ export default function PostManagement() {
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search posts..."
+                  placeholder="Tìm kiếm bài viết..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -207,22 +258,17 @@ export default function PostManagement() {
                 onChange={(e) => setFilterType(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">All Posts</option>
-                <option value="with_attachments">With Attachments</option>
-                <option value="text_only">Text Only</option>
+                <option value="all">Tất Cả Bài Viết</option>
+                <option value="with_attachments">Có Tệp Đính Kèm</option>
+                <option value="text_only">Chỉ Văn Bản</option>
               </select>
-
-              {/* Export Button */}
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                Export Data
-              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Posts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredPosts.map((post) => (
+          {paginatedPosts.map((post) => (
             <Card key={post._id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -231,9 +277,13 @@ export default function PostManagement() {
                       <User className="w-5 h-5 text-gray-600" />
                     </div>
                     <div>
-                      <div className="font-medium">{post.userId?.username || 'Unknown User'}</div>
+                      <div className="font-medium">
+                        {post.userId?.username || "Người Dùng Không Xác Định"}
+                      </div>
                       <div className="text-sm text-gray-500">
-                        {post.userId?.Faculty || 'Unknown Faculty'} - {post.userId?.Major || 'Unknown Major'} ({post.userId?.Year || 'Unknown Year'})
+                        {post.userId?.Faculty || "Khoa Không Xác Định"} -{" "}
+                        {post.userId?.Major || "Ngành Không Xác Định"} (
+                        {post.userId?.Year || "Năm Không Xác Định"})
                       </div>
                     </div>
                   </div>
@@ -241,7 +291,7 @@ export default function PostManagement() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.open(`/post/${post._id}`, '_blank')}
+                      onClick={() => window.open(`/post/${post._id}`, "_blank")}
                     >
                       <Eye className="w-3 h-3" />
                     </Button>
@@ -260,19 +310,32 @@ export default function PostManagement() {
                 {/* Post Content */}
                 {post.text && (
                   <div className="mb-4">
-                    <p className="text-gray-700">{truncateText(post.text, 150)}</p>
+                    <p className="text-gray-700">
+                      {truncateText(post.text, 150)}
+                    </p>
                   </div>
                 )}
 
                 {/* Attachments */}
                 {post.attachments && post.attachments.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Attachments:</h4>
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">
+                      Tệp Đính Kèm:
+                    </h4>
                     <div className="space-y-2">
                       {post.attachments.map((attachment, index) => (
-                        <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                          <span className="text-lg">{getFileTypeIcon(attachment?.file?.filetype || 'unknown')}</span>
-                          <span className="text-sm text-gray-600">{attachment?.file?.filename || 'Unknown file'}</span>
+                        <div
+                          key={index}
+                          className="flex items-center space-x-2 p-2 bg-gray-50 rounded"
+                        >
+                          <span className="text-lg">
+                            {getFileTypeIcon(
+                              attachment?.file?.filetype || "unknown"
+                            )}
+                          </span>
+                          <span className="text-sm text-gray-600">
+                            {attachment?.file?.filename || "Tệp không xác định"}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -292,11 +355,14 @@ export default function PostManagement() {
                 </div>
 
                 {/* Warning for potentially inappropriate content */}
-                {(post.text.includes('inappropriate') || post.text.includes('spam')) && (
+                {(post.text.includes("inappropriate") ||
+                  post.text.includes("spam")) && (
                   <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                     <div className="flex items-center space-x-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm text-yellow-800">Potentially inappropriate content</span>
+                      <span className="text-sm text-yellow-800">
+                        Có khả năng nội dung không phù hợp
+                      </span>
                     </div>
                   </div>
                 )}
@@ -305,17 +371,28 @@ export default function PostManagement() {
           ))}
         </div>
 
+        {/* Pagination */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          showInfo={true}
+        />
+
         {/* Empty State */}
         {filteredPosts.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Không tìm thấy bài viết
+              </h3>
               <p className="text-gray-500">
-                {searchTerm || filterType !== 'all' 
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'There are no posts to display at the moment.'
-                }
+                {searchTerm || filterType !== "all"
+                  ? "Hãy thử điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc của bạn."
+                  : "Hiện tại không có bài viết nào để hiển thị."}
               </p>
             </CardContent>
           </Card>
@@ -323,4 +400,4 @@ export default function PostManagement() {
       </div>
     </div>
   );
-} 
+}

@@ -16,10 +16,7 @@ const protectedPaths = [
   "/user",
   "/premium",
 ];
-const adminPaths = [
-  "/dashboard",
-  "/admin",
-];
+const adminPaths = ["/dashboard", "/admin"];
 
 function isJWTExpired(token: string) {
   try {
@@ -30,29 +27,48 @@ function isJWTExpired(token: string) {
   }
 }
 
+function getUserRoleFromToken(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role;
+  } catch {
+    return null;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow public paths
   if (publicPaths.includes(pathname)) {
     return NextResponse.next();
   }
 
-  if (protectedPaths.includes(pathname)) {
+  // Check for admin routes
+  if (adminPaths.some((path) => pathname.startsWith(path))) {
     const token = request.cookies.get("token")?.value;
+
+    // Check if token exists and is not expired
     if (!token || isJWTExpired(token)) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
+
+    // Check if user has admin role
+    const userRole = getUserRoleFromToken(token);
+    if (userRole !== "admin") {
+      // Redirect non-admin users to home page or show unauthorized page
+      return NextResponse.redirect(new URL("/home", request.url));
+    }
+
+    return NextResponse.next();
   }
 
-  // Check for admin routes
-  if (adminPaths.some(path => pathname.startsWith(path))) {
+  // Check for other protected paths
+  if (protectedPaths.some((path) => pathname.startsWith(path))) {
     const token = request.cookies.get("token")?.value;
     if (!token || isJWTExpired(token)) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-    
-    // Additional admin role check would be done on the server side
-    // This is just a basic protection for the route
   }
 
   return NextResponse.next();

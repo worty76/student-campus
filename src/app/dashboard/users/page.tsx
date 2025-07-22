@@ -1,18 +1,22 @@
-'use client';
-import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { usePagination } from "@/hooks/usePagination";
 import { BASEURL } from "@/app/constants/url";
-import { 
-  Users, 
-  Shield, 
-  Crown, 
-  Search,
-  Edit,
-  Eye
-} from 'lucide-react';
+import { Users, Shield, Crown, Search, Edit, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface User {
   _id: string;
@@ -29,12 +33,31 @@ interface User {
 }
 
 export default function UserManagement() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterPremium, setFilterPremium] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterPremium, setFilterPremium] = useState("all");
+
+  // Dialog state for role confirmation
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [targetRole, setTargetRole] = useState<string>("");
+
+  // Pagination for filtered users
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedUsers,
+    totalItems,
+    itemsPerPage,
+    setCurrentPage,
+  } = usePagination({
+    data: filteredUsers,
+    itemsPerPage: 12, // Show 12 users per page (3 rows of 4 columns)
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -44,12 +67,12 @@ export default function UserManagement() {
     try {
       const response = await fetch(`${BASEURL}/api/premium/admin/users`);
       const data = await response.json();
-      
+
       if (data.success) {
         setUsers(data.users);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     } finally {
       setIsLoading(false);
     }
@@ -60,23 +83,24 @@ export default function UserManagement() {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.Faculty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.Major.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (user) =>
+          user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.Faculty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.Major.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Role filter
-    if (filterRole !== 'all') {
-      filtered = filtered.filter(user => user.role === filterRole);
+    if (filterRole !== "all") {
+      filtered = filtered.filter((user) => user.role === filterRole);
     }
 
     // Premium filter
-    if (filterPremium !== 'all') {
-      filtered = filtered.filter(user => 
-        filterPremium === 'premium' ? user.isPremium : !user.isPremium
+    if (filterPremium !== "all") {
+      filtered = filtered.filter((user) =>
+        filterPremium === "premium" ? user.isPremium : !user.isPremium
       );
     }
 
@@ -87,27 +111,43 @@ export default function UserManagement() {
     filterUsers();
   }, [filterUsers]);
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  // Function to open role change confirmation dialog
+  const handleRoleChangeRequest = (user: User, newRole: string) => {
+    setSelectedUser(user);
+    setTargetRole(newRole);
+    setShowRoleDialog(true);
+  };
+
+  // Function to confirm role change
+  const confirmRoleChange = async () => {
+    if (!selectedUser || !targetRole) return;
+
     try {
-      const response = await fetch(`${BASEURL}/api/premium/admin/users/${userId}/role`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role: newRole })
-      });
+      const response = await fetch(
+        `${BASEURL}/api/premium/admin/users/${selectedUser._id}/role`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ role: targetRole }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (data.success) {
         fetchUsers(); // Refresh the list
-        alert('User role updated successfully');
+        setShowRoleDialog(false);
+        setSelectedUser(null);
+        setTargetRole("");
+        // Success notification can be added here if needed
       } else {
-        alert('Failed to update user role: ' + data.message);
+        alert("Không thể cập nhật vai trò người dùng: " + data.message);
       }
     } catch (error) {
-      console.error('Error updating user role:', error);
-      alert('Failed to update user role');
+      console.error("Error updating user role:", error);
+      alert("Không thể cập nhật vai trò người dùng");
     }
   };
 
@@ -116,13 +156,14 @@ export default function UserManagement() {
   };
 
   const getPremiumStatus = (user: User) => {
-    if (!user.isPremium) return { text: 'Free', color: 'bg-gray-100 text-gray-800' };
-    
+    if (!user.isPremium)
+      return { text: "Miễn Phí", color: "bg-gray-100 text-gray-800" };
+
     if (user.premiumExpiry && new Date(user.premiumExpiry) < new Date()) {
-      return { text: 'Expired', color: 'bg-red-100 text-red-800' };
+      return { text: "Hết Hạn", color: "bg-red-100 text-red-800" };
     }
-    
-    return { text: 'Premium', color: 'bg-green-100 text-green-800' };
+
+    return { text: "Premium", color: "bg-green-100 text-green-800" };
   };
 
   if (isLoading) {
@@ -130,7 +171,7 @@ export default function UserManagement() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading users...</p>
+          <p className="mt-4 text-gray-600">Đang tải người dùng...</p>
         </div>
       </div>
     );
@@ -142,14 +183,29 @@ export default function UserManagement() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-              <p className="text-gray-600">Manage platform users and their roles</p>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.back()}
+                className="flex items-center space-x-2 text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Quay Lại</span>
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Quản Lý Người Dùng
+                </h1>
+                <p className="text-gray-600">
+                  Quản lý người dùng nền tảng và vai trò của họ
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                 <Users className="w-4 h-4 mr-2" />
-                {filteredUsers.length} Users
+                {totalItems} Người Dùng
               </Badge>
             </div>
           </div>
@@ -167,7 +223,7 @@ export default function UserManagement() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search users..."
+                  placeholder="Tìm kiếm người dùng..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -180,9 +236,9 @@ export default function UserManagement() {
                 onChange={(e) => setFilterRole(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">All Roles</option>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="all">Tất Cả Vai Trò</option>
+                <option value="user">Người Dùng</option>
+                <option value="admin">Quản Trị Viên</option>
               </select>
 
               {/* Premium Filter */}
@@ -191,14 +247,14 @@ export default function UserManagement() {
                 onChange={(e) => setFilterPremium(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">All Users</option>
-                <option value="premium">Premium Only</option>
-                <option value="free">Free Only</option>
+                <option value="all">Tất Cả Người Dùng</option>
+                <option value="premium">Chỉ Premium</option>
+                <option value="free">Chỉ Miễn Phí</option>
               </select>
 
               {/* Export Button */}
               <Button className="bg-blue-600 hover:bg-blue-700">
-                Export Data
+                Xuất Dữ Liệu
               </Button>
             </div>
           </CardContent>
@@ -207,7 +263,7 @@ export default function UserManagement() {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Users ({filteredUsers.length})</CardTitle>
+            <CardTitle>Users ({totalItems})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -215,15 +271,23 @@ export default function UserManagement() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-semibold">User</th>
-                    <th className="text-left py-3 px-4 font-semibold">Faculty</th>
+                    <th className="text-left py-3 px-4 font-semibold">
+                      Faculty
+                    </th>
                     <th className="text-left py-3 px-4 font-semibold">Role</th>
-                    <th className="text-left py-3 px-4 font-semibold">Premium</th>
-                    <th className="text-left py-3 px-4 font-semibold">Joined</th>
-                    <th className="text-left py-3 px-4 font-semibold">Actions</th>
+                    <th className="text-left py-3 px-4 font-semibold">
+                      Premium
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold">
+                      Joined
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => {
+                  {paginatedUsers.map((user) => {
                     const premiumStatus = getPremiumStatus(user);
                     return (
                       <tr key={user._id} className="border-b hover:bg-gray-50">
@@ -231,12 +295,12 @@ export default function UserManagement() {
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                               {user.avatar_link ? (
-                                <Image 
-                                  src={user.avatar_link} 
-                                  alt={user.username} 
+                                <Image
+                                  src={user.avatar_link}
+                                  alt={user.username}
                                   width={40}
                                   height={40}
-                                  className="w-10 h-10 rounded-full object-cover" 
+                                  className="w-10 h-10 rounded-full object-cover"
                                 />
                               ) : (
                                 <span className="text-gray-600 font-semibold">
@@ -246,32 +310,48 @@ export default function UserManagement() {
                             </div>
                             <div>
                               <div className="font-medium">{user.username}</div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
+                              <div className="text-sm text-gray-500">
+                                {user.email}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="py-3 px-4">
                           <div>
                             <div className="font-medium">{user.Faculty}</div>
-                            <div className="text-sm text-gray-500">{user.Major} - {user.Year}</div>
+                            <div className="text-sm text-gray-500">
+                              {user.Major} - {user.Year}
+                            </div>
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge 
-                            variant={user.role === 'admin' ? 'destructive' : 'secondary'}
-                            className={user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}
+                          <Badge
+                            variant={
+                              user.role === "admin"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className={
+                              user.role === "admin"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                            }
                           >
-                            {user.role === 'admin' ? (
+                            {user.role === "admin" ? (
                               <Shield className="w-3 h-3 mr-1" />
                             ) : (
                               <Users className="w-3 h-3 mr-1" />
                             )}
-                            {user.role}
+                            {user.role === "admin"
+                              ? "Quản Trị Viên"
+                              : "Người Dùng"}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
                           <Badge className={premiumStatus.color}>
-                            {premiumStatus.text === 'Premium' && <Crown className="w-3 h-3 mr-1" />}
+                            {premiumStatus.text === "Premium" && (
+                              <Crown className="w-3 h-3 mr-1" />
+                            )}
                             {premiumStatus.text}
                           </Badge>
                         </td>
@@ -283,13 +363,17 @@ export default function UserManagement() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateUserRole(user._id, user.role === 'admin' ? 'user' : 'admin')}
+                              onClick={() =>
+                                handleRoleChangeRequest(
+                                  user,
+                                  user.role === "admin" ? "user" : "admin"
+                                )
+                              }
                             >
                               <Edit className="w-3 h-3 mr-1" />
-                              {user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <Eye className="w-3 h-3" />
+                              {user.role === "admin"
+                                ? "Xóa Quyền Admin"
+                                : "Cấp Quyền Admin"}
                             </Button>
                           </div>
                         </td>
@@ -299,9 +383,67 @@ export default function UserManagement() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              showInfo={true}
+            />
           </CardContent>
         </Card>
       </div>
+
+      {/* Role Change Confirmation Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác Nhận Thay Đổi Quyền</DialogTitle>
+            <DialogDescription>
+              {selectedUser && targetRole && (
+                <>
+                  Bạn có chắc chắn muốn{" "}
+                  {targetRole === "admin"
+                    ? "cấp quyền Quản trị viên"
+                    : "xóa quyền Quản trị viên"}{" "}
+                  cho người dùng <strong>{selectedUser.username}</strong>?
+                  <br />
+                  <br />
+                  {targetRole === "admin" ? (
+                    <span className="text-orange-600">
+                      ⚠️ Người dùng sẽ có quyền quản lý toàn bộ hệ thống sau khi
+                      được cấp quyền.
+                    </span>
+                  ) : (
+                    <span className="text-blue-600">
+                      ℹ️ Người dùng sẽ chỉ còn quyền truy cập cơ bản sau khi bị
+                      xóa quyền admin.
+                    </span>
+                  )}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={confirmRoleChange}
+              className={
+                targetRole === "admin"
+                  ? "bg-orange-600 hover:bg-orange-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }
+            >
+              {targetRole === "admin" ? "Cấp Quyền" : "Xóa Quyền"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-} 
+}
