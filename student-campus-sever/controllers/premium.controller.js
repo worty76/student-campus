@@ -48,28 +48,64 @@ const createVNPayPayment = async (req, res) => {
 
     await transaction.save();
 
+    // Performance monitoring for VNPay integration
+    const startTime = Date.now();
+
     // Extract real client IP address for production environments
     const clientIpAddress = vnpayService.getClientIpAddress(req);
     console.log("Client IP Address extracted for VNPay:", clientIpAddress);
 
-    // Create VNPay payment URL with dynamic IP
-    const paymentUrl = vnpayService.createPaymentUrl(
-      orderId,
-      amount,
-      orderDescription,
-      bankCode,
-      language || "vn",
-      userId,
-      clientIpAddress
-    );
+    // Create VNPay payment URL with enhanced error handling
+    try {
+      const paymentUrl = vnpayService.measurePerformance(
+        "PaymentURL_Generation",
+        () => {
+          return vnpayService.createPaymentUrl(
+            orderId,
+            amount,
+            orderDescription,
+            bankCode,
+            language || "vn",
+            userId,
+            clientIpAddress
+          );
+        }
+      );
 
-    console.log("Generated payment URL:", paymentUrl);
+      const totalProcessingTime = Date.now() - startTime;
 
-    res.status(200).json({
-      success: true,
-      paymentUrl: paymentUrl,
-      orderId: orderId,
-    });
+      console.log("VNPay Payment Creation Summary:", {
+        orderId,
+        amount,
+        clientIP: clientIpAddress,
+        totalProcessingTimeMs: totalProcessingTime,
+        paymentUrlLength: paymentUrl.length,
+        expirationMinutes: 30,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.status(200).json({
+        success: true,
+        paymentUrl: paymentUrl,
+        orderId: orderId,
+        expiresIn: 30 * 60 * 1000, // 30 minutes in milliseconds
+        processingTime: totalProcessingTime,
+      });
+    } catch (vnpayError) {
+      console.error("VNPay Service Error:", vnpayError);
+
+      // Update transaction status to failed
+      transaction.status = "failed";
+      transaction.failureReason = vnpayError.message;
+      await transaction.save();
+
+      res.status(500).json({
+        success: false,
+        message: "VNPay payment URL generation failed",
+        error: vnpayError.message,
+        orderId: orderId,
+      });
+    }
   } catch (error) {
     console.error("Error creating VNPay payment:", error);
     res
@@ -78,24 +114,35 @@ const createVNPayPayment = async (req, res) => {
   }
 };
 
-// Handle VNPay return callback
+// Handle VNPay return callback with enhanced verification
 const handleVNPayReturn = async (req, res) => {
+  const startTime = Date.now();
+
   try {
     console.log("VNPay Return Parameters:", req.query);
 
     const vnpParams = req.query;
 
-    // Temporarily disable signature verification for debugging
-    // const isValidSignature = vnpayService.verifyReturnUrl(vnpParams);
-    const isValidSignature = true; // TODO: Re-enable signature verification
+    // Enhanced signature verification with performance monitoring
+    const isValidSignature = vnpayService.measurePerformance(
+      "Signature_Verification",
+      () => {
+        return vnpayService.verifyReturnUrl(vnpParams);
+      }
+    );
 
-    console.log("Signature validation result:", isValidSignature);
+    console.log("VNPay Return Validation:", {
+      signatureValid: isValidSignature,
+      processingTimeMs: Date.now() - startTime,
+      orderId: vnpParams.vnp_TxnRef,
+      responseCode: vnpParams.vnp_ResponseCode,
+    });
 
     if (!isValidSignature) {
-      console.log("Invalid signature for return URL");
+      console.error("VNPay Return - Invalid signature detected");
       return res.status(400).json({
         success: false,
-        message: "Invalid signature",
+        message: "Invalid signature - security verification failed",
       });
     }
 
