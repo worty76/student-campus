@@ -12,52 +12,152 @@ class PremiumPaymentService {
   private readonly API_BASE_URL = BASEURL;
 
   /**
-   * Initialize VNPay timer protection before payment
+   * Initialize comprehensive VNPay timer protection before payment redirect
    */
   private static initializeVNPayProtection(): void {
-    console.log("PremiumPaymentService - Initializing VNPay timer protection");
+    console.log(
+      "PremiumPaymentService - Initializing comprehensive VNPay timer protection"
+    );
 
-    // Ensure timer object exists before VNPay redirect
-    if (typeof window !== "undefined" && !(window as any).timer) {
-      (window as any).timer = {
-        remaining: 1800, // 30 minutes
-        interval: null,
-        isActive: false,
-        init: function () {
-          this.isActive = true;
-          return this;
-        },
-        start: function () {
-          this.isActive = true;
-          return this;
-        },
-        stop: function () {
-          if (this.interval) clearInterval(this.interval);
-          this.interval = null;
-          return this;
-        },
-        update: function () {
-          /* Safe update */
-        },
-        formatTime: function () {
-          const m = Math.floor(this.remaining / 60);
-          const s = this.remaining % 60;
-          return m + ":" + (s < 10 ? "0" : "") + s;
-        },
-      };
-    }
+    if (typeof window !== "undefined") {
+      // Create comprehensive timer object
+      if (!(window as any).timer) {
+        (window as any).timer = {
+          remaining: 1800, // 30 minutes
+          interval: null,
+          isActive: false,
+          startTime: Date.now(),
 
-    // Ensure updateTime function exists
-    if (typeof window !== "undefined" && !(window as any).updateTime) {
-      (window as any).updateTime = function () {
-        try {
-          if ((window as any).timer && (window as any).timer.remaining > 0) {
-            (window as any).timer.remaining--;
+          init: function () {
+            console.log("Service timer init");
+            this.isActive = true;
+            this.startTime = Date.now();
+            return this;
+          },
+          start: function () {
+            console.log("Service timer start");
+            this.isActive = true;
+            if (this.interval) this.stop();
+            this.interval = setInterval(() => {
+              if (this.remaining > 0) {
+                this.remaining--;
+                this.updateDisplay();
+              } else {
+                this.onExpire();
+              }
+            }, 1000);
+            return this;
+          },
+          stop: function () {
+            if (this.interval) {
+              clearInterval(this.interval);
+              this.interval = null;
+            }
+            this.isActive = false;
+            return this;
+          },
+          update: function () {
+            if (this.remaining > 0) {
+              this.remaining--;
+            }
+            return this;
+          },
+          updateDisplay: function () {
+            try {
+              const minutes = Math.floor(this.remaining / 60);
+              const seconds = this.remaining % 60;
+              const timeString =
+                minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+              const elements = document.querySelectorAll(
+                '#timer, .timer, [id*="timer"], [class*="timer"]'
+              );
+              elements.forEach((el: any) => {
+                if (el) el.textContent = timeString;
+              });
+            } catch (e) {
+              // Handle silently
+            }
+          },
+          formatTime: function () {
+            const m = Math.floor(this.remaining / 60);
+            const s = this.remaining % 60;
+            return m + ":" + (s < 10 ? "0" : "") + s;
+          },
+          reset: function (newTime: number) {
+            this.remaining = newTime || 1800;
+            this.isActive = true;
+            return this;
+          },
+          onExpire: function () {
+            console.warn("Service timer expired");
+            this.isActive = false;
+            this.stop();
+          },
+        };
+
+        console.log("Service timer object created");
+      }
+
+      // Create updateTime function
+      if (!(window as any).updateTime) {
+        (window as any).updateTime = function () {
+          try {
+            if (
+              (window as any).timer &&
+              typeof (window as any).timer.update === "function"
+            ) {
+              (window as any).timer.update();
+            }
+          } catch (e) {
+            console.warn("Service updateTime handled safely");
           }
-        } catch (e) {
-          console.warn("updateTime handled safely in service");
+        };
+
+        console.log("Service updateTime function created");
+      }
+
+      // Create additional timer functions that VNPay might expect
+      if (!(window as any).startTimer) {
+        (window as any).startTimer = function () {
+          if ((window as any).timer) {
+            (window as any).timer.start();
+          }
+        };
+      }
+
+      if (!(window as any).stopTimer) {
+        (window as any).stopTimer = function () {
+          if ((window as any).timer) {
+            (window as any).timer.stop();
+          }
+        };
+      }
+
+      // Enhanced error handling for VNPay redirect
+      const originalOnError = window.onerror;
+      window.onerror = function (message, source, lineno, colno, error) {
+        if (typeof message === "string") {
+          const msg = message.toLowerCase();
+          if (
+            msg.includes("timer is not defined") ||
+            msg.includes("updatetime is not defined") ||
+            msg.includes("referenceerror: timer")
+          ) {
+            console.warn("Service prevented timer error:", message);
+
+            // Re-initialize if needed
+            PremiumPaymentService.initializeVNPayProtection();
+            return true;
+          }
         }
+
+        return originalOnError
+          ? originalOnError.call(this, message, source, lineno, colno, error)
+          : false;
       };
+
+      console.log("Service VNPay protection initialized successfully");
     }
   }
 
