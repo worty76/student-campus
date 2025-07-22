@@ -41,6 +41,8 @@ const nextConfig: NextConfig = {
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
+      "frame-src https://vercel.live https://*.vercel.com https://vercel.com", // Allow Vercel Live frames
+      "child-src https://vercel.live https://*.vercel.com https://vercel.com", // Fallback for older browsers
       "worker-src 'self' blob:",
     ];
 
