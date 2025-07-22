@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import NavigationBar from "@/app/(main)/layouts/navbar";
@@ -9,6 +10,7 @@ import Image from "next/image";
 import { BASEURL } from "@/app/constants/url";
 import axios from "axios";
 import RenderPost from "@/components/home/post";
+import { navigateToCommunityGroup } from "@/utils/navigation";
 
 // TypeScript interfaces for the post data
 interface FileAttachment {
@@ -87,6 +89,7 @@ const userInfo = {
 };
 
 const HomePage = () => {
+  const router = useRouter();
   const [postContent, setPostContent] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [userData, setUserData] = useState<UserdataProps | null>(null);
@@ -247,9 +250,9 @@ const HomePage = () => {
         <Image
           src={imgSrc}
           alt={alt}
-          width={260}
-          height={240}
-          className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
+          width={320}
+          height={280}
+          className="w-full h-60 lg:h-72 xl:h-80 object-cover hover:scale-105 transition-transform duration-300"
           style={{ objectFit: "cover" }}
         />
       </a>
@@ -341,15 +344,15 @@ const HomePage = () => {
       </div>
 
       {/* Main Content Container - with improved spacing */}
-      <div className="flex justify-center w-full pt-20 px-2 sm:px-4">
-        <div className="flex justify-center items-start gap-2 sm:gap-4 w-full max-w-7xl">
+      <div className="main-layout flex justify-center w-full pt-20 px-2 sm:px-4 lg:px-6 xl:px-8">
+        <div className="flex justify-between items-start gap-0.5 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1.5 w-full max-w-[1400px]">
           {/* Left Sidebar - Enhanced User Info */}
-          <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-            <div className="fixed top-24 w-64 xl:w-72 left-[calc((100vw-1280px)/2)] max-h-[calc(100vh-6rem)] xl:left-[calc((100vw-1408px)/2)]">
+          <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
+            <div className="fixed top-24 w-56 lg:w-64 xl:w-80 left-1 lg:left-8 xl:left-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
               {/* Enhanced User Profile Card */}
-              <div className="bg-white rounded-2xl shadow-lg p-4 border border-[#1E293B]/10 w-full flex flex-col items-center mb-4 hover:shadow-xl transition-all duration-300">
+              <div className="bg-white rounded-2xl shadow-lg p-3 lg:p-4 xl:p-6 border border-[#1E293B]/10 w-full flex flex-col items-center mb-2 lg:mb-3 xl:mb-4 hover:shadow-xl transition-all duration-300">
                 <div className="relative group">
-                  <div className="w-20 h-20 rounded-full bg-[#F1F1E6] mb-3 overflow-hidden flex items-center justify-center ring-4 ring-[#0694FA]/20 ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-full bg-[#F1F1E6] mb-2 lg:mb-3 xl:mb-4 overflow-hidden flex items-center justify-center ring-2 lg:ring-3 xl:ring-4 ring-[#0694FA]/20 ring-offset-1 lg:ring-offset-2 xl:ring-offset-2 ring-offset-white group-hover:ring-[#0694FA]/40 transition-all duration-300">
                     <Image
                       src={userData?.avatar_link || "/schoolimg.jpg"}
                       alt={userInfo.name}
@@ -357,30 +360,30 @@ const HomePage = () => {
                       height={160}
                       quality={95}
                       priority
-                      className="w-20 h-20 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-16 h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
                       style={{ objectFit: "cover" }}
                       placeholder="blur"
                       blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                       unoptimized={userData?.avatar_link?.startsWith("data:")}
                     />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 lg:-bottom-1 lg:-right-1 xl:-bottom-1 xl:-right-1 w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
                 </div>
 
-                <div className="text-center space-y-2">
-                  <div className="font-bold text-lg text-[#1E293B]">
+                <div className="text-center space-y-1 lg:space-y-2 xl:space-y-3">
+                  <div className="font-bold text-sm lg:text-base xl:text-xl text-[#1E293B]">
                     {userData?.username || userInfo.name}
                   </div>
-                  <div className="text-xs text-[#0694FA] font-medium">
+                  <div className="text-xs lg:text-sm xl:text-base text-[#0694FA] font-medium">
                     {userData?.email || userInfo.email}
                   </div>
-                  <div className="flex items-center justify-center space-x-3 mt-3 text-xs text-[#1E293B]/70">
-                    <div className="flex items-center space-x-1">
-                      <span className="w-2 h-2 bg-[#0694FA] rounded-full"></span>
+                  <div className="flex items-center justify-center space-x-2 lg:space-x-3 xl:space-x-4 mt-2 lg:mt-3 xl:mt-4 text-xs lg:text-sm xl:text-base text-[#1E293B]/70">
+                    <div className="flex items-center space-x-1 lg:space-x-1.5 xl:space-x-2">
+                      <span className="w-1.5 h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-[#0694FA] rounded-full"></span>
                       <span>{userData?.Major || "IT"}</span>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <div className="flex items-center space-x-1 lg:space-x-1.5 xl:space-x-2">
+                      <span className="w-1.5 h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-green-500 rounded-full"></span>
                       <span>{userData?.Year || "Year 3"}</span>
                     </div>
                   </div>
@@ -388,24 +391,27 @@ const HomePage = () => {
               </div>
 
               {/* Enhanced Community Groups Section */}
-              <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 mb-4 overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="bg-[#1E293B] px-4 py-3">
-                  <h4 className="font-bold text-white flex items-center gap-2 text-sm">
-                    <span className="text-base">👥</span>
+              <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 mb-2 lg:mb-3 xl:mb-4 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="bg-[#1E293B] px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 xl:py-3">
+                  <h4 className="font-bold text-white flex items-center gap-1 lg:gap-2 text-xs lg:text-xs xl:text-sm">
+                    <span className="text-xs lg:text-sm xl:text-base">👥</span>
                     <span>Nhóm cộng đồng</span>
-                    <span className="ml-auto bg-[#0694FA] px-2 py-1 rounded-full text-xs font-semibold">
+                    <span className="ml-auto bg-[#0694FA] px-1 lg:px-1.5 xl:px-2 py-0.5 lg:py-1 rounded-full text-xs font-semibold">
                       {userGroups.length}
                     </span>
                   </h4>
                 </div>
-                <div className="px-4 py-3 max-h-60 overflow-y-auto">
+                <div className="px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 xl:py-3 max-h-40 lg:max-h-52 xl:max-h-60 overflow-y-auto">
                   {userGroups.length === 0 ? (
                     <div className="text-center py-6 space-y-2">
                       <div className="text-3xl opacity-50">👥</div>
                       <div className="text-[#1E293B]/70 text-xs">
                         Bạn chưa tham gia nhóm nào
                       </div>
-                      <button className="text-[#0694FA] hover:text-[#1E293B] text-xs font-medium underline">
+                      <button 
+                        className="text-[#0694FA] hover:text-[#1E293B] text-xs font-medium underline"
+                        onClick={() => router.push('/community')}
+                      >
                         Khám phá nhóm
                       </button>
                     </div>
@@ -414,7 +420,9 @@ const HomePage = () => {
                       {userGroups.map((group) => (
                         <li
                           key={group._id}
-                          className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
+                          className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md relative"
+                          onClick={() => navigateToCommunityGroup(router, group._id, group.name)}
+                          title={`Nhấp để xem bài đăng của nhóm ${group.name}`}
                         >
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center space-x-2">
@@ -441,14 +449,17 @@ const HomePage = () => {
 
               {/* Enhanced About Website Section */}
               <div className="bg-white rounded-2xl shadow-lg border border-[#1E293B]/10 overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="bg-[#1E293B] px-4 py-3">
-                  <h4 className="font-bold text-white flex items-center gap-2 text-sm">
-                    <span className="text-base">ℹ️</span>
+                <div className="bg-[#1E293B] px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 xl:py-3">
+                  <h4 className="font-bold text-white flex items-center gap-1 lg:gap-2 text-xs lg:text-xs xl:text-sm">
+                    <span className="text-xs lg:text-sm xl:text-base">ℹ️</span>
                     <span>Về trang web</span>
                   </h4>
                 </div>
-                <ul className="space-y-2 px-4 py-3">
-                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                <ul className="space-y-1 lg:space-y-2 px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 xl:py-3">
+                  <li 
+                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
+                    onClick={() => router.push('/about/qa')}
+                  >
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         🗨️
@@ -458,7 +469,10 @@ const HomePage = () => {
                       </span>
                     </div>
                   </li>
-                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                  <li 
+                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
+                    onClick={() => router.push('/community')}
+                  >
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         📚
@@ -468,7 +482,10 @@ const HomePage = () => {
                       </span>
                     </div>
                   </li>
-                  <li className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md">
+                  <li 
+                    className="bg-[#F1F1E6] rounded-xl p-3 hover:bg-[#F5F5FF] transition-all duration-200 cursor-pointer group border border-[#1E293B]/10 hover:border-[#0694FA]/30 hover:shadow-md"
+                    onClick={() => router.push('/about/career')}
+                  >
                     <div className="flex items-center space-x-2">
                       <span className="text-sm group-hover:scale-110 transition-transform duration-200">
                         💼
@@ -484,7 +501,7 @@ const HomePage = () => {
           </div>
 
           {/* Center Feed - Enhanced Posts Area */}
-          <div className="w-full max-w-2xl flex flex-col items-center space-y-4 sm:space-y-6 px-2 sm:px-0">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto flex flex-col items-center space-y-4 sm:space-y-6 px-1 sm:px-2 lg:px-4">
             {/* Enhanced New Post Input */}
             <div className="bg-white border border-[#1E293B]/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg w-full hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-start gap-3 sm:gap-4">
@@ -575,7 +592,7 @@ const HomePage = () => {
                       </button>
                       <button
                         onClick={() => setisAddmodalopen(true)}
-                        className="hidden sm:flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]"
+                        className="hidden lg:flex items-center space-x-2 text-[#1E293B]/70 hover:text-[#0694FA] transition-colors px-3 py-2 rounded-xl hover:bg-[#F5F5FF]"
                       >
                         <svg
                           className="w-5 h-5"
@@ -595,12 +612,12 @@ const HomePage = () => {
                     </div>
 
                     <button
-                      className="px-4 sm:px-8 py-2 sm:py-3 bg-[#0694FA] hover:bg-[#1E293B] text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-[#0694FA]/30 focus:outline-none text-sm sm:text-base flex-shrink-0"
+                      className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-[#0694FA] hover:bg-[#1E293B] text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-[#0694FA]/30 focus:outline-none text-sm sm:text-base flex-shrink-0"
                       onClick={() => setisAddmodalopen(true)}
                       type="button"
                     >
-                      <span className="hidden sm:inline">Đăng bài</span>
-                      <span className="sm:hidden">Đăng</span>
+                      <span className="hidden md:inline">Đăng bài</span>
+                      <span className="md:hidden">Đăng</span>
                     </button>
                   </div>
                 </div>
@@ -719,35 +736,35 @@ const HomePage = () => {
 
           {/* Enhanced Right Sidebar - Ads (only for non-premium users) */}
           {!userData?.isPremium && (
-            <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-              <div className="fixed top-24 w-64 xl:w-72 right-[calc((100vw-1280px)/2)] xl:right-[calc((100vw-1408px)/2)] space-y-4">
+            <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
+              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-1 lg:right-8 xl:right-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
                 {/* Quick Stats Card */}
-                <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <h4 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2 text-sm">
-                    <span className="text-base">📊</span>
+                <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-3 lg:p-4 xl:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <h4 className="font-bold text-[#1E293B] mb-2 lg:mb-3 xl:mb-4 flex items-center gap-2 lg:gap-3 xl:gap-4 text-sm lg:text-base xl:text-lg">
+                    <span className="text-sm lg:text-base xl:text-lg">📊</span>
                     <span>Hoạt động hôm nay</span>
                   </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 bg-[#F5F5FF] rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-[#0694FA] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                  <div className="space-y-2 lg:space-y-3 xl:space-y-4">
+                    <div className="flex items-center justify-between p-2 lg:p-3 xl:p-4 bg-[#F5F5FF] rounded-xl">
+                      <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+                        <div className="w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-[#0694FA] rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs lg:text-sm xl:text-base font-bold">
                             {posts.length}
                           </span>
                         </div>
-                        <span className="text-[#1E293B] font-medium text-xs">
+                        <span className="text-[#1E293B] font-medium text-xs lg:text-sm xl:text-base">
                           Bài viết
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-[#F1F1E6] rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-[#1E293B] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                    <div className="flex items-center justify-between p-2 lg:p-3 xl:p-4 bg-[#F1F1E6] rounded-xl">
+                      <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+                        <div className="w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-[#1E293B] rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs lg:text-sm xl:text-base font-bold">
                             {userGroups.length}
                           </span>
                         </div>
-                        <span className="text-[#1E293B] font-medium text-xs">
+                        <span className="text-[#1E293B] font-medium text-xs lg:text-sm xl:text-base">
                           Nhóm tham gia
                         </span>
                       </div>
@@ -772,35 +789,35 @@ const HomePage = () => {
 
           {/* Premium User - No Ads Message */}
           {userData?.isPremium && (
-            <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-              <div className="fixed top-24 w-64 xl:w-72 right-[calc((100vw-1280px)/2)] xl:right-[calc((100vw-1408px)/2)] space-y-4">
+            <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
+              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-1 lg:right-8 xl:right-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
                 {/* Quick Stats Card */}
-                <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <h4 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2 text-sm">
-                    <span className="text-base">📊</span>
+                <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-3 lg:p-4 xl:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <h4 className="font-bold text-[#1E293B] mb-2 lg:mb-3 xl:mb-4 flex items-center gap-2 lg:gap-3 xl:gap-4 text-sm lg:text-base xl:text-lg">
+                    <span className="text-sm lg:text-base xl:text-lg">📊</span>
                     <span>Hoạt động hôm nay</span>
                   </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 bg-[#F5F5FF] rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-[#0694FA] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                  <div className="space-y-2 lg:space-y-3 xl:space-y-4">
+                    <div className="flex items-center justify-between p-2 lg:p-3 xl:p-4 bg-[#F5F5FF] rounded-xl">
+                      <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+                        <div className="w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-[#0694FA] rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs lg:text-sm xl:text-base font-bold">
                             {posts.length}
                           </span>
                         </div>
-                        <span className="text-[#1E293B] font-medium text-xs">
+                        <span className="text-[#1E293B] font-medium text-xs lg:text-sm xl:text-base">
                           Bài viết
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-[#F1F1E6] rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-[#1E293B] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                    <div className="flex items-center justify-between p-2 lg:p-3 xl:p-4 bg-[#F1F1E6] rounded-xl">
+                      <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+                        <div className="w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 bg-[#1E293B] rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs lg:text-sm xl:text-base font-bold">
                             {userGroups.length}
                           </span>
                         </div>
-                        <span className="text-[#1E293B] font-medium text-xs">
+                        <span className="text-[#1E293B] font-medium text-xs lg:text-sm xl:text-base">
                           Nhóm tham gia
                         </span>
                       </div>
@@ -809,11 +826,11 @@ const HomePage = () => {
                 </div>
 
                 {/* Premium No Ads Card */}
-                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300 rounded-2xl p-6 shadow-lg">
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300 rounded-2xl p-4 md:p-6 shadow-lg">
                   <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-yellow-500 rounded-full flex items-center justify-center">
                       <svg
-                        className="w-8 h-8 text-white"
+                        className="w-6 h-6 md:w-8 md:h-8 text-white"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -824,7 +841,7 @@ const HomePage = () => {
                         />
                       </svg>
                     </div>
-                    <h3 className="font-bold text-yellow-800 text-sm mb-2">
+                    <h3 className="font-bold text-yellow-800 text-xs md:text-sm mb-1 md:mb-2">
                       🎉 Premium Active!
                     </h3>
                     <p className="text-yellow-700 text-xs">
@@ -841,7 +858,7 @@ const HomePage = () => {
 
       {/* Enhanced Chat Bubble */}
       {chatFriend && (
-        <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8">
           <BubbleChat name={chatFriend} status="Online" />
         </div>
       )}
@@ -864,7 +881,7 @@ const HomePage = () => {
       {/* Enhanced bottom gradient bar */}
       <div className="fixed left-0 bottom-0 w-full bg-[#0694FA] h-1 z-40 shadow-lg" />
 
-      {/* Floating Action Button for Mobile */}
+      {/* Floating Action Button for Mobile and smaller screens */}
       <div className="lg:hidden fixed bottom-6 right-4 z-50">
         <button
           onClick={() => setisAddmodalopen(true)}
@@ -903,8 +920,8 @@ const HomePage = () => {
           scrollbar-width: thin;
         }
 
-        .scrollbar-thumb-blue-200 {
-          scrollbar-color: #dbeafe transparent;
+        .scrollbar-thumb-gray-300 {
+          scrollbar-color: #d1d5db transparent;
         }
 
         .line-clamp-2 {
@@ -912,6 +929,59 @@ const HomePage = () => {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+
+        /* Responsive Sidebar Display */
+        @media (min-width: 1024px) {
+          .sidebar-container {
+            display: block !important;
+          }
+        }
+
+        /* Adjust layout for different screen sizes */
+        @media (min-width: 1024px) and (max-width: 1279px) {
+          .main-layout {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
+
+        @media (min-width: 1280px) {
+          .main-layout {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
+
+        /* Enhanced responsive typography and spacing */
+        @media (max-width: 640px) {
+          .sidebar-container {
+            display: none !important;
+          }
+        }
+
+        @media (min-width: 641px) and (max-width: 1023px) {
+          .sidebar-container {
+            display: none !important;
+          }
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
         }
       `}</style>
     </div>

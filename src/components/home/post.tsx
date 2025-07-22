@@ -638,7 +638,7 @@ const RenderPost: React.FC<RenderPostProps> = ({
           className="flex-1 flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-gray-700 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
           onClick={isLiked ? handleUnLikePost : handleLikePost}
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all duration-300">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all duration-300 sm:block hidden">
             <svg
               className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
                 isLiked ? "text-red-500 scale-110" : "text-gray-400"
@@ -658,7 +658,7 @@ const RenderPost: React.FC<RenderPostProps> = ({
           <span className="hidden sm:inline">
             {isLiked ? "Đã thích" : "Thích"}
           </span>
-          <span className="sm:hidden">❤️</span>
+          <span className="sm:hidden text-xl">{isLiked ? "❤️" : "🤍"}</span>
         </button>
 
         <button
@@ -670,14 +670,14 @@ const RenderPost: React.FC<RenderPostProps> = ({
           onClick={() => setShowComments((v) => !v)}
         >
           <div
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 hidden sm:flex ${
               showComments ? "bg-blue-100" : "bg-gray-100"
             }`}
           >
             <span className="text-base sm:text-lg">💬</span>
           </div>
           <span className="hidden sm:inline">Bình luận</span>
-          <span className="sm:hidden">💬</span>
+          <span className="sm:hidden text-xl">💬</span>
           {comments.length > 0 && (
             <span className="bg-blue-500 text-white rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-bold min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 flex items-center justify-center">
               {comments.length}

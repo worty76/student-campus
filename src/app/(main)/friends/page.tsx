@@ -780,18 +780,8 @@ const FriendsNCommunitys = () => {
                     <p className="text-gray-500 text-xs sm:text-sm mt-2">Vui lòng chờ trong giây lát</p>
                   </div>
                 ) : (
-                  (query
-                    ? displayData.filter(friend =>
-                        friend.username.toLowerCase().includes(query.toLowerCase())
-                      )
-                    : displayData
-                  ).length > 0 ? (
-                    (query
-                      ? displayData.filter(friend =>
-                          friend.username.toLowerCase().includes(query.toLowerCase())
-                        )
-                      : displayData
-                    ).map((friend) => (
+                  displayData.length > 0 ? (
+                    displayData.map((friend) => (
                       <div
                         key={friend._id}
                         className="group flex items-center bg-[#F1F1E6] backdrop-blur-sm rounded-2xl p-2 sm:p-3 md:p-4 lg:p-5 hover:bg-[#F5F9FF] transition-all duration-300 cursor-pointer border border-gray-200 hover:border-[#0694FA] transform hover:scale-[1.02] hover:shadow-lg"

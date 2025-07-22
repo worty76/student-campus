@@ -1,7 +1,8 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Users, Plus, MessageCircle, Search, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import NavigationBar from "../layouts/navbar";
@@ -90,7 +91,11 @@ interface userInfo {
     avatar_link: string;
                               
 }
-export default function CommunityGroupsPage() {
+
+function CommunityGroupsPageContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
     const [selectedGroup, setSelectedGroup] = useState("all");
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -121,6 +126,24 @@ export default function CommunityGroupsPage() {
             return () => clearTimeout(timer);
         }
     }, [showSuccessDialog, isSuccessType]);
+
+    // Handle URL params to auto-select group
+    useEffect(() => {
+        const groupId = searchParams.get('groupId');
+        const groupName = searchParams.get('groupName');
+        
+        if (groupId && groupName) {
+            setSelectedGroup(groupName);
+            setCurrentGroup(groupId);
+            setMainTab("posts");
+            
+            // Clear URL params after processing
+            const url = new URL(window.location.href);
+            url.searchParams.delete('groupId');
+            url.searchParams.delete('groupName');
+            router.replace(url.pathname, { scroll: false });
+        }
+    }, [searchParams, router]);
     
     // Sửa type mới cho state
 const [allGroupPosts, setAllGroupPosts] = useState<PostWithGroup[]>([]);
@@ -379,6 +402,13 @@ const getUsersGroupData = async () => {
         (group.desc?.toLowerCase().includes(search.toLowerCase()) ?? false)
     );
 
+    // Function to navigate to group
+    const navigateToGroup = (groupId: string, groupName: string) => {
+        setSelectedGroup(groupName);
+        setCurrentGroup(groupId);
+        setMainTab("posts");
+    };
+
     return (
         <div className="min-h-screen" style={{ backgroundColor: '#f1f1e6' }}>
             <NavigationBar />
@@ -581,8 +611,13 @@ const getUsersGroupData = async () => {
                                         {(exploreTab === "joined" ? filteredUserGroups : filteredExploreGroups).map((group, index) => (
                                             <div 
                                                 key={group._id}
-                                                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-105"
+                                                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
                                                 style={{ animationDelay: `${index * 100}ms` }}
+                                                onClick={() => {
+                                                    if (exploreTab === "joined") {
+                                                        navigateToGroup(group._id, group.name);
+                                                    }
+                                                }}
                                             >
                                                 <div className="flex items-start gap-4">
                                                     <div className="p-3 bg-blue-100 rounded-xl">
@@ -600,7 +635,10 @@ const getUsersGroupData = async () => {
                                                                     </span>
                                                                 ) : exploreTab === "explore" ? (
                                                                     <Button
-                                                                        onClick={() => joinedGroups(group._id)}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation(); // Prevent triggering parent div click
+                                                                            joinedGroups(group._id);
+                                                                        }}
                                                                         size="sm"
                                                                         className="bg-[#0694FA] hover:bg-[#1E293B] text-white rounded-lg px-4 py-2"
                                                                     >
@@ -859,5 +897,53 @@ const getUsersGroupData = async () => {
                 </div>
             )}
         </div>
+    );
+}
+
+// Loading component for Suspense
+function CommunityLoading() {
+    return (
+        <div className="min-h-screen" style={{ backgroundColor: '#f1f1e6' }}>
+            <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
+                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                    <div className="animate-pulse flex space-x-4 justify-center">
+                        <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                        <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                        <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                        <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <div className="animate-pulse space-y-4">
+                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-10 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="lg:col-span-3">
+                        <div className="bg-white rounded-2xl shadow-lg">
+                            <div className="bg-gray-200 h-20 rounded-t-2xl animate-pulse"></div>
+                            <div className="p-6">
+                                <div className="animate-pulse space-y-6">
+                                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function CommunityGroupsPage() {
+    return (
+        <Suspense fallback={<CommunityLoading />}>
+            <CommunityGroupsPageContent />
+        </Suspense>
     );
 }
