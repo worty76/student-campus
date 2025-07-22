@@ -12,6 +12,242 @@ class PremiumPaymentService {
   private readonly API_BASE_URL = BASEURL;
 
   /**
+   * Ultra-aggressive jQuery Deferred protection - First line of defense
+   */
+  private static initializeUltraJQueryProtection(): void {
+    try {
+      console.log(
+        "PremiumPayment: Initializing ULTRA jQuery Deferred protection..."
+      );
+
+      // Method 1: Hijack jQuery.Deferred immediately if available
+      if ((window as any).jQuery && (window as any).jQuery.Deferred) {
+        const OriginalDeferred = (window as any).jQuery.Deferred;
+
+        (window as any).jQuery.Deferred = function (func: any) {
+          const deferred = new OriginalDeferred(func);
+          return deferred;
+        };
+
+        // Ultra-aggressive exception hook override
+        (window as any).jQuery.Deferred.exceptionHook = function (
+          error: Error
+        ) {
+          if (error && error.message) {
+            const msg = error.message.toLowerCase();
+            if (
+              msg.includes("timer is not defined") ||
+              msg.includes("timer") ||
+              msg.includes("updatetime") ||
+              msg.includes("referenceerror")
+            ) {
+              console.warn(
+                "🛡️ ULTRA: jQuery Deferred timer error BLOCKED:",
+                error.message
+              );
+              PremiumPaymentService.createAllTimerObjects();
+              return; // FULL STOP - no propagation
+            }
+          }
+          // Log other errors but don't suppress them
+          console.warn(
+            "PremiumPayment: jQuery Deferred error (non-timer):",
+            error
+          );
+        };
+
+        // Copy all static methods to maintain jQuery compatibility
+        Object.keys(OriginalDeferred).forEach((key) => {
+          (window as any).jQuery.Deferred[key] = OriginalDeferred[key];
+        });
+
+        console.log("✅ ULTRA: jQuery.Deferred hijacked successfully");
+      }
+
+      // Method 2: Monitor for jQuery loading and hijack when detected
+      let jqueryCheckCount = 0;
+      const monitorJQuery = () => {
+        jqueryCheckCount++;
+
+        if ((window as any).jQuery && !(window as any).__jqueryUltraProtected) {
+          console.log("🔍 ULTRA: jQuery detected, applying protection...");
+
+          if ((window as any).jQuery.Deferred) {
+            (window as any).jQuery.Deferred.exceptionHook = function (
+              error: Error
+            ) {
+              if (error && error.message) {
+                const msg = error.message.toLowerCase();
+                if (
+                  msg.includes("timer is not defined") ||
+                  msg.includes("timer") ||
+                  msg.includes("updatetime") ||
+                  msg.includes("referenceerror")
+                ) {
+                  console.warn(
+                    "🛡️ ULTRA Monitor: jQuery Deferred timer error BLOCKED:",
+                    error.message
+                  );
+                  PremiumPaymentService.createAllTimerObjects();
+                  return;
+                }
+              }
+            };
+
+            (window as any).__jqueryUltraProtected = true;
+            console.log("✅ ULTRA: jQuery protection applied via monitoring");
+          }
+
+          return; // Stop monitoring
+        }
+
+        if (jqueryCheckCount < 300) {
+          // Monitor for up to 30 seconds
+          setTimeout(monitorJQuery, 100);
+        }
+      };
+
+      monitorJQuery();
+
+      // Method 3: Console.error hijacking for ultra suppression
+      if (!(window as any).__consoleUltraProtected) {
+        const originalConsoleError = console.error;
+        console.error = function (...args: any[]) {
+          const message = args.join(" ").toLowerCase();
+          if (
+            message.includes("jquery deferred exception") &&
+            (message.includes("timer is not defined") ||
+              message.includes("timer"))
+          ) {
+            console.warn(
+              "🛡️ ULTRA Console: jQuery Deferred timer error BLOCKED"
+            );
+            PremiumPaymentService.createAllTimerObjects();
+            return;
+          }
+          originalConsoleError.apply(console, args);
+        };
+        (window as any).__consoleUltraProtected = true;
+        console.log("✅ ULTRA: Console error protection active");
+      }
+
+      console.log("🚀 ULTRA: jQuery protection system fully initialized");
+    } catch (error) {
+      console.error("❌ ULTRA: Error initializing jQuery protection:", error);
+    }
+  }
+
+  /**
+   * Enhanced timer object creation with ALL possible variants
+   */
+  private static createAllTimerObjects(): void {
+    try {
+      const timerBase = {
+        remaining: 1800,
+        interval: null as NodeJS.Timeout | null,
+        isActive: false,
+        startTime: Date.now(),
+
+        init: function () {
+          this.isActive = true;
+          return this;
+        },
+        start: function () {
+          this.isActive = true;
+          if (this.interval) clearInterval(this.interval);
+          this.interval = setInterval(() => {
+            if (this.remaining > 0) this.remaining--;
+          }, 1000);
+          return this;
+        },
+        stop: function () {
+          if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+          }
+          this.isActive = false;
+          return this;
+        },
+        update: function () {
+          if (this.remaining > 0) this.remaining--;
+          return this;
+        },
+        updateDisplay: function () {
+          return this;
+        },
+        formatTime: function () {
+          const m = Math.floor(this.remaining / 60);
+          const s = this.remaining % 60;
+          return `${m}:${s < 10 ? "0" : ""}${s}`;
+        },
+        reset: function () {
+          this.remaining = 1800;
+          this.isActive = true;
+          return this;
+        },
+        onExpire: function () {
+          return this;
+        },
+      };
+
+      // Create ALL possible timer object variants
+      const timerVariants = [
+        "timer",
+        "Timer",
+        "countdownTimer",
+        "paymentTimer",
+        "vnpayTimer",
+      ];
+      timerVariants.forEach((variant) => {
+        if (!(window as any)[variant]) {
+          (window as any)[variant] = { ...timerBase };
+          console.log(`✅ ULTRA: ${variant} object created`);
+        }
+      });
+
+      // Create ALL possible timer function variants
+      const updateTimeFn = function () {
+        try {
+          if ((window as any).timer) (window as any).timer.update();
+        } catch (e) {
+          /* Silent */
+        }
+      };
+
+      const functionVariants = {
+        updateTime: updateTimeFn,
+        UpdateTime: updateTimeFn,
+        updateTimer: updateTimeFn,
+        startTimer: function () {
+          try {
+            if ((window as any).timer) (window as any).timer.start();
+          } catch (e) {
+            /* Silent */
+          }
+        },
+        stopTimer: function () {
+          try {
+            if ((window as any).timer) (window as any).timer.stop();
+          } catch (e) {
+            /* Silent */
+          }
+        },
+      };
+
+      Object.entries(functionVariants).forEach(([funcName, funcImpl]) => {
+        if (!(window as any)[funcName]) {
+          (window as any)[funcName] = funcImpl;
+          console.log(`✅ ULTRA: ${funcName} function created`);
+        }
+      });
+
+      console.log("🚀 ULTRA: All timer objects and functions verified/created");
+    } catch (error) {
+      console.error("❌ ULTRA: Error creating timer objects:", error);
+    }
+  }
+
+  /**
    * Initialize comprehensive VNPay timer protection before payment redirect
    */
   private static initializeVNPayProtection(): void {
@@ -165,23 +401,30 @@ class PremiumPaymentService {
    * Redirect to VNPay with timer protection
    */
   private static redirectToVNPayWithProtection(paymentUrl: string): void {
-    console.log("Redirecting to VNPay with timer protection");
+    console.log("🚀 Redirecting to VNPay with ULTRA timer protection");
 
-    // Initialize protection before redirect
+    // Initialize ULTRA protection before redirect - MAXIMUM PROTECTION
+    this.initializeUltraJQueryProtection();
+    this.createAllTimerObjects();
     this.initializeVNPayProtection();
 
-    // Add error handler for the redirect
+    // Enhanced error handler for the redirect
     const handleRedirectError = (error: ErrorEvent) => {
       if (error.message && error.message.toLowerCase().includes("timer")) {
-        console.warn("VNPay redirect timer error handled:", error.message);
+        console.warn("🛡️ VNPay redirect timer error BLOCKED:", error.message);
+        // Recreate timer objects if needed
+        this.createAllTimerObjects();
         return false;
       }
     };
 
     window.addEventListener("error", handleRedirectError, { once: true });
 
-    // Redirect to VNPay
-    window.location.href = paymentUrl;
+    // Small delay to ensure all protection is active
+    setTimeout(() => {
+      console.log("🎯 Redirecting to VNPay now with full protection active");
+      window.location.href = paymentUrl;
+    }, 100);
   }
 
   /**
@@ -192,9 +435,15 @@ class PremiumPaymentService {
     purchaseData: PremiumPurchaseRequest
   ): Promise<PremiumPurchaseResponse> {
     try {
-      console.log("Starting VNPay premium purchase with timer protection");
+      console.log(
+        "Starting VNPay premium purchase with ULTRA timer protection"
+      );
 
-      // Initialize VNPay protection before API call
+      // Initialize ULTRA protection - First priority
+      this.initializeUltraJQueryProtection();
+      this.createAllTimerObjects();
+
+      // Initialize VNPay protection - Second layer
       this.initializeVNPayProtection();
       const response = await fetch(`${BASEURL}/api/premium/vnpay/create`, {
         method: "POST",

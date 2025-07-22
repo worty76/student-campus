@@ -22,6 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Ultra-Aggressive jQuery Deferred Timer Error Prevention - Load first for maximum protection */}
+        <script src="/jquery-deferred-timer-fix.js" defer />
+
         {/* Enhanced VNPay Timer Error Prevention - Load multiple protection layers */}
         <script src="/vnpay-timer-enhanced.js" defer />
         <script src="/vnpay-universal-fix.js" defer />

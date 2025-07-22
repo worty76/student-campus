@@ -7,34 +7,51 @@
   console.log("Enhanced VNPay Universal Fix - Loading...");
 
   // Immediately define timer objects to prevent any timing issues
-  const defineTimerImmediately = function() {
-    if (typeof window.timer === 'undefined') {
+  const defineTimerImmediately = function () {
+    if (typeof window.timer === "undefined") {
       window.timer = {
         remaining: 1800, // 30 minutes
         interval: null,
         isActive: false,
-        init: function() { this.isActive = true; return this; },
-        start: function() { this.isActive = true; return this; },
-        stop: function() { if (this.interval) clearInterval(this.interval); return this; },
-        update: function() { return this; },
-        formatTime: function() { return '30:00'; },
-        reset: function() { return this; },
-        onExpire: function() { return this; }
+        init: function () {
+          this.isActive = true;
+          return this;
+        },
+        start: function () {
+          this.isActive = true;
+          return this;
+        },
+        stop: function () {
+          if (this.interval) clearInterval(this.interval);
+          return this;
+        },
+        update: function () {
+          return this;
+        },
+        formatTime: function () {
+          return "30:00";
+        },
+        reset: function () {
+          return this;
+        },
+        onExpire: function () {
+          return this;
+        },
       };
-      console.log('Timer object created immediately');
+      console.log("Timer object created immediately");
     }
-    
-    if (typeof window.updateTime === 'undefined') {
-      window.updateTime = function() {
+
+    if (typeof window.updateTime === "undefined") {
+      window.updateTime = function () {
         try {
           if (window.timer && window.timer.remaining > 0) {
             window.timer.remaining--;
           }
-        } catch(e) {
-          console.warn('updateTime handled safely');
+        } catch (e) {
+          console.warn("updateTime handled safely");
         }
       };
-      console.log('updateTime function created immediately');
+      console.log("updateTime function created immediately");
     }
   };
 
@@ -68,17 +85,6 @@
 
         // Re-initialize timer objects if missing
         defineTimerImmediately();
-        
-        return true; // Prevent error from showing
-      }
-    }
-    return false;
-  };
-
-        // Initialize timer objects if missing
-        if (!window.timer) {
-          initializeTimerObjects();
-        }
 
         return true; // Prevent error from showing
       }
