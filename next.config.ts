@@ -31,6 +31,39 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   async headers() {
+    const isDev = process.env.NODE_ENV === "development";
+
+    // Base CSP directives
+    const baseCSP = [
+      "default-src 'self'",
+      "img-src 'self' data: blob: https: http:",
+      "media-src 'self' blob: data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+      "worker-src 'self' blob:",
+    ];
+
+    // Development CSP (more permissive)
+    const devCSP = [
+      ...baseCSP,
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://*.vercel.com https://vercel.com localhost:* http://localhost:*",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://*.vercel.com",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://*.vercel.com data:",
+      "connect-src 'self' ws: wss: https: http: data: blob: https://vercel.live https://*.vercel.com wss://vercel.live wss://*.vercel.com ws://localhost:* http://localhost:*",
+      "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
+    ];
+
+    // Production CSP (more restrictive)
+    const prodCSP = [
+      ...baseCSP,
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://*.vercel.com https://vercel.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://*.vercel.com",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://*.vercel.com",
+      "connect-src 'self' wss: https: data: blob: https://vercel.live https://*.vercel.com wss://vercel.live wss://*.vercel.com",
+      "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
+    ];
+
     return [
       {
         // Apply CSP to all routes
@@ -38,20 +71,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn", // Allow VNPay scripts
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // Allow inline styles and Google Fonts
-              "font-src 'self' https://fonts.gstatic.com", // Allow font loading
-              "img-src 'self' data: blob: https: http:", // Allow images from various sources
-              "media-src 'self' blob: data:", // Allow media
-              "object-src 'none'", // Block objects for security
-              "base-uri 'self'", // Restrict base URI
-              "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn", // Allow forms to VNPay
-              "frame-ancestors 'none'", // Prevent framing
-              "connect-src 'self' ws: wss: https: data: blob:", // Allow websockets and HTTPS connections
-              "worker-src 'self' blob:", // Allow web workers
-            ].join("; "),
+            value: (isDev ? devCSP : prodCSP).join("; "),
           },
           {
             key: "X-Frame-Options",
