@@ -580,6 +580,64 @@ const getTransactionHistory = async (req, res) => {
   }
 };
 
+// Admin: Export revenue data to CSV
+const exportRevenueData = async (req, res) => {
+  try {
+    const { period = "month" } = req.query;
+
+    let dateFilter = {};
+    const now = new Date();
+
+    if (period === "month") {
+      dateFilter = {
+        createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) },
+      };
+    } else if (period === "year") {
+      dateFilter = { createdAt: { $gte: new Date(now.getFullYear(), 0, 1) } };
+    } else if (period === "week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      dateFilter = { createdAt: { $gte: weekAgo } };
+    }
+
+    const transactions = await PremiumTransaction.find({
+      ...dateFilter,
+      status: "completed",
+    }).populate("userId", "username email");
+
+    // Generate CSV content
+    let csvContent =
+      "Date,User,Email,Amount,Payment Method,Transaction ID,Status\n";
+
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.createdAt).toLocaleDateString("vi-VN");
+      const username = transaction.userId?.username || "N/A";
+      const email = transaction.userId?.email || "N/A";
+      const amount = transaction.amount;
+      const paymentMethod = transaction.paymentMethod;
+      const transactionId = transaction.transactionId;
+      const status = transaction.status;
+
+      csvContent += `"${date}","${username}","${email}","${amount}","${paymentMethod}","${transactionId}","${status}"\n`;
+    });
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="revenue-report-${period}-${
+        new Date().toISOString().split("T")[0]
+      }.csv"`
+    );
+
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("Error exporting revenue data:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   purchasePremium,
   checkPremiumStatus,
@@ -589,6 +647,7 @@ module.exports = {
   deletePost,
   updateUserRole,
   getTransactionHistory,
+  exportRevenueData,
   createVNPayPayment,
   handleVNPayReturn,
   handleVNPayIPN,
