@@ -54,7 +54,7 @@ export default function AdminDashboard() {
           totalUsers: data.stats.totalUsers,
           premiumUsers: data.stats.premiumUsers,
           totalRevenue: data.stats.totalRevenue,
-          totalPosts: 0, // Will be fetched separately
+          totalPosts: data.stats.totalPosts || 0, // Use the posts count from API
           premiumConversionRate: parseFloat(data.stats.premiumConversionRate),
         });
       }

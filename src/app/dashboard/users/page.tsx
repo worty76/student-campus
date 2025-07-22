@@ -251,11 +251,6 @@ export default function UserManagement() {
                 <option value="premium">Chỉ Premium</option>
                 <option value="free">Chỉ Miễn Phí</option>
               </select>
-
-              {/* Export Button */}
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                Xuất Dữ Liệu
-              </Button>
             </div>
           </CardContent>
         </Card>

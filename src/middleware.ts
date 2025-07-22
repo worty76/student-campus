@@ -47,6 +47,7 @@ export function middleware(request: NextRequest) {
   // Check for admin routes
   if (adminPaths.some((path) => pathname.startsWith(path))) {
     const token = request.cookies.get("token")?.value;
+    console.log(token);
 
     // Check if token exists and is not expired
     if (!token || isJWTExpired(token)) {
@@ -55,6 +56,7 @@ export function middleware(request: NextRequest) {
 
     // Check if user has admin role
     const userRole = getUserRoleFromToken(token);
+    console.log(userRole);
     if (userRole !== "admin") {
       // Redirect non-admin users to home page or show unauthorized page
       return NextResponse.redirect(new URL("/home", request.url));
