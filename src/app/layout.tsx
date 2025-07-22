@@ -27,54 +27,113 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Immediate VNPay timer error prevention
+              // Enhanced VNPay and jQuery timer error prevention
               (function() {
-                console.log('VNPay Layout Protection - Initializing...');
+                console.log('Enhanced Layout Protection - Initializing...');
                 
-                // Global error handler for timer-related errors
+                // Suppress jQuery deferred exceptions for timer errors
+                if (typeof window.jQuery !== 'undefined' || typeof $ !== 'undefined') {
+                  const originalReadyException = jQuery?.Deferred?.exceptionHook || function(){};
+                  if (jQuery?.Deferred) {
+                    jQuery.Deferred.exceptionHook = function(error, stack) {
+                      if (error && error.message && error.message.toLowerCase().includes('timer is not defined')) {
+                        console.warn('jQuery Deferred timer error suppressed:', error.message);
+                        return; // Don't call original handler for timer errors
+                      }
+                      return originalReadyException.call(this, error, stack);
+                    };
+                  }
+                }
+                
+                // Enhanced global error handler for timer-related errors
                 const originalError = window.onerror;
                 window.onerror = function(message, source, lineno, colno, error) {
                   if (typeof message === 'string') {
                     const msg = message.toLowerCase();
                     if (msg.includes('timer is not defined') || 
                         msg.includes('updatetime') || 
-                        msg.includes('referenceerror: timer')) {
-                      console.warn('VNPay timer error prevented in layout:', message);
+                        msg.includes('referenceerror: timer') ||
+                        (source && source.includes('custom.min.js') && msg.includes('timer'))) {
+                      console.warn('Timer error prevented - Source:', source, 'Line:', lineno, 'Message:', message);
+                      
+                      // Initialize timer if not exists
+                      if (!window.timer) {
+                        window.timer = {
+                          remaining: 1800,
+                          interval: null,
+                          isActive: false,
+                          init: function() { this.isActive = true; return this; },
+                          start: function() { this.isActive = true; return this; },
+                          stop: function() { if (this.interval) clearInterval(this.interval); return this; },
+                          update: function() { return this; },
+                          formatTime: function() { return '30:00'; }
+                        };
+                      }
+                      
                       return true; // Prevent error from showing
                     }
                   }
                   return originalError ? originalError.apply(this, arguments) : false;
                 };
 
-                // Promise rejection handler
+                // Enhanced promise rejection handler
                 window.addEventListener('unhandledrejection', function(event) {
                   if (event.reason && event.reason.message && 
                       event.reason.message.toLowerCase().includes('timer')) {
-                    console.warn('VNPay timer promise rejection handled:', event.reason.message);
+                    console.warn('Timer promise rejection handled:', event.reason.message);
                     event.preventDefault();
                   }
                 });
 
-                // Pre-define timer object to prevent "not defined" errors
+                // Pre-define comprehensive timer object
                 if (!window.timer) {
-                  console.log('VNPay Layout - Defining timer object');
+                  console.log('Layout - Defining enhanced timer object');
                   Object.defineProperty(window, 'timer', {
                     value: {
                       remaining: 1800, // 30 minutes
                       interval: null,
                       isActive: false,
-                      init: function() { this.isActive = true; return this; },
+                      startTime: Date.now(),
+                      
+                      init: function() { 
+                        console.log('Timer initialized from layout');
+                        this.isActive = true; 
+                        this.startTime = Date.now();
+                        return this; 
+                      },
                       start: function() { 
-                        console.log('VNPay timer started from layout');
+                        console.log('Timer started from layout');
                         this.isActive = true;
+                        if (this.interval) this.stop();
+                        this.interval = setInterval(() => {
+                          if (this.remaining > 0) {
+                            this.remaining--;
+                          }
+                        }, 1000);
                         return this; 
                       },
                       stop: function() { 
-                        if (this.interval) clearInterval(this.interval);
-                        this.interval = null;
+                        if (this.interval) {
+                          clearInterval(this.interval);
+                          this.interval = null;
+                        }
+                        this.isActive = false;
                         return this; 
                       },
-                      update: function() { /* Safe update */ },
+                      reset: function(newTime) {
+                        this.remaining = newTime || 1800;
+                        this.startTime = Date.now();
+                        return this;
+                      },
+                      update: function() { 
+                        // Safe update with error handling
+                        try {
+                          if (this.remaining > 0) this.remaining--;
+                        } catch(e) { 
+                          console.warn('Timer update handled safely'); 
+                        }
+                        return this;
+                      },
                       formatTime: function() {
                         const m = Math.floor(this.remaining / 60);
                         const s = this.remaining % 60;
@@ -86,20 +145,33 @@ export default function RootLayout({
                   });
                 }
 
-                // Pre-define updateTime function
+                // Enhanced updateTime function
                 if (!window.updateTime) {
-                  window.updateTime = function() {
-                    try {
-                      if (window.timer && window.timer.remaining > 0) {
-                        window.timer.remaining--;
+                  Object.defineProperty(window, 'updateTime', {
+                    value: function() {
+                      try {
+                        if (window.timer && typeof window.timer.update === 'function') {
+                          window.timer.update();
+                        }
+                      } catch(e) {
+                        console.warn('updateTime handled safely:', e.message);
                       }
-                    } catch(e) {
-                      console.warn('updateTime handled safely');
-                    }
-                  };
+                    },
+                    writable: false,
+                    configurable: false
+                  });
                 }
 
-                console.log('VNPay Layout Protection - Ready');
+                // Additional jQuery timer variables that might be expected
+                if (!window.countdownTimer) {
+                  window.countdownTimer = window.timer;
+                }
+                
+                if (!window.paymentTimer) {
+                  window.paymentTimer = window.timer;
+                }
+
+                console.log('Enhanced Layout Protection - Ready with timer object:', !!window.timer);
               })();
             `,
           }}

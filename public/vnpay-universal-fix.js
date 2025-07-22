@@ -1,309 +1,356 @@
 // VNPay Timer Error Fix - Universal Solution for Production
-// This script prevents "timer is not defined" errors in VNPay payment pages
+// This script prevents "timer is not defined" errors in VNPay payment pages and jQuery custom.min.js
 
 (function () {
   "use strict";
 
-  console.log("VNPay Universal Fix - Loading...");
+  console.log("Enhanced VNPay Universal Fix - Loading...");
 
-  // Global error handler for VNPay timer issues
+  // Enhanced error suppression for jQuery and custom.min.js
+  const suppressTimerErrors = function (message, source, lineno, colno, error) {
+    if (typeof message === "string") {
+      const msg = message.toLowerCase();
+      const src = (source || "").toLowerCase();
+
+      // Check for timer-related errors
+      if (
+        msg.includes("timer is not defined") ||
+        msg.includes("updatetime is not defined") ||
+        msg.includes("referenceerror: timer") ||
+        (src.includes("custom.min.js") && msg.includes("timer")) ||
+        (src.includes("vnpay") && msg.includes("timer"))
+      ) {
+        console.warn(
+          "Timer error suppressed - Source:",
+          source,
+          "Line:",
+          lineno,
+          "Message:",
+          message
+        );
+
+        // Initialize timer objects if missing
+        if (!window.timer) {
+          initializeTimerObjects();
+        }
+
+        return true; // Prevent error from showing
+      }
+    }
+    return false;
+  };
+
+  // Global error handler
   const originalOnError = window.onerror;
   window.onerror = function (message, source, lineno, colno, error) {
-    if (typeof message === 'string' && 
-        (message.includes('timer is not defined') || 
-         message.includes('updateTime is not defined') ||
-         message.includes('ReferenceError: timer'))) {
-      console.warn('VNPay timer error intercepted and handled:', message);
-      return true; // Prevent the error from showing in console
+    if (suppressTimerErrors(message, source, lineno, colno, error)) {
+      return true;
     }
-    
+
     if (originalOnError) {
       return originalOnError.apply(this, arguments);
     }
     return false;
   };
 
+  // jQuery Deferred exception handler
+  const setupJQueryErrorHandling = function () {
+    if (typeof window.jQuery !== "undefined" && window.jQuery.Deferred) {
+      const originalExceptionHook = window.jQuery.Deferred.exceptionHook;
+      window.jQuery.Deferred.exceptionHook = function (error, stack) {
+        if (
+          error &&
+          error.message &&
+          error.message.toLowerCase().includes("timer is not defined")
+        ) {
+          console.warn(
+            "jQuery Deferred timer error suppressed:",
+            error.message
+          );
+          return; // Don't propagate timer errors
+        }
+        if (originalExceptionHook) {
+          return originalExceptionHook.call(this, error, stack);
+        }
+      };
+      console.log("jQuery Deferred error handling configured");
+    }
+  };
+
   // Enhanced unhandled promise rejection handler
-  window.addEventListener('unhandledrejection', function(event) {
-    if (event.reason && event.reason.message && 
-        event.reason.message.includes('timer')) {
-      console.warn('VNPay timer promise rejection handled:', event.reason.message);
+  window.addEventListener("unhandledrejection", function (event) {
+    if (
+      event.reason &&
+      event.reason.message &&
+      event.reason.message.toLowerCase().includes("timer")
+    ) {
+      console.warn("Timer promise rejection handled:", event.reason.message);
       event.preventDefault();
     }
   });
 
-  // Define comprehensive timer object before any VNPay scripts load
-  if (typeof window.timer === 'undefined') {
-    console.log('VNPay Fix - Initializing timer object');
-    
-    window.timer = {
-      remaining: 1800, // 30 minutes in seconds
-      interval: null,
-      isActive: false,
-      
-      // Initialize timer
-      init: function() {
-        console.log('VNPay Timer - Initialized with', this.remaining, 'seconds');
-        this.isActive = true;
-        return this;
-      },
-      
-      // Start countdown
-      start: function() {
-        if (this.interval) this.stop();
-        
-        this.interval = setInterval(() => {
-          try {
-            if (this.remaining > 0) {
-              this.remaining--;
-              if (typeof this.update === 'function') {
-                this.update();
-              }
-            } else {
-              this.stop();
-              if (typeof this.onExpire === 'function') {
+  // Comprehensive timer object initialization
+  const initializeTimerObjects = function () {
+    if (typeof window.timer === "undefined") {
+      console.log(
+        "Enhanced VNPay Fix - Initializing comprehensive timer object"
+      );
+
+      window.timer = {
+        remaining: 1800, // 30 minutes in seconds
+        interval: null,
+        isActive: false,
+        startTime: Date.now(),
+
+        // Initialize timer
+        init: function () {
+          console.log(
+            "Enhanced Timer - Initialized with",
+            this.remaining,
+            "seconds"
+          );
+          this.isActive = true;
+          this.startTime = Date.now();
+          return this;
+        },
+
+        // Start countdown
+        start: function () {
+          if (this.interval) this.stop();
+
+          this.interval = setInterval(() => {
+            try {
+              if (this.remaining > 0) {
+                this.remaining--;
+                this.updateDisplay();
+              } else {
+                this.stop();
                 this.onExpire();
               }
+            } catch (e) {
+              console.warn(
+                "Enhanced Timer - Update error handled safely:",
+                e.message
+              );
+            }
+          }, 1000);
+
+          this.isActive = true;
+          console.log("Enhanced Timer - Started");
+          return this;
+        },
+
+        // Stop timer
+        stop: function () {
+          if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+          }
+          this.isActive = false;
+          console.log("Enhanced Timer - Stopped");
+          return this;
+        },
+
+        // Update display
+        updateDisplay: function () {
+          try {
+            const minutes = Math.floor(this.remaining / 60);
+            const seconds = this.remaining % 60;
+            const timeString = `${minutes.toString().padStart(2, "0")}:${seconds
+              .toString()
+              .padStart(2, "0")}`;
+
+            // Update timer display elements
+            const timerElements = document.querySelectorAll(
+              '#timer, .timer, [class*="timer"], [id*="timer"], .countdown, #countdown, .time-remaining'
+            );
+
+            timerElements.forEach((el) => {
+              if (el && el.textContent !== undefined) {
+                el.textContent = timeString;
+              }
+            });
+
+            // Update page title if it has timer format
+            if (
+              document.title.includes(":") &&
+              document.title.match(/\d+:\d+/)
+            ) {
+              document.title = document.title.replace(/\d+:\d+/, timeString);
+            }
+
+            // Call external update functions if they exist
+            if (typeof window.updateTime === "function") {
+              window.updateTime();
+            }
+            if (typeof window.updateTimer === "function") {
+              window.updateTimer();
             }
           } catch (e) {
-            console.warn('VNPay Timer - Update error handled safely:', e.message);
+            console.warn(
+              "Enhanced Timer - Display update handled safely:",
+              e.message
+            );
           }
-        }, 1000);
-        
-        console.log('VNPay Timer - Started');
-        return this;
-      },
-      
-      // Stop timer
-      stop: function() {
-        if (this.interval) {
-          clearInterval(this.interval);
-          this.interval = null;
-        }
-        console.log('VNPay Timer - Stopped');
-        return this;
-      },
-      
-      // Update display (override by VNPay if needed)
-      update: function() {
-        // Safe update function that won't crash
+        },
+
+        // Update method (alias for updateDisplay)
+        update: function () {
+          this.updateDisplay();
+          return this;
+        },
+
+        // Format time for display
+        formatTime: function () {
+          const minutes = Math.floor(this.remaining / 60);
+          const seconds = this.remaining % 60;
+          return `${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`;
+        },
+
+        // Expiration handler
+        onExpire: function () {
+          console.log("Enhanced Timer - Expired");
+          this.isActive = false;
+
+          // Notify user about expiration
+          try {
+            if (
+              window.location.href.includes("vnpay") ||
+              document.body.innerHTML.includes("vnpay")
+            ) {
+              console.warn("Payment timer expired");
+              // Could add user notification here
+            }
+          } catch (e) {
+            console.warn("Timer expiration notification handled safely");
+          }
+        },
+
+        // Reset timer
+        reset: function (newTime) {
+          this.remaining = newTime || 1800;
+          this.startTime = Date.now();
+          this.isActive = true;
+          console.log("Enhanced Timer - Reset to", this.remaining, "seconds");
+          return this;
+        },
+      };
+
+      console.log("Enhanced Timer object created successfully");
+    }
+  };
+
+  // Define enhanced updateTime function
+  const defineUpdateTimeFunction = function () {
+    if (typeof window.updateTime === "undefined") {
+      window.updateTime = function () {
         try {
-          if (typeof window.updateTime === 'function') {
-            window.updateTime();
-          } else if (typeof window.updateTimer === 'function') {
-            window.updateTimer();
+          if (window.timer && typeof window.timer.update === "function") {
+            window.timer.update();
           }
         } catch (e) {
-          // Silently handle update errors
+          console.warn("Enhanced updateTime handled safely:", e.message);
         }
-      },
-      
-      // Format time for display
-      formatTime: function() {
-        const minutes = Math.floor(this.remaining / 60);
-        const seconds = this.remaining % 60;
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      },
-      
-      // Expiration handler
-      onExpire: function() {
-        console.log('VNPay Timer - Expired');
-        this.isActive = false;
-      },
-      
-      // Reset timer
-      reset: function(newTime) {
-        this.remaining = newTime || 1800;
-        this.isActive = true;
-        console.log('VNPay Timer - Reset to', this.remaining, 'seconds');
-        return this;
-      }
-    };
-  }
-          this.interval = null;
-        }
-      },
-      }
-
-  // Define additional VNPay-related functions that might be missing
-  if (typeof window.updateTime === 'undefined') {
-    window.updateTime = function() {
-      try {
-        if (window.timer && window.timer.remaining >= 0) {
-          const minutes = Math.floor(window.timer.remaining / 60);
-          const seconds = window.timer.remaining % 60;
-          
-          // Update any timer display elements
-          const timerElements = document.querySelectorAll(
-            '#timer, .timer, [class*="timer"], [id*="timer"], .countdown, #countdown'
-          );
-          
-          timerElements.forEach((el) => {
-            if (el) {
-              el.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-          });
-          
-          // Update page title if it has timer
-          if (document.title.includes(':') && document.title.match(/\d+:\d+/)) {
-            document.title = document.title.replace(/\d+:\d+/, 
-              `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-          }
-        }
-      } catch (e) {
-        console.warn('VNPay updateTime handled safely:', e.message);
-      }
-    };
-  }
-
-  // Define other potentially missing VNPay functions
-  if (typeof window.updateTimer === 'undefined') {
-    window.updateTimer = window.updateTime;
-  }
-
-  if (typeof window.countdown === 'undefined') {
-    window.countdown = function(seconds) {
-      if (window.timer) {
-        window.timer.remaining = seconds || 1800;
-        window.timer.start();
-      }
-    };
-  }
-
-  // Auto-initialize timer when VNPay page loads
-  document.addEventListener('DOMContentLoaded', function() {
-    if (window.timer && !window.timer.isActive) {
-      console.log('VNPay Fix - Auto-initializing timer on DOMContentLoaded');
-      window.timer.init();
-      
-      // Start timer if we detect we're on a payment page
-      if (document.querySelector('.payment, .vnpay, [class*="pay"]') || 
-          window.location.href.includes('vnpay') ||
-          document.body.innerHTML.includes('VNPay')) {
-        window.timer.start();
-      }
-    }
-  });
-
-  // Enhanced error suppression for common VNPay issues
-  const originalConsoleError = console.error;
-  console.error = function(...args) {
-    const message = args.join(' ').toLowerCase();
-    
-    // List of VNPay-related errors to suppress
-    const vnpayErrors = [
-      'timer is not defined',
-      'updatetime is not defined',
-      'referenceerror: timer',
-      'custom.min.js',
-      'vnpay-timer',
-      'payment-timer',
-      'countdown is not defined'
-    ];
-    
-    if (vnpayErrors.some(error => message.includes(error))) {
-      console.warn('VNPay error suppressed and handled:', args[0]);
-      return;
-    }
-    
-    originalConsoleError.apply(console, args);
-  };
-
-  // Additional protection for script loading errors
-  window.addEventListener('error', function(e) {
-    if (e.filename && (e.filename.includes('vnpay') || e.filename.includes('custom.min.js'))) {
-      if (e.message && e.message.includes('timer')) {
-        console.warn('VNPay script error handled:', e.message);
-        e.preventDefault();
-        return false;
-      }
-    }
-  }, true);
-
-  // Initialize timer immediately if we're already on a VNPay domain
-  if (window.location.hostname.includes('vnpay')) {
-    console.log('VNPay Fix - On VNPay domain, initializing timer immediately');
-    if (window.timer) {
-      window.timer.init().start();
-    }
-  }
-
-  console.log("VNPay Universal Fix - Loaded successfully");
-
-})();
-    },
-    writable: false,
-    configurable: false,
-  });
-
-  // Define updateTime function
-  Object.defineProperty(window, "updateTime", {
-    value: function () {
-      try {
-        if (window.timer && typeof window.timer.update === "function") {
-          window.timer.update();
-        }
-      } catch (e) {
-        console.warn("updateTime handled safely:", e.message);
-      }
-    },
-    writable: false,
-    configurable: false,
-  });
-
-  // Start timer when page loads
-  const startTimer = () => {
-    if (window.timer && typeof window.timer.start === "function") {
-      window.timer.start();
+      };
+      console.log("Enhanced updateTime function defined");
     }
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startTimer);
-  } else {
-    startTimer();
-  }
-
-  // Override window.onerror to handle VNPay errors
-  const originalOnError = window.onerror;
-  window.onerror = function (message, source, lineno, colno, error) {
-    if (
-      typeof message === "string" &&
-      (message.includes("timer is not defined") ||
-        message.includes("updateTime") ||
-        (source && source.includes("custom.min.js")))
-    ) {
-      console.warn("VNPay error handled:", message);
-      return true; // Prevent error from showing
+  // Define additional timer aliases that jQuery/VNPay might expect
+  const defineTimerAliases = function () {
+    if (!window.countdownTimer) {
+      window.countdownTimer = window.timer;
     }
-
-    if (originalOnError) {
-      return originalOnError.apply(window, arguments);
+    if (!window.paymentTimer) {
+      window.paymentTimer = window.timer;
     }
-    return false;
+    if (!window.sessionTimer) {
+      window.sessionTimer = window.timer;
+    }
   };
 
-  // Modern error handling
-  window.addEventListener(
-    "error",
-    function (event) {
+  // Console error suppression for cleaner logs
+  const suppressConsoleErrors = function () {
+    const originalConsoleError = console.error;
+    console.error = function (...args) {
+      const message = args.join(" ").toLowerCase();
       if (
-        event.message &&
-        (event.message.includes("timer is not defined") ||
-          event.message.includes("updateTime") ||
-          (event.filename && event.filename.includes("custom.min.js")))
+        message.includes("timer is not defined") ||
+        message.includes("timer not defined") ||
+        (message.includes("referenceerror") && message.includes("timer"))
       ) {
-        console.warn(
-          "VNPay error handled via addEventListener:",
-          event.message
-        );
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
+        console.warn("Console timer error suppressed:", args[0]);
+        return;
       }
-    },
-    true
-  );
+      originalConsoleError.apply(console, args);
+    };
+  };
 
-  console.log("VNPay timer fix loaded successfully");
+  // Initialize everything
+  const initialize = function () {
+    try {
+      initializeTimerObjects();
+      defineUpdateTimeFunction();
+      defineTimerAliases();
+      suppressConsoleErrors();
+
+      // Setup jQuery error handling when jQuery is available
+      if (typeof window.jQuery !== "undefined") {
+        setupJQueryErrorHandling();
+      } else {
+        // Wait for jQuery to load
+        let jQueryCheckCount = 0;
+        const jQueryCheck = setInterval(() => {
+          if (typeof window.jQuery !== "undefined" || jQueryCheckCount > 50) {
+            clearInterval(jQueryCheck);
+            if (typeof window.jQuery !== "undefined") {
+              setupJQueryErrorHandling();
+            }
+          }
+          jQueryCheckCount++;
+        }, 100);
+      }
+
+      console.log("Enhanced VNPay Universal Fix - Loaded successfully");
+    } catch (e) {
+      console.error("Enhanced VNPay Universal Fix - Initialization error:", e);
+    }
+  };
+
+  // Auto-initialize on VNPay domains or when timer errors are detected
+  const shouldAutoInit = function () {
+    const hostname = window.location.hostname.toLowerCase();
+    const pathname = window.location.pathname.toLowerCase();
+    const href = window.location.href.toLowerCase();
+
+    return (
+      hostname.includes("vnpay") ||
+      pathname.includes("payment") ||
+      pathname.includes("vnpay") ||
+      href.includes("vnpay") ||
+      document.body.innerHTML.toLowerCase().includes("vnpay")
+    );
+  };
+
+  // Initialize immediately
+  initialize();
+
+  // Auto-start timer on VNPay pages
+  if (shouldAutoInit()) {
+    setTimeout(() => {
+      if (window.timer && !window.timer.isActive) {
+        console.log("Auto-starting timer on VNPay page");
+        window.timer.init().start();
+      }
+    }, 1000);
+  }
+
+  // Export for manual initialization if needed
+  window.VNPayTimerFix = {
+    initialize: initialize,
+    initializeTimerObjects: initializeTimerObjects,
+    setupJQueryErrorHandling: setupJQueryErrorHandling,
+  };
 })();
