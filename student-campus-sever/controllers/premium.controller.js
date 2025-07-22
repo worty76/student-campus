@@ -55,22 +55,17 @@ const createVNPayPayment = async (req, res) => {
     const clientIpAddress = vnpayService.getClientIpAddress(req);
     console.log("Client IP Address extracted for VNPay:", clientIpAddress);
 
-    // Create VNPay payment URL with enhanced error handling
+    // Create VNPay payment URL using studenthub compatible parameters
     try {
-      const paymentUrl = vnpayService.measurePerformance(
-        "PaymentURL_Generation",
-        () => {
-          return vnpayService.createPaymentUrl(
-            orderId,
-            amount,
-            orderDescription,
-            bankCode,
-            language || "vn",
-            userId,
-            clientIpAddress
-          );
-        }
-      );
+      const paymentUrl = vnpayService.createPaymentUrl({
+        orderId: orderId,
+        amount: amount,
+        orderInfo: orderDescription,
+        bankCode: bankCode,
+        locale: language || "vn",
+        ipAddr: clientIpAddress,
+        returnUrl: process.env.VNP_RETURN_URL,
+      });
 
       const totalProcessingTime = Date.now() - startTime;
 
