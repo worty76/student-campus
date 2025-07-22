@@ -200,11 +200,11 @@ const FriendsNCommunitys = () => {
       try {
         setQueryerror(false);
         setLoading(true);
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
         const id = localStorage.getItem('userId');
-        const response = await axios.post(`http://localhost:3001/api/user/search`, { query: query, id: id }, {
+        const response = await axios.post(`${BASEURL}/api/user/search`, { query: query, id: id }, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: token ? `Bearer ${token}` : "",
           },
         });
 

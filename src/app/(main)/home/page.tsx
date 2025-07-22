@@ -345,10 +345,10 @@ const HomePage = () => {
 
       {/* Main Content Container - with improved spacing */}
       <div className="main-layout flex justify-center w-full pt-20 px-2 sm:px-4 lg:px-6 xl:px-8">
-        <div className="flex justify-between items-start gap-0.5 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1.5 w-full max-w-[1400px]">
+        <div className="flex justify-between items-start gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 w-full max-w-[1400px]">
           {/* Left Sidebar - Enhanced User Info */}
           <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
-            <div className="fixed top-24 w-56 lg:w-64 xl:w-80 left-1 lg:left-8 xl:left-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+            <div className="fixed top-24 w-56 lg:w-64 xl:w-80 left-4 lg:left-6 xl:left-8 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
               {/* Enhanced User Profile Card */}
               <div className="bg-white rounded-2xl shadow-lg p-3 lg:p-4 xl:p-6 border border-[#1E293B]/10 w-full flex flex-col items-center mb-2 lg:mb-3 xl:mb-4 hover:shadow-xl transition-all duration-300">
                 <div className="relative group">
@@ -501,7 +501,7 @@ const HomePage = () => {
           </div>
 
           {/* Center Feed - Enhanced Posts Area */}
-          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto flex flex-col items-center space-y-4 sm:space-y-6 px-1 sm:px-2 lg:px-4">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto flex flex-col items-center space-y-4 sm:space-y-6 px-1 sm:px-2 lg:px-0">
             {/* Enhanced New Post Input */}
             <div className="bg-white border border-[#1E293B]/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg w-full hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-start gap-3 sm:gap-4">
@@ -737,7 +737,7 @@ const HomePage = () => {
           {/* Enhanced Right Sidebar - Ads (only for non-premium users) */}
           {!userData?.isPremium && (
             <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
-              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-1 lg:right-8 xl:right-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
+              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-4 lg:right-6 xl:right-8 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
                 {/* Quick Stats Card */}
                 <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-3 lg:p-4 xl:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <h4 className="font-bold text-[#1E293B] mb-2 lg:mb-3 xl:mb-4 flex items-center gap-2 lg:gap-3 xl:gap-4 text-sm lg:text-base xl:text-lg">
@@ -790,7 +790,7 @@ const HomePage = () => {
           {/* Premium User - No Ads Message */}
           {userData?.isPremium && (
             <div className="sidebar-container hidden lg:block w-56 lg:w-64 xl:w-80 flex-shrink-0">
-              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-1 lg:right-8 xl:right-[calc((100vw-1200px)/2-16rem)] max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
+              <div className="fixed top-24 w-56 lg:w-64 xl:w-80 right-4 lg:right-6 xl:right-8 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 space-y-4">
                 {/* Quick Stats Card */}
                 <div className="bg-white border border-[#1E293B]/10 rounded-2xl p-3 lg:p-4 xl:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <h4 className="font-bold text-[#1E293B] mb-2 lg:mb-3 xl:mb-4 flex items-center gap-2 lg:gap-3 xl:gap-4 text-sm lg:text-base xl:text-lg">
@@ -941,15 +941,15 @@ const HomePage = () => {
         /* Adjust layout for different screen sizes */
         @media (min-width: 1024px) and (max-width: 1279px) {
           .main-layout {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
           }
         }
 
         @media (min-width: 1280px) {
           .main-layout {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+            padding-left: 8px !important;
+            padding-right: 8px !important;
           }
         }
 
