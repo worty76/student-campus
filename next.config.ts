@@ -33,36 +33,39 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === "development";
 
-    // Base CSP directives
-    const baseCSP = [
+    // Development CSP (more permissive)
+    const devCSP = [
       "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://student-campus.vercel.app https://*.vercel.com https://vercel.com localhost:* http://localhost:*",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
       "img-src 'self' data: blob: https: http:",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com data:",
+      "connect-src 'self' ws: wss: https: http: data: blob: https://vercel.live https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com ws://localhost:* http://localhost:*",
       "media-src 'self' blob: data:",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
-      "frame-src https://vercel.live https://*.vercel.com https://vercel.com", // Allow Vercel Live frames
-      "child-src https://vercel.live https://*.vercel.com https://vercel.com", // Fallback for older browsers
+      "frame-src https://vercel.live https://*.vercel.com https://vercel.com",
+      "child-src https://vercel.live https://*.vercel.com https://vercel.com",
       "worker-src 'self' blob:",
-    ];
-
-    // Development CSP (more permissive)
-    const devCSP = [
-      ...baseCSP,
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://student-campus.vercel.app https://*.vercel.com https://vercel.com localhost:* http://localhost:*",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
-      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com data:",
-      "connect-src 'self' ws: wss: https: http: data: blob: https://vercel.live https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com ws://localhost:* http://localhost:*",
       "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
     ];
 
     // Production CSP (more restrictive)
     const prodCSP = [
-      ...baseCSP,
+      "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://student-campus.vercel.app https://*.vercel.com https://vercel.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
+      "img-src 'self' data: blob: https: http:",
       "font-src 'self' https://fonts.gstatic.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
       "connect-src 'self' wss: https: data: blob: https://vercel.live https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com",
+      "media-src 'self' blob: data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+      "frame-src https://vercel.live https://*.vercel.com https://vercel.com",
+      "child-src https://vercel.live https://*.vercel.com https://vercel.com",
+      "worker-src 'self' blob:",
       "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
     ];
 
