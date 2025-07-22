@@ -118,13 +118,8 @@ const handleVNPayReturn = async (req, res) => {
 
     const vnpParams = req.query;
 
-    // Enhanced signature verification with performance monitoring
-    const isValidSignature = vnpayService.measurePerformance(
-      "Signature_Verification",
-      () => {
-        return vnpayService.verifyReturnUrl(vnpParams);
-      }
-    );
+    // Enhanced signature verification
+    const isValidSignature = vnpayService.verifyReturnUrl(vnpParams);
 
     console.log("VNPay Return Validation:", {
       signatureValid: isValidSignature,
