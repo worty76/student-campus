@@ -1,5 +1,5 @@
 // VNPay Payment Page Component with Timer Error Protection
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 // Type definitions for VNPay timer
 interface VNPayTimer {
@@ -29,10 +29,10 @@ interface VNPayPaymentWrapperProps {
   timeoutMinutes?: number;
 }
 
-export default function VNPayPaymentWrapper({ 
-  children, 
+export default function VNPayPaymentWrapper({
+  children,
   onTimerError,
-  timeoutMinutes = 30 
+  timeoutMinutes = 30,
 }: VNPayPaymentWrapperProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialized = useRef(false);
@@ -41,38 +41,39 @@ export default function VNPayPaymentWrapper({
     if (isInitialized.current) return;
     isInitialized.current = true;
 
-    console.log('VNPayPaymentWrapper - Initializing timer protection');
+    console.log("VNPayPaymentWrapper - Initializing timer protection");
 
     // Enhanced error handling specifically for VNPay pages
     const handleVNPayError = (error: Error | ErrorEvent): boolean => {
       const message = error.message || error.toString();
-      
-      if (message.toLowerCase().includes('timer is not defined') ||
-          message.toLowerCase().includes('updatetime is not defined')) {
-        
-        console.warn('VNPay timer error intercepted by wrapper:', message);
-        
+
+      if (
+        message.toLowerCase().includes("timer is not defined") ||
+        message.toLowerCase().includes("updatetime is not defined")
+      ) {
+        console.warn("VNPay timer error intercepted by wrapper:", message);
+
         // Initialize timer objects if they don't exist
         if (!window.timer) {
           window.timer = {
             remaining: timeoutMinutes * 60,
             interval: null,
             isActive: true,
-            
+
             init(): VNPayTimer {
-              console.log('VNPay timer start handled');
+              console.log("VNPay timer start handled");
               this.isActive = true;
               return this;
             },
-            
+
             start(): VNPayTimer {
-              console.log('VNPay timer start handled');
+              console.log("VNPay timer start handled");
               this.isActive = true;
               return this;
             },
-            
+
             stop(): VNPayTimer {
-              console.log('VNPay timer stop handled');
+              console.log("VNPay timer stop handled");
               if (this.interval) {
                 clearInterval(this.interval);
                 this.interval = null;
@@ -80,27 +81,29 @@ export default function VNPayPaymentWrapper({
               this.isActive = false;
               return this;
             },
-            
+
             reset(newTime?: number): VNPayTimer {
-              this.remaining = newTime || (timeoutMinutes * 60);
+              this.remaining = newTime || timeoutMinutes * 60;
               this.isActive = true;
               return this;
             },
-            
+
             updateDisplay(): void {
               // Safe update implementation
             },
-            
+
             formatTime(): string {
               const minutes = Math.floor(this.remaining / 60);
               const seconds = this.remaining % 60;
-              return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+              return `${minutes.toString().padStart(2, "0")}:${seconds
+                .toString()
+                .padStart(2, "0")}`;
             },
-            
+
             onExpire(): void {
-              console.log('VNPay timer expired');
+              console.log("VNPay timer expired");
               this.isActive = false;
-            }
+            },
           };
         }
 
@@ -111,7 +114,7 @@ export default function VNPayPaymentWrapper({
                 window.timer.remaining--;
               }
             } catch {
-              console.warn('updateTime handled safely');
+              console.warn("updateTime handled safely");
             }
           };
         }
@@ -120,10 +123,10 @@ export default function VNPayPaymentWrapper({
         if (onTimerError) {
           onTimerError(error instanceof Error ? error : new Error(message));
         }
-        
+
         return true; // Prevent default error handling
       }
-      
+
       return false;
     };
 
@@ -140,8 +143,8 @@ export default function VNPayPaymentWrapper({
       }
     };
 
-    window.addEventListener('error', errorHandler);
-    window.addEventListener('unhandledrejection', unhandledRejectionHandler);
+    window.addEventListener("error", errorHandler);
+    window.addEventListener("unhandledrejection", unhandledRejectionHandler);
 
     // Initialize VNPay timer protection
     const initVNPayTimer = () => {
@@ -150,19 +153,19 @@ export default function VNPayPaymentWrapper({
           remaining: timeoutMinutes * 60,
           interval: null,
           isActive: false,
-          
+
           init(): VNPayTimer {
-            console.log('VNPay Wrapper - Timer initialized');
+            console.log("VNPay Wrapper - Timer initialized");
             this.isActive = true;
             return this;
           },
-          
+
           start(): VNPayTimer {
-            console.log('VNPay Wrapper - Timer started');
+            console.log("VNPay Wrapper - Timer started");
             this.isActive = true;
-            
+
             if (this.interval) this.stop();
-            
+
             this.interval = setInterval(() => {
               try {
                 if (this.remaining > 0) {
@@ -173,13 +176,13 @@ export default function VNPayPaymentWrapper({
                   this.onExpire();
                 }
               } catch {
-                console.warn('VNPay timer update handled');
+                console.warn("VNPay timer update handled");
               }
             }, 1000);
-            
+
             return this;
           },
-          
+
           stop(): VNPayTimer {
             if (this.interval) {
               clearInterval(this.interval);
@@ -187,45 +190,49 @@ export default function VNPayPaymentWrapper({
             }
             return this;
           },
-          
+
           updateDisplay(): void {
             const minutes = Math.floor(this.remaining / 60);
             const seconds = this.remaining % 60;
-            const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
+            const timeString = `${minutes.toString().padStart(2, "0")}:${seconds
+              .toString()
+              .padStart(2, "0")}`;
+
             // Update any timer elements
             const timerElements = document.querySelectorAll(
               '#timer, .timer, [class*="timer"], .countdown, #countdown'
             );
-            
+
             timerElements.forEach((el) => {
               if (el instanceof HTMLElement) {
                 el.textContent = timeString;
               }
             });
-            
+
             // Update title if it has timer format
-            if (document.title.includes(':')) {
+            if (document.title.includes(":")) {
               document.title = document.title.replace(/\d+:\d+/, timeString);
             }
           },
-          
+
           formatTime(): string {
             const minutes = Math.floor(this.remaining / 60);
             const seconds = this.remaining % 60;
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return `${minutes.toString().padStart(2, "0")}:${seconds
+              .toString()
+              .padStart(2, "0")}`;
           },
-          
+
           reset(newTime?: number): VNPayTimer {
-            this.remaining = newTime || (timeoutMinutes * 60);
+            this.remaining = newTime || timeoutMinutes * 60;
             this.isActive = true;
             return this;
           },
-          
+
           onExpire(): void {
-            console.log('VNPay Wrapper - Timer expired');
+            console.log("VNPay Wrapper - Timer expired");
             this.isActive = false;
-          }
+          },
         };
       }
 
@@ -237,7 +244,7 @@ export default function VNPayPaymentWrapper({
               window.timer.updateDisplay();
             }
           } catch {
-            console.warn('updateTime handled in wrapper');
+            console.warn("updateTime handled in wrapper");
           }
         };
       }
@@ -251,20 +258,23 @@ export default function VNPayPaymentWrapper({
 
     // Initialize immediately and also on DOM ready
     initVNPayTimer();
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initVNPayTimer);
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initVNPayTimer);
     }
 
     // Cleanup function
     return () => {
-      window.removeEventListener('error', errorHandler);
-      window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
-      
+      window.removeEventListener("error", errorHandler);
+      window.removeEventListener(
+        "unhandledrejection",
+        unhandledRejectionHandler
+      );
+
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
-      
+
       if (window.timer && window.timer.stop) {
         window.timer.stop();
       }
@@ -298,7 +308,7 @@ export function useVNPayTimer(timeoutMinutes: number = 30) {
   };
 
   const getFormattedTime = (): string => {
-    return timerRef.current?.formatTime() || '00:00';
+    return timerRef.current?.formatTime() || "00:00";
   };
 
   const isActive = (): boolean => {
@@ -309,6 +319,6 @@ export function useVNPayTimer(timeoutMinutes: number = 30) {
     getRemainingTime,
     getFormattedTime,
     isActive,
-    timer: timerRef.current
+    timer: timerRef.current,
   };
 }
