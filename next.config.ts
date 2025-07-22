@@ -47,20 +47,20 @@ const nextConfig: NextConfig = {
     // Development CSP (more permissive)
     const devCSP = [
       ...baseCSP,
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://student-campus.vercel.app https://*.vercel.com https://vercel.com localhost:* http://localhost:*",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://student-campus.vercel.app https://*.vercel.com",
-      "font-src 'self' https://fonts.gstatic.com https://student-campus.vercel.app https://*.vercel.com data:",
-      "connect-src 'self' ws: wss: https: http: data: blob: https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com ws://localhost:* http://localhost:*",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://student-campus.vercel.app https://*.vercel.com https://vercel.com localhost:* http://localhost:*",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com data:",
+      "connect-src 'self' ws: wss: https: http: data: blob: https://vercel.live https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com ws://localhost:* http://localhost:*",
       "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
     ];
 
     // Production CSP (more restrictive)
     const prodCSP = [
       ...baseCSP,
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://student-campus.vercel.app https://*.vercel.com https://vercel.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://student-campus.vercel.app https://*.vercel.com",
-      "font-src 'self' https://fonts.gstatic.com https://student-campus.vercel.app https://*.vercel.com",
-      "connect-src 'self' wss: https: data: blob: https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sandbox.vnpayment.vn https://pay.vnpay.vn https://vercel.live https://student-campus.vercel.app https://*.vercel.com https://vercel.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://student-campus.vercel.app https://*.vercel.com",
+      "connect-src 'self' wss: https: data: blob: https://vercel.live https://student-campus.vercel.app https://*.vercel.com wss://vercel.live wss://*.vercel.com",
       "form-action 'self' https://sandbox.vnpayment.vn https://pay.vnpay.vn",
     ];
 
