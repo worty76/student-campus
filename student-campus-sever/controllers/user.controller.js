@@ -119,6 +119,7 @@ const createAccount = async (req, res) => {
       Major: major,
       Year: year,
       avatar_link: "",
+      role: "user", // Explicitly set role for new users
     });
 
     await result.save();
@@ -161,7 +162,11 @@ const LoginRequest = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: foundUser._id, email: foundUser.email, role: foundUser.role },
+      {
+        userId: foundUser._id,
+        email: foundUser.email,
+        role: foundUser.role || "user",
+      },
       JWT_SECRET,
       { expiresIn: "72h" }
     );
@@ -170,6 +175,23 @@ const LoginRequest = async (req, res) => {
     const friends = foundUser.friends
       ? foundUser.friends.map((f) => f.toString())
       : [];
+
+    // Ensure role is set (defensive programming for existing users without role)
+    const userRole = foundUser.role || "user";
+
+    // If user doesn't have a role, update it in the database
+    if (!foundUser.role) {
+      try {
+        await User.findByIdAndUpdate(foundUser._id, { role: "user" });
+        console.log(`Updated role for user ${foundUser._id} to 'user'`);
+      } catch (updateError) {
+        console.error(
+          `Failed to update role for user ${foundUser._id}:`,
+          updateError
+        );
+        // Don't fail the login if role update fails
+      }
+    }
 
     const logindata = {
       token: token,
@@ -180,7 +202,7 @@ const LoginRequest = async (req, res) => {
         Faculty: foundUser.Faculty,
         Major: foundUser.Major,
         Year: foundUser.Year,
-        role: foundUser.role,
+        role: userRole,
         friends: friends,
         createtime: foundUser.createtime,
         avatar_link: foundUser.avatar_link,
@@ -227,6 +249,7 @@ const getUserData = async (req, res) => {
       messagePrivacy: user.messagePrivacy,
       notifcationSettings: user.notifcationSettings,
       isPremium: user.isPremium,
+      role: user.role || "user", // Include role with fallback
     };
 
     res.status(200).json({ success: true, resUser });
@@ -640,3 +663,33 @@ module.exports = {
   setCodeAsNewPassword,
   sendVerification,
 };
+
+// Migration function to add role field to existing users who don't have it
+const updateUsersWithoutRole = async () => {
+  try {
+    // Update all users that don't have a role field or have it set to null/undefined
+    const result = await User.updateMany(
+      {
+        $or: [
+          { role: { $exists: false } },
+          { role: null },
+          { role: undefined },
+        ],
+      },
+      {
+        $set: { role: "user" },
+      }
+    );
+
+    console.log(
+      `Updated ${result.modifiedCount} users with missing role field`
+    );
+    return result;
+  } catch (error) {
+    console.error("Error updating users without role:", error);
+    throw error;
+  }
+};
+
+// Export the migration function (can be called separately if needed)
+module.exports.updateUsersWithoutRole = updateUsersWithoutRole;

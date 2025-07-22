@@ -476,6 +476,9 @@ const getRevenueStats = async (req, res) => {
     const premiumUsers = await User.countDocuments({ isPremium: true });
     const totalUsers = await User.countDocuments({});
 
+    // Total posts count
+    const totalPosts = await Post.countDocuments({});
+
     res.status(200).json({
       success: true,
       stats: {
@@ -485,6 +488,7 @@ const getRevenueStats = async (req, res) => {
         revenueByMethod,
         premiumUsers,
         totalUsers,
+        totalPosts, // Add total posts to the response
         premiumConversionRate:
           totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(2) : 0,
       },
