@@ -10,6 +10,71 @@ class PremiumPaymentService {
   private readonly API_BASE_URL = BASEURL;
 
   /**
+   * Initialize VNPay timer protection before payment
+   */
+  private static initializeVNPayProtection(): void {
+    console.log('PremiumPaymentService - Initializing VNPay timer protection');
+    
+    // Ensure timer object exists before VNPay redirect
+    if (typeof window !== 'undefined' && !(window as any).timer) {
+      (window as any).timer = {
+        remaining: 1800, // 30 minutes
+        interval: null,
+        isActive: false,
+        init: function() { this.isActive = true; return this; },
+        start: function() { this.isActive = true; return this; },
+        stop: function() { 
+          if (this.interval) clearInterval(this.interval);
+          this.interval = null;
+          return this; 
+        },
+        update: function() { /* Safe update */ },
+        formatTime: function() {
+          const m = Math.floor(this.remaining / 60);
+          const s = this.remaining % 60;
+          return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+      };
+    }
+
+    // Ensure updateTime function exists
+    if (typeof window !== 'undefined' && !(window as any).updateTime) {
+      (window as any).updateTime = function() {
+        try {
+          if ((window as any).timer && (window as any).timer.remaining > 0) {
+            (window as any).timer.remaining--;
+          }
+        } catch(e) {
+          console.warn('updateTime handled safely in service');
+        }
+      };
+    }
+  }
+
+  /**
+   * Redirect to VNPay with timer protection
+   */
+  private static redirectToVNPayWithProtection(paymentUrl: string): void {
+    console.log('Redirecting to VNPay with timer protection');
+    
+    // Initialize protection before redirect
+    this.initializeVNPayProtection();
+    
+    // Add error handler for the redirect
+    const handleRedirectError = (error: ErrorEvent) => {
+      if (error.message && error.message.toLowerCase().includes('timer')) {
+        console.warn('VNPay redirect timer error handled:', error.message);
+        return false;
+      }
+    };
+
+    window.addEventListener('error', handleRedirectError, { once: true });
+    
+    // Redirect to VNPay
+    window.location.href = paymentUrl;
+  }
+
+  /**
    * Purchase premium subscription with VNPay
    */
   static async purchaseWithVNPay(
@@ -17,6 +82,10 @@ class PremiumPaymentService {
     purchaseData: PremiumPurchaseRequest
   ): Promise<PremiumPurchaseResponse> {
     try {
+      console.log('Starting VNPay premium purchase with timer protection');
+      
+      // Initialize VNPay protection before API call
+      this.initializeVNPayProtection();
       const response = await fetch(`${BASEURL}/api/premium/vnpay/create`, {
         method: "POST",
         headers: {
@@ -64,6 +133,17 @@ class PremiumPaymentService {
           data.message || "Có lỗi xảy ra khi xử lý thanh toán",
           response.status
         );
+      }
+
+      // Handle successful response with payment URL
+      if (data.success && data.paymentUrl) {
+        console.log('VNPay payment URL received, redirecting with timer protection');
+        
+        // Use protected redirect instead of direct redirect
+        this.redirectToVNPayWithProtection(data.paymentUrl);
+        
+        // Return the response for any additional handling
+        return data as PremiumPurchaseResponse;
       }
 
       return data as PremiumPurchaseResponse;

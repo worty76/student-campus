@@ -22,33 +22,85 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* VNPay Timer Error Fix */}
+        {/* VNPay Timer Error Prevention - Load before any other scripts */}
         <script src="/vnpay-universal-fix.js" defer />
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Additional global error handler for VNPay timer issues
-              window.addEventListener('error', function(e) {
-                if (e.message && e.message.includes('timer is not defined')) {
-                  console.warn('VNPay timer error caught and ignored:', e.message);
-                  e.preventDefault();
-                  return false;
-                }
-              });
-              
-              // Define timer globally before any scripts load
-              if (typeof window.timer === 'undefined') {
-                window.timer = { remaining: 900, interval: null };
-              }
-              if (typeof window.updateTime === 'undefined') {
-                window.updateTime = function() {
-                  try {
-                    if (window.timer && window.timer.remaining > 0) {
-                      window.timer.remaining--;
+              // Immediate VNPay timer error prevention
+              (function() {
+                console.log('VNPay Layout Protection - Initializing...');
+                
+                // Global error handler for timer-related errors
+                const originalError = window.onerror;
+                window.onerror = function(message, source, lineno, colno, error) {
+                  if (typeof message === 'string') {
+                    const msg = message.toLowerCase();
+                    if (msg.includes('timer is not defined') || 
+                        msg.includes('updatetime') || 
+                        msg.includes('referenceerror: timer')) {
+                      console.warn('VNPay timer error prevented in layout:', message);
+                      return true; // Prevent error from showing
                     }
-                  } catch(err) { console.warn('Timer update handled'); }
+                  }
+                  return originalError ? originalError.apply(this, arguments) : false;
                 };
-              }
+
+                // Promise rejection handler
+                window.addEventListener('unhandledrejection', function(event) {
+                  if (event.reason && event.reason.message && 
+                      event.reason.message.toLowerCase().includes('timer')) {
+                    console.warn('VNPay timer promise rejection handled:', event.reason.message);
+                    event.preventDefault();
+                  }
+                });
+
+                // Pre-define timer object to prevent "not defined" errors
+                if (!window.timer) {
+                  console.log('VNPay Layout - Defining timer object');
+                  Object.defineProperty(window, 'timer', {
+                    value: {
+                      remaining: 1800, // 30 minutes
+                      interval: null,
+                      isActive: false,
+                      init: function() { this.isActive = true; return this; },
+                      start: function() { 
+                        console.log('VNPay timer started from layout');
+                        this.isActive = true;
+                        return this; 
+                      },
+                      stop: function() { 
+                        if (this.interval) clearInterval(this.interval);
+                        this.interval = null;
+                        return this; 
+                      },
+                      update: function() { /* Safe update */ },
+                      formatTime: function() {
+                        const m = Math.floor(this.remaining / 60);
+                        const s = this.remaining % 60;
+                        return m + ':' + (s < 10 ? '0' : '') + s;
+                      }
+                    },
+                    writable: false,
+                    configurable: false
+                  });
+                }
+
+                // Pre-define updateTime function
+                if (!window.updateTime) {
+                  window.updateTime = function() {
+                    try {
+                      if (window.timer && window.timer.remaining > 0) {
+                        window.timer.remaining--;
+                      }
+                    } catch(e) {
+                      console.warn('updateTime handled safely');
+                    }
+                  };
+                }
+
+                console.log('VNPay Layout Protection - Ready');
+              })();
             `,
           }}
         />
